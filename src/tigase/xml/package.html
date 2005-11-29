@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+ <head>
+  <title>Package: tigase.server</title>
+<!--
+
+  Package Tigase XMPP/Jabber Server
+  Copyright (C) 2001, 2002, 2003, 2004, 2005
+  "Artur Hefczyc" <artur.hefczyc@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+  $Rev: 68 $
+  $Author: kobit $
+  $Date: 2005/04/01 10:29:44 $
+
+-->
+ </head>
+ <body bgcolor="white">
+  <h3>Simple <em>XML</em> parser implementation.</h3>
+  <p>This package contains simple <em>XML</em> parser implementation. The main
+   idea was to create lightweight parser supporting multithreaded processing with
+   special focus on efficiency. So it supports only basic <em>XML</em>
+   structures but enough for many simple cases like parsing <em>XML</em> streams
+   from network connections, processing <em>XML</em> files containing
+   configuration or for simple <em>XML</em> data base implementation.</p>
+  <p>Base classes define and implement <em>SAX</em> style parser:</p>
+  <ul>
+   <li><code>SimpleParser</code> - implementation of <em>SAX</em> parser. This
+    is very basic implementation of <em>XML</em> parser designed especially to
+    be light and parse <em>XML</em> streams like jabber <em>XML</em> stream. It
+    is very efficient, capable of parsing parts of <em>XML</em> document
+    received from the network connection as well as handling a few <em>XML</em>
+    documents in one buffer. This is especially useful when parsing data
+    received from the network. Packets received from the network can contain non-complete
+    <em>XML</em> document as well as a few complete <em>XML</em> documents. It
+    doesn't support <em>XML</em> comments, processing instructions, document
+    inclusions. Actually it supports only:
+    <ul>
+     <li>Start element event (with all attributes found).</li>
+     <li>End element even.</li>
+     <li>Character data event.</li>
+     <li>'Other-XML' data event - everything between '&#60;' and '&#62;' if after
+      &#60; is '?' or '!'. So it can 'catch' doc-type declaration, processing
+      instructions but it can't process correctly commented blocks.</li>
+    </ul> Although very simple this implementation is sufficient for Jabber
+    protocol needs and is even used by some other packages of this server like
+    implementation of <code>UserRepository</code> based on <em>XML</em> file or
+    server configuration.
+    <p>It is worth to note also that this class is fully thread safe. It means that
+     one instance of this class can be simultaneously used by many threads. This
+     is to improve resources usage when processing many client connections at
+     the same time.</p>
+   </li>
+   <li><code>SimpleHandler</code> - parser handler interface for event driven
+    parser. It is very simplified version of
+    <code>org.xml.sax.ContentHandler</code> interface created for
+    <code>SimpleParser</code> needs. It allows to receive events like start
+    element (with element attributes), end element, element c-data, other <em>XML</em>
+    content and error event if <em>XML</em> error found.</li>
+  </ul>
+  <p>Based on above <em>SAX</em> parser there is also <em>DOM</em>
+   implementation. Classes used to build <em>DOM</em> for <em>XML</em> content
+   are:</p>
+  <ul>
+   <li><code>DomBuilderHandler</code> - implementation of
+    <code>SimpleHandler</code> building <em>DOM</em> structures during parsing
+    time. It also supports creation of multiple, sperate document trees if parsed
+    buffer contains a few <em>XML</em> documents. As a result of work it returns
+    always <code>Queue</code> containing all found <em>XML</em> trees in the
+    same order as they were found in network data.<br/>
+    Document trees created by this <em>DOM</em> builder consist of instances of
+    <code>Element</code> class or instances of class extending
+    <code>Element</code> class. To receive trees built with instances of proper
+    class user must provide <code>ElementFactory</code> implementation creating
+    instances of required <code>ELement</code> extension.</li>
+   <li><code>Element</code> - basic document tree node implementation.
+    Supports Java 5.0 generic types to make it easier to extend and
+    still preserve some useful functionality. Sufficient for simple cases but
+    probably in the most more advanced cases should be extended with additional
+    features. Look in API documentation for more details and information about
+    existing extensions. The most important features apart from obvious tree
+    implementation are:
+    <ul>
+     <li><code>toString()</code> implementation so it can generate valid
+      <em>XML</em> content from this element and all children.</li>
+     <li><code>addChild(...)</code>, <code>getChild(childName)</code> supporting
+      generic types.</li>
+     <li><code>findChild(childPath)</code> finding child in subtree by given
+      path to element.</li>
+     <li><code>getChildCData(childPath)</code>, <code>getAttribute(childPath,
+       attName)</code> returning element c-data or attribute from child in
+      subtree by given path to element.</li>
+    </ul>
+   </li>
+   <li><code>ElementFactory</code> is interface definition for factories
+    creating proper instances of <code>Element</code> class or its extension.</li>
+   <li><code>DefaultElementFactory</code> is an <code>ElementFactory</code>
+    implementation creating instances of basic <code>Element</code> class. This
+    implementation exists to offer complementary implementation of
+    <em>DOM</em>. It can be used when basic <code>Element</code> class is
+    sufficient for particular needs.</li>
+   <li><code>SingletonFactory</code> provides a way to use only one instance of
+    <code>SimpleParser</code> in all your code.
+    Since <code>SimpleParser</code> if fully thread safe implementation there is
+    no sense to use multiple instances of this class. This in particular useful
+    when processing a lot of network connections sending <em>XML</em> streams
+    and using one instance for all connections can save some resources.<br/>
+    Of course it is still possible to create as many instances of
+    <code>SimpleParser</code> you like in normal way using public constructor.</li>
+  </ul>
+ </body>
+</html>
