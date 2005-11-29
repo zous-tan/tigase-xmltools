@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+ <head>
+  <title>Package: tigase.server</title>
+<!--
+
+  Package Tigase XMPP/Jabber Server
+  Copyright (C) 2001, 2002, 2003, 2004, 2005
+  "Artur Hefczyc" <artur.hefczyc@gmail.com>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+  $Rev: 68 $
+  $Author: kobit $
+  $Date: 2005/04/01 10:29:46 $
+
+-->
+ </head>
+ <body bgcolor="white">
+  <h3>This package contains implementation of simple data base stored in
+   <em>XML</em> file.</h3>
+  <p>This data base implementation is very simple but also very handy. It simple
+   because it reads whole data base file into memory to operate on data. It
+   allows to store and retrieve only text or character string data.<br/>
+   Data base is kept in <em>XML</em> file. This gives us a few nice benefits:
+   </p>
+  <ul>
+   <li>First of all this is hierachical data base so you can organize your data in
+    tree like structures. It looks like a file system directory structure and
+    you also operate on it in very similar way.</li>
+   <li>Second it allows you to assign any number of values to one key. They are
+    called <em>data lists</em>.</li>
+  </ul>
+  <p>As a whole data base is kept in memory it is not good for storring large
+   number of data in one file. But it is very fast. It is good especially for
+   storring configuration or data which are similar in their nature to
+   <em>LDAP</em> supporting data bases. You don't have to worry about saving
+   data. Each time you add new item to data base it take care about saving them
+   to permanent storage.</p>
+  <p><code>XMLDB</code> is the main data base access class.
+   It allows you to create new data base in given file, open data base from
+   given file, add, delete and retrieve data and data lists. All data or data
+   lists are stored in data base nodes. There are three possible kinds of nodes
+   for each data base:</p>
+  <ol>
+   <li><b>root node</b> - this is top node in each <em>XML</em> hierachy tree.
+    There can be only one root node in data base as there can be only one root
+    element in <em>XML</em> file. The element name for root node can be defined
+    by the user when new data base is created or defualt element name
+    '<code>root</code>' is used.</li>
+   <li><b>node1 nodes</b> - these are the first level nodes under <em>root</em>
+    node. There can be any number of nodes on this level. All data added for
+    this data base are added to first level node unless subnode path is
+    given. User can define element name of <em>node1</em> when new data base is
+    created. If not given default element name '<code>node</code>' is used.</li>
+   <li><b>subnodes</b> - node on any deeper level under <em>node1</em>
+    level. There can be any number of <em>subnodes</em> on any
+    level. <em>Subnodes</em> has always '<code>node</code>' element name and this can't
+    be changed.</li>
+  </ol>
+  <p>All <em>node1</em> nodes and <em>subnodes</em> can contains any number of
+   data associated with keys. With some keys there ca be more than one value
+   assigned. Such kind of data are called <em>data lists</em>.<br/>
+   Although element name for <em>subnode</em> can not be defined it is actually not
+   important. Because data base user doesn't use subnode element names. He doesn't
+   even use neiher <em>root</em> node element name nor <em>node1</em> element
+   name. Data base user uses <em><b>node name</b></em> what is quite different
+   from <b><em>node element name</em></b>. Let see example below:</p>
+  <pre>&#60;node name='roster'/&#62;</pre>
+  <p>In this example <em>node element name</em> is <b>node</b> and
+   <em>node name</em> is <b>roster.</b><br/>
+   Data base users (actually developers) use only <em>node names</em>.<br/>
+   If you want to access subnode on some level you need to give full path to
+   this subnode. For example, let's assume we have following data base:</p>
+  <pre>  &#60;node name='tigase'>
+   &#60;node name='server'>
+   &#60;/node>
+   &#60;node name='xmpp'>
+   &#60;/node>
+  &#60;/node></pre>
+  <p>If you need to access '<code>server</code>' subnode you need to call method
+   with '<code>/tigase/server</code>' as subnode path and for subnode
+   '<code>xmpp</code>' proper subnode path is of course
+   '<code>/tigase/xmpp</code>'. If you skip subnode path or give
+   <code>null</code> as a parameter you will be accessing data on <em>node1</em>
+   level. You can not access or save data on root node level.</p>
+  <p><code>DBElement</code> class extends <code>tigase.xml.Element</code>. It
+   adds some extra functionality useful for data base operations like searching
+   for some specific nodes, add data entries, remove data, and all other common
+   operations not directly related to pure <em>XML</em> processing. Pure
+   <em>XML</em> processing is of course implemented in
+   <code>tigase.xml.Element</code>. The are also some methods which make it
+   easier to save <em>XML</em> tree from memory to disk file in a form which is
+   easier to read by a human.</p>
+  <p><code>DBElementFactory</code> is implementation of factory design pattern
+   required by <em>XML</em> <em>DOM</em> builder to create proper
+   <code>Element</code> instances for tree nodes.</p>
+ </body>
+</html>
