@@ -31,9 +31,9 @@ package tigase.xml;
  * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
  * @version $Rev$
  */
-public interface ElementFactory<E extends Element> {
+public interface ElementFactory {
 
-  E elementInstance(String name, String cdata,
+  Element elementInstance(String name, String cdata,
     StringBuilder[] attNames, StringBuilder[] attValues);
 
 } // ElementFactory

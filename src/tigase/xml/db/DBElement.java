@@ -23,7 +23,7 @@
 package tigase.xml.db;
 
 import java.util.List;
-import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 import tigase.xml.Element;
 
@@ -43,7 +43,7 @@ import tigase.xml.Element;
  * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
  * @version $Rev$
  */
-public class DBElement extends Element<DBElement> {
+public class DBElement extends Element {
 
   public static final String NODE  = "node";
   public static final String MAP   = "map";
@@ -51,6 +51,7 @@ public class DBElement extends Element<DBElement> {
   public static final String NAME  = "name";
   public static final String VALUE = "value";
   public static final String KEY   = "key";
+	public static final String TYPE  = "type";
 
   public boolean removed = false;
 
@@ -102,8 +103,8 @@ public class DBElement extends Element<DBElement> {
     StringBuilder result = new StringBuilder();
     if (children != null) {
       synchronized (children) {
-        for (DBElement child : children) {
-          result.append(child.formatedString(indent, step));
+        for (Element child : children) {
+          result.append(((DBElement)child).formatedString(indent, step));
         } // end of for ()
       }
     } // end of if (child != null)
@@ -115,10 +116,10 @@ public class DBElement extends Element<DBElement> {
       return null;
     } // end of if (children == null)
     synchronized (children) {
-      for (DBElement elem : children) {
+      for (Element elem : children) {
         if (elem.getName().equals(NODE) &&
           elem.getAttribute(NAME).equals(name)) {
-          return elem;
+          return (DBElement)elem;
         } //
       } // end of for (DBElement node : children)
     }
@@ -133,7 +134,7 @@ public class DBElement extends Element<DBElement> {
     String[] result = new String[children.size()-1];
     synchronized (children) {
       int idx = 0;
-      for (DBElement elem : children) {
+      for (Element elem : children) {
         if (elem.getName().equals(NODE)) {
           result[idx++] = elem.getAttribute(NAME);
         } //
@@ -143,7 +144,7 @@ public class DBElement extends Element<DBElement> {
   }
 
   public final DBElement findNode(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
     if (!getName().equals(NODE) ||
       !getAttribute(NAME).equals(strtok.nextToken())) {
       return null;
@@ -156,7 +157,7 @@ public class DBElement extends Element<DBElement> {
   }
 
   public final void removeNode(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
     DBElement node = this;
     DBElement parent = null;
     while (strtok.hasMoreTokens() && node != null) {
@@ -169,7 +170,7 @@ public class DBElement extends Element<DBElement> {
   }
 
   public final DBElement buildNodesTree(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
     DBElement node = this;
     while (strtok.hasMoreTokens()) {
       String token = strtok.nextToken();
@@ -197,12 +198,12 @@ public class DBElement extends Element<DBElement> {
 
   public final DBElement findEntry(String key) {
     DBElement result = null;
-    List<DBElement> entries = getChild(MAP).getChildren();
+    List<Element> entries = getChild(MAP).getChildren();
     if (entries != null) {
       synchronized (entries) {
-        for (DBElement elem : entries) {
+        for (Element elem : entries) {
           if (elem.getAttribute(KEY).equals(key)) {
-            result = elem;
+            result = (DBElement)elem;
             break;
           } //
         } // end of for (DBElement node : children)
@@ -212,11 +213,10 @@ public class DBElement extends Element<DBElement> {
   }
 
   public final void removeEntry(String key) {
-    DBElement result = null;
-    List<DBElement> entries = getChild(MAP).getChildren();
+    List<Element> entries = getChild(MAP).getChildren();
     if (entries != null) {
       synchronized (entries) {
-        for (Iterator<DBElement> it = entries.iterator();
+        for (ListIterator<Element> it = entries.listIterator();
              it.hasNext();) {
           if (it.next().getAttribute(KEY).equals(key)) {
             it.remove();
@@ -228,13 +228,13 @@ public class DBElement extends Element<DBElement> {
   }
 
   public final String[] getEntryKeys() {
-    List<DBElement> entries = getChild(MAP).getChildren();
+    List<Element> entries = getChild(MAP).getChildren();
     if (entries != null) {
       String[] result = null;
       synchronized (entries) {
         result = new String[entries.size()];
         int cnt  = 0;
-        for (DBElement dbe : entries) {
+        for (Element dbe : entries) {
           result[cnt++] = dbe.getAttribute(KEY);
         } // end of for (DBElement dbe : entries)
       }
@@ -252,35 +252,151 @@ public class DBElement extends Element<DBElement> {
     return result;
   }
 
-  public final void setEntry(String key, String value) {
+  public final void setEntry(String key, Object value) {
+		String type = value.getClass().getSimpleName();
+		System.out.println("data type: " + type);
     DBElement entry = getEntry(key);
-    entry.setAttribute(VALUE, value);
+		entry.setAttribute(TYPE, type);
+		if (value.getClass().isArray()) {
+			switch (Types.DataType.valueof(type)) {
+			case INTEGER_ARR:
+				for (int val : (int[])value) {
+					entry.addChild(new DBElement("item", VALUE, "" + val));
+				} // end of for (String val : values)
+				break;
+			case DOUBLE_ARR:
+				for (double val : (double[])value) {
+					entry.addChild(new DBElement("item", VALUE, "" + val));
+				} // end of for (String val : values)
+				break;
+			case BOOLEAN_ARR:
+				for (boolean val : (boolean[])value) {
+					entry.addChild(new DBElement("item", VALUE, "" + val));
+				} // end of for (String val : values)
+				break;
+			default:
+				for (Object val : (Object[])value) {
+					entry.addChild(new DBElement("item", VALUE, val.toString()));
+				} // end of for (String val : values)
+				break;
+			} // end of switch (DataType.valueof(type))
+		} // end of if (value.getClass().isArray())
+		else {
+			entry.setAttribute(VALUE, value.toString());
+		} // end of if (value.getClass().isArray()) else
   }
 
-  public final void setEntry(String key, String values[]) {
-    DBElement entry = getEntry(key);
-    for (String val : values) {
-      entry.addChild(new DBElement("item", VALUE, val));
-    } // end of for (String val : values)
-  }
+// 	private void setEntry(String key, Object value, String type) {
+//     DBElement entry = getEntry(key);
+// 		entry.setAttribute(TYPE, type);
+//     entry.setAttribute(VALUE, value.toString());
+// 	}
 
-  public final String getEntryValue(String key, String def) {
+//   private void setEntry(String key, Object values[], String type) {
+//     DBElement entry = getEntry(key);
+// 		entry.setAttribute(TYPE, type);
+//     for (Object val : values) {
+//       entry.addChild(new DBElement("item", VALUE, val.toString()));
+//     } // end of for (String val : values)
+//   }
+
+	public final String getEntryStringValue(String key, String def) {
+		return (String)getEntryValue(key, def);
+	}
+
+	public final String[] getEntryStringArrValue(String key, String[] def) {
+		return (String[])getEntryValue(key, def);
+	}
+
+	public final int getEntryIntValue(String key, int def) {
+		return ((Integer)getEntryValue(key, new Integer(def))).intValue();
+	}
+
+	public final int[] getEntryIntArrValue(String key, int[] def) {
+		return (int[])getEntryValue(key, def);
+	}
+
+	public final float getEntryFloatValue(String key, float def) {
+		return ((Float)getEntryValue(key, new Float(def))).floatValue();
+	}
+
+	public final float[] getEntryFloatArrValue(String key, float[] def) {
+		return (float[])getEntryValue(key, def);
+	}
+
+	public final Object getEntryValue(String key, Object def) {
     DBElement entry = findEntry(key);
-    String result = null;
-    if (entry != null) {
-      result = entry.getAttribute(VALUE);
-    } // end of if (entry != null)
-    return result != null ? result : def;
+
+		if (entry == null) { return def; }
+
+		Types.DataType type = Types.DataType.valueof(entry.getAttribute(TYPE));
+
+    Object result = def;
+
+		String[] tmp_s = getEntryValues(key);
+		int idx = -1;
+		try {
+			switch (type) {
+			case INTEGER:
+				result = Integer.decode(entry.getAttribute(VALUE));
+				break;
+			case INTEGER_ARR:
+				int[] tmp_i = new int[tmp_s.length];
+				for (String tmp : tmp_s) {
+					tmp_i[++idx] = Integer.decode(tmp).intValue();
+				} // end of for (String tmp : tmp_s)
+				result = tmp_i;
+				break;
+			case STRING_ARR:
+				result = tmp_s;
+				break;
+			case DOUBLE:
+				result = new Float(Float.parseFloat(entry.getAttribute(VALUE)));
+				break;
+			case DOUBLE_ARR:
+				float[] tmp_f = new float[tmp_s.length];
+				for (String tmp : tmp_s) {
+					tmp_f[++idx] = Float.parseFloat(tmp);
+				} // end of for (String tmp : tmp_s)
+				result = tmp_f;
+				break;
+			case BOOLEAN:
+				result = new Boolean(parseBool(entry.getAttribute(VALUE)));
+				break;
+			case BOOLEAN_ARR:
+				boolean[] tmp_b = new boolean[tmp_s.length];
+				for (String tmp : tmp_s) {
+					tmp_b[++idx] = parseBool(tmp);
+				} // end of for (String tmp : tmp_s)
+				result = tmp_b;
+				break;
+			case STRING:
+			default:
+				result = entry.getAttribute(VALUE);
+				break;
+			} // end of switch (type)
+		} // end of try
+		catch (NullPointerException e) {
+			result = def;
+		} // end of try-catch
+		return result;
   }
 
-  public final String[] getEntryValues(String key) {
-    DBElement entry = findEntry(key);
+	private boolean parseBool(final String val) {
+		return val != null &&
+			(val.equalsIgnoreCase("yes")
+				|| val.equalsIgnoreCase("true")
+				|| val.equalsIgnoreCase("on"));
+	}
+
+  private final String[] getEntryValues(String key) {
+    Element entry = findEntry(key);
     if (entry != null) {
-      List<DBElement> items = entry.getChildren();
+      List<Element> items = entry.getChildren();
       if (items != null) {
         String[] result = new String[items.size()];
         int cnt  = 0;
-        for (DBElement item : items) {
+        for (Element item : items) {
           result[cnt++] = item.getAttribute(VALUE);
         } // end of for (DBElement dbe : entries)
         return result;

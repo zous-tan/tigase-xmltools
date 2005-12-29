@@ -58,13 +58,13 @@ import tigase.annotations.TODO;
  * @version $Rev$
  */
 @TODO(note="Make it a bit lighter.")
-public class Element<E extends Element> implements Comparable<E> {
+public class Element implements Comparable<Element> {
 
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
   protected Map<String, String> attributes = null;
-  protected LinkedList<E> children = null;
+  protected LinkedList<Element> children = null;
 
   public Element(String argName) {
     setName(argName);
@@ -88,17 +88,17 @@ public class Element<E extends Element> implements Comparable<E> {
     } // end of if (att_names != null)
   }
 
-  public List<E> getChildren() {
+  public List<Element> getChildren() {
     return children;
   }
 
-  public List<E> getChildren(String elementPath) {
+  public List<Element> getChildren(String elementPath) {
     Element child = findChild(elementPath);
     return child != null ? child.getChildren() : null;
   }
 
-  public void setChildren(List<E> children) {
-    this.children = new LinkedList<E>(children);
+  public void setChildren(List<Element> children) {
+    this.children = new LinkedList<Element>(children);
   }
 
   public String toString() {
@@ -127,7 +127,7 @@ public class Element<E extends Element> implements Comparable<E> {
     StringBuilder result = new StringBuilder();
     if (children != null) {
       synchronized (children) {
-        for (E child : children) {
+        for (Element child : children) {
           result.append(child.toString());
         } // end of for ()
       }
@@ -135,16 +135,16 @@ public class Element<E extends Element> implements Comparable<E> {
     return result.toString();
   }
 
-  public final void addChild(E child) {
+  public final void addChild(Element child) {
     if (children == null) {
-      children = new LinkedList<E>();
+      children = new LinkedList<Element>();
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
     }
   }
 
-  public final boolean removeChild(E child) {
+  public final boolean removeChild(Element child) {
     boolean res = false;
     if (children != null) {
       synchronized (children) {
@@ -154,10 +154,10 @@ public class Element<E extends Element> implements Comparable<E> {
     return res;
   }
 
-  public final E getChild(String name) {
+  public final Element getChild(String name) {
     if (children != null) {
       synchronized (children) {
-        for (E el : children) {
+        for (Element el : children) {
           if (el.getName().equals(name)) {
             return el;
           }
@@ -326,7 +326,7 @@ public class Element<E extends Element> implements Comparable<E> {
    * @param elem an <code>Object</code> value
    * @return an <code>int</code> value
    */
-  public final int compareTo(final E elem) {
+  public final int compareTo(final Element elem) {
     return name.compareTo(elem.getName());
   }
 

@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.SimpleParser;
+import tigase.xml.Element;
 
 /**
  * <code>XMLDB</code> is the main data base access class.
@@ -158,17 +159,17 @@ public class XMLDB {
       new InputStreamReader(new FileInputStream(dbFile), "UTF-8");
     char[] buff = new char[16*1024];
     SimpleParser parser = new SimpleParser();
-    DomBuilderHandler<DBElement> domHandler =
-      new DomBuilderHandler<DBElement>(DBElementFactory.getFactory());
+    DomBuilderHandler domHandler =
+      new DomBuilderHandler(DBElementFactory.getFactory());
     int result = -1;
     while((result = file.read(buff)) != -1) {
       parser.parse(domHandler, buff, 0, result);
     }
     file.close();
-    root = domHandler.getParsedElements().poll();
+    root = (DBElement)domHandler.getParsedElements().poll();
     //    node1s = root.getChildren();
     this.root_name = root.getName();
-    List<DBElement> children = root.getChildren();
+    List<Element> children = root.getChildren();
     if (children != null && children.size() > 0) {
       this.node1_name = children.get(0).getName();
     } // end of if (children != null && children.size() > 0)
@@ -192,7 +193,7 @@ public class XMLDB {
         dbel = node1s[idx];
       } // end of if (idx >= 0)
       if (node1s_modified && (idx < 0 || (dbel != null && dbel.removed))) {
-        List<DBElement> children = root.getChildren();
+        List<Element> children = root.getChildren();
         if (children != null) {
           node1s = children.toArray(new DBElement[children.size()]);
           Arrays.sort(node1s, comparator);
@@ -258,7 +259,7 @@ public class XMLDB {
    * @param key a <code>String</code> value
    * @param value a <code>String</code> value
    */
-  public void setData(String node1_id, String subnode, String key, String value)
+  public void setData(String node1_id, String subnode, String key, Object value)
     throws NodeNotFoundException {
     getNode(node1_id, subnode).setEntry(key, value);
     saveDB();
@@ -271,25 +272,25 @@ public class XMLDB {
    * @param key a <code>String</code> value
    * @param value a <code>String</code> value
    */
-  public void setData(String node1_id, String key, String value)
+  public void setData(String node1_id, String key, Object value)
     throws NodeNotFoundException {
     setData(node1_id, null, key, value);
   }
 
-  /**
-   * Describe <code>setDataList</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @param list a <code>String[]</code> value
-   * @exception NodeNotFoundException if an error occurs
-   */
-  public void setDataList(String node1_id, String subnode, String key, String[] list)
-    throws NodeNotFoundException {
-    getNode(node1_id, subnode).setEntry(key, list);
-    saveDB();
-  }
+//   /**
+//    * Describe <code>setDataList</code> method here.
+//    *
+//    * @param node1_id a <code>String</code> value
+//    * @param subnode a <code>String</code> value
+//    * @param key a <code>String</code> value
+//    * @param list a <code>String[]</code> value
+//    * @exception NodeNotFoundException if an error occurs
+//    */
+//   public void setDataList(String node1_id, String subnode, String key, String[] list)
+//     throws NodeNotFoundException {
+//     getNode(node1_id, subnode).setEntry(key, list);
+//     saveDB();
+//   }
 
   /**
    * Describe <code>getDataList</code> method here.
@@ -302,7 +303,17 @@ public class XMLDB {
    */
   public String[] getDataList(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryValues(key);
+    return getNode(node1_id, subnode).getEntryStringArrValue(key, null);
+  }
+
+  public int[] getDataIntList(String node1_id, String subnode, String key)
+    throws NodeNotFoundException {
+    return getNode(node1_id, subnode).getEntryIntArrValue(key, null);
+  }
+
+  public float[] getDataFloatList(String node1_id, String subnode, String key)
+    throws NodeNotFoundException {
+    return getNode(node1_id, subnode).getEntryFloatArrValue(key, null);
   }
 
   /**
@@ -314,9 +325,19 @@ public class XMLDB {
    * @param def a <code>String</code> value
    * @return a <code>String</code> value
    */
-  public String getData(String node1_id, String subnode, String key, String def)
+  public Object getData(String node1_id, String subnode, String key, Object def)
     throws NodeNotFoundException {
     return getNode(node1_id, subnode).getEntryValue(key, def);
+  }
+
+  public int getDataInt(String node1_id, String subnode, String key, int def)
+    throws NodeNotFoundException {
+    return getNode(node1_id, subnode).getEntryIntValue(key, def);
+  }
+
+  public float getDataFloat(String node1_id, String subnode, String key, float def)
+    throws NodeNotFoundException {
+    return getNode(node1_id, subnode).getEntryFloatValue(key, def);
   }
 
   /**
@@ -327,7 +348,7 @@ public class XMLDB {
    * @param key a <code>String</code> value
    * @return a <code>String</code> value
    */
-  public String getData(String node1_id, String subnode, String key)
+  public Object getData(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
     return getData(node1_id, subnode, key, null);
   }
@@ -339,7 +360,7 @@ public class XMLDB {
    * @param key a <code>String</code> value
    * @return a <code>String</code> value
    */
-  public String getData(String node1_id, String key)
+  public Object getData(String node1_id, String key)
     throws NodeNotFoundException {
     return getData(node1_id, null, key, null);
   }
@@ -426,6 +447,25 @@ public class XMLDB {
     saveDB();
   }
 
+	public void sync() throws IOException {
+		write();
+	}
+
+	private void write() throws IOException {
+		lock.lock();
+		try {
+			String buffer = root.formatedString(0, 1);
+			OutputStreamWriter file =
+				new OutputStreamWriter(new FileOutputStream(dbFile, false),
+					"UTF-8");
+			file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+			file.write(buffer+"\n");
+			file.close();
+		} finally {
+			lock.unlock();
+		} // end of try-finally
+	}
+
   private class DBElementComparator
     implements Comparator<DBElement> {
 
@@ -454,20 +494,11 @@ public class XMLDB {
           synchronized(db_saver) { db_saver.wait(); }
           Thread.sleep(2000);
         } catch (InterruptedException e) { }
-        lock.lock();
         try {
-          String buffer = root.formatedString(0, 1);
-          OutputStreamWriter file =
-            new OutputStreamWriter(new FileOutputStream(dbFile, false),
-              "UTF-8");
-          file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-          file.write(buffer+"\n");
-          file.close();
-        } catch (Exception e) {
-          log.severe("Can't save repository file: "+e);
-        } finally {
-          lock.unlock();
-        } // end of try-finally
+					sync();
+				} catch (Exception e) {
+          log.severe("Can't save repository file: " + e);
+        }
       } // end of while (true)
     }
 

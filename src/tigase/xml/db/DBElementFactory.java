@@ -36,7 +36,7 @@ import tigase.xml.ElementFactory;
  * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
  * @version $Rev$
  */
-public class DBElementFactory implements ElementFactory<DBElement> {
+public class DBElementFactory implements ElementFactory {
 
   private static DBElementFactory factory =
     new DBElementFactory();
@@ -58,7 +58,7 @@ public class DBElementFactory implements ElementFactory<DBElement> {
    * @param attvalues a <code>StringBuilder[]</code> value
    * @return an <code>DBElement</code> value
    */
-  public DBElement elementInstance(final String name, final String cdata,
+  public Element elementInstance(final String name, final String cdata,
     final StringBuilder[] attnames, final StringBuilder[] attvalues) {
     return new DBElement(name, cdata, attnames, attvalues);
   }

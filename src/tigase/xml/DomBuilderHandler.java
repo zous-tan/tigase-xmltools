@@ -50,26 +50,26 @@ import java.util.logging.Logger;
  * @version $Rev$
  */
 
-public class DomBuilderHandler<E extends Element> implements SimpleHandler {
+public class DomBuilderHandler implements SimpleHandler {
 
   private static Logger log =
     Logger.getLogger("tigase.protocols.xmpp.DomBuilderHandler");
 
   private static final String ELEM_STREAM_STREAM = "stream:stream";
-  private ElementFactory<E> customFactory = null;
+  private ElementFactory customFactory = null;
 
   private Object parserState = null;
   private String top_xmlns = null;
   private String def_xmlns = null;
 
-  private LinkedList<E> all_roots = new LinkedList<E>();
-  private Stack<E> el_stack = new Stack<E>();
+  private LinkedList<Element> all_roots = new LinkedList<Element>();
+  private Stack<Element> el_stack = new Stack<Element>();
 
-  public DomBuilderHandler(ElementFactory<E> factory) {
+  public DomBuilderHandler(ElementFactory factory) {
     customFactory = factory;
   }
 
-  public Queue<E> getParsedElements() {
+  public Queue<Element> getParsedElements() {
     return all_roots;
   }
 
@@ -77,7 +77,7 @@ public class DomBuilderHandler<E extends Element> implements SimpleHandler {
     log.warning("XML content parse error.");
   }
 
-  private E newElement(String name, String cdata,
+  private Element newElement(String name, String cdata,
     StringBuilder[] attnames, StringBuilder[] attvals) {
     return customFactory.elementInstance(name, cdata, attnames, attvals);
   }
@@ -90,7 +90,7 @@ public class DomBuilderHandler<E extends Element> implements SimpleHandler {
 
     String tmp_name = name.toString();
 
-    E elem = newElement(tmp_name, null, attr_names, attr_values);
+    Element elem = newElement(tmp_name, null, attr_names, attr_values);
     String ns = elem.getXMLNS();
     if (ns == null) {
       elem.setDefXMLNS(def_xmlns);
@@ -118,7 +118,7 @@ public class DomBuilderHandler<E extends Element> implements SimpleHandler {
       el_stack.push(newElement(name.toString(), null, null, null));
     } // end of if (tmp_name.equals())
 
-    E elem = el_stack.pop();
+    Element elem = el_stack.pop();
     if (el_stack.isEmpty()) {
       all_roots.offer(elem);
       def_xmlns = top_xmlns;

@@ -35,7 +35,7 @@ package tigase.xml;
  * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
  * @version $Rev$
  */
-public class DefaultElementFactory implements ElementFactory<Element> {
+public class DefaultElementFactory implements ElementFactory {
 
   /**
    * Creates a new <code>DefaultElementFactory</code> instance.
@@ -45,7 +45,8 @@ public class DefaultElementFactory implements ElementFactory<Element> {
 
   // Implementation of tigase.xml.ElementFactory
 
-  public final Element elementInstance(final String name, final String cdata,
+  public final Element elementInstance(final String name,
+		final String cdata,
     final StringBuilder[] attnames, final StringBuilder[] attvals) {
     return new Element(name, cdata, attnames, attvals);
   }
