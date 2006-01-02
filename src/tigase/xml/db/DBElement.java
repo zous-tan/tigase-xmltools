@@ -258,6 +258,7 @@ public class DBElement extends Element {
     DBElement entry = getEntry(key);
 		entry.setAttribute(TYPE, type);
 		if (value.getClass().isArray()) {
+			entry.getChildren().clear();
 			switch (Types.DataType.valueof(type)) {
 			case INTEGER_ARR:
 				for (int val : (int[])value) {
@@ -316,12 +317,12 @@ public class DBElement extends Element {
 		return (int[])getEntryValue(key, def);
 	}
 
-	public final float getEntryFloatValue(String key, float def) {
-		return ((Float)getEntryValue(key, new Float(def))).floatValue();
+	public final double getEntryDoubleValue(String key, double def) {
+		return ((Double)getEntryValue(key, new Double(def))).doubleValue();
 	}
 
-	public final float[] getEntryFloatArrValue(String key, float[] def) {
-		return (float[])getEntryValue(key, def);
+	public final double[] getEntryDoubleArrValue(String key, double[] def) {
+		return (double[])getEntryValue(key, def);
 	}
 
 	public final Object getEntryValue(String key, Object def) {
@@ -351,12 +352,12 @@ public class DBElement extends Element {
 				result = tmp_s;
 				break;
 			case DOUBLE:
-				result = new Float(Float.parseFloat(entry.getAttribute(VALUE)));
+				result = new Double(Double.parseDouble(entry.getAttribute(VALUE)));
 				break;
 			case DOUBLE_ARR:
-				float[] tmp_f = new float[tmp_s.length];
+				double[] tmp_f = new double[tmp_s.length];
 				for (String tmp : tmp_s) {
-					tmp_f[++idx] = Float.parseFloat(tmp);
+					tmp_f[++idx] = Double.parseDouble(tmp);
 				} // end of for (String tmp : tmp_s)
 				result = tmp_f;
 				break;

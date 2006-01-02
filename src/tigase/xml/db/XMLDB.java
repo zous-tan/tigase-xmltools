@@ -311,9 +311,9 @@ public class XMLDB {
     return getNode(node1_id, subnode).getEntryIntArrValue(key, null);
   }
 
-  public float[] getDataFloatList(String node1_id, String subnode, String key)
+  public double[] getDataDoubleList(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryFloatArrValue(key, null);
+    return getNode(node1_id, subnode).getEntryDoubleArrValue(key, null);
   }
 
   /**
@@ -335,9 +335,10 @@ public class XMLDB {
     return getNode(node1_id, subnode).getEntryIntValue(key, def);
   }
 
-  public float getDataFloat(String node1_id, String subnode, String key, float def)
+  public double getDataDouble(String node1_id, String subnode, String key,
+		double def)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryFloatValue(key, def);
+    return getNode(node1_id, subnode).getEntryDoubleValue(key, def);
   }
 
   /**
