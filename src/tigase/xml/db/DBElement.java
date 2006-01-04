@@ -254,11 +254,12 @@ public class DBElement extends Element {
 
   public final void setEntry(String key, Object value) {
 		String type = value.getClass().getSimpleName();
-		System.out.println("data type: " + type);
     DBElement entry = getEntry(key);
 		entry.setAttribute(TYPE, type);
 		if (value.getClass().isArray()) {
-			entry.getChildren().clear();
+			if (entry.getChildren() != null) {
+				entry.getChildren().clear();
+			} // end of if (entry.getChildren() != null)
 			switch (Types.DataType.valueof(type)) {
 			case INTEGER_ARR:
 				for (int val : (int[])value) {

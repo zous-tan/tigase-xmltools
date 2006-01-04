@@ -70,7 +70,6 @@ public abstract class Types {
 		private DataType(String java_type) {
 			this.javaType = java_type;
 			if (java_type != null) {
-				System.out.println(java_type + "=" + this);
 				dataTypeMap.put(java_type, this);
 			} // end of if (java_type != null)
 		}
