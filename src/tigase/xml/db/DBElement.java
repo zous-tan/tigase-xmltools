@@ -144,7 +144,7 @@ public class DBElement extends Element {
   }
 
   public final DBElement findNode(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
     if (!getName().equals(NODE) ||
       !getAttribute(NAME).equals(strtok.nextToken())) {
       return null;
@@ -157,7 +157,7 @@ public class DBElement extends Element {
   }
 
   public final void removeNode(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
     DBElement node = this;
     DBElement parent = null;
     while (strtok.hasMoreTokens() && node != null) {
@@ -170,7 +170,7 @@ public class DBElement extends Element {
   }
 
   public final DBElement buildNodesTree(String nodePath) {
-    StringTokenizer strtok = new StringTokenizer(nodePath, "/.", false);
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
     DBElement node = this;
     while (strtok.hasMoreTokens()) {
       String token = strtok.nextToken();
