@@ -82,6 +82,15 @@ public abstract class Types {
 			return result == null ? UNDEFINED : result;
 		}
 
+		public String toString() {
+			if (javaType == null) {
+				return String.class.getSimpleName();
+			} // end of if (javaType == null)
+			else {
+				return javaType;
+			} // end of if (javaType == null) else
+		}
+
 	} // DataType
 
 } // Types

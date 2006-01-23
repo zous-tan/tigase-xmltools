@@ -253,14 +253,15 @@ public class DBElement extends Element {
   }
 
   public final void setEntry(String key, Object value) {
-		String type = value.getClass().getSimpleName();
+		Types.DataType type =
+			Types.DataType.valueof(value.getClass().getSimpleName());
     DBElement entry = getEntry(key);
-		entry.setAttribute(TYPE, type);
+		entry.setAttribute(TYPE, type.toString());
 		if (value.getClass().isArray()) {
 			if (entry.getChildren() != null) {
 				entry.getChildren().clear();
 			} // end of if (entry.getChildren() != null)
-			switch (Types.DataType.valueof(type)) {
+			switch (type) {
 			case INTEGER_ARR:
 				for (int val : (int[])value) {
 					entry.addChild(new DBElement("item", VALUE, "" + val));
@@ -281,7 +282,7 @@ public class DBElement extends Element {
 					entry.addChild(new DBElement("item", VALUE, val.toString()));
 				} // end of for (String val : values)
 				break;
-			} // end of switch (DataType.valueof(type))
+			} // end of switch (type)
 		} // end of if (value.getClass().isArray())
 		else {
 			entry.setAttribute(VALUE, value.toString());
