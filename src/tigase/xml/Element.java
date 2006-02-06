@@ -58,7 +58,7 @@ import tigase.annotations.TODO;
  * @version $Rev$
  */
 @TODO(note="Make it a bit lighter.")
-public class Element implements Comparable<Element> {
+	public class Element implements Comparable<Element>, Cloneable {
 
   protected String name = null;
   protected String cdata = null;
@@ -66,8 +66,23 @@ public class Element implements Comparable<Element> {
   protected Map<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
-  public Element(String argName) {
+	public Object clone() {
+		Element clone = null;
+		try {
+			clone = (Element)super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new InternalError();
+		} // end of try-catch
+		return clone;
+	}
+
+	public Element(String argName) {
     setName(argName);
+  }
+
+	public Element(String argName, String argCData) {
+    setName(argName);
+    setCData(argCData);
   }
 
   public Element(String argName, String argCData,
@@ -106,7 +121,7 @@ public class Element implements Comparable<Element> {
     result.append("<"+name);
     if (attributes != null) {
       for (String key : attributes.keySet()) {
-        result.append(" "+key+"='"+attributes.get(key)+"'");
+        result.append(" "+key+"=\""+attributes.get(key)+"\"");
       } // end of for ()
     } // end of if (attributes != null)
     String childrenStr = childrenToString();
@@ -329,5 +344,15 @@ public class Element implements Comparable<Element> {
   public final int compareTo(final Element elem) {
     return name.compareTo(elem.getName());
   }
+
+	public static void main(final String[] args) {
+		Element elem = new Element("Test", "This is a test",
+			new String[] {"first-name", "last-name"},
+			new String[] {"Artur", "Hefczyc"});
+		elem.addChild(new Element("Chile-element"));
+		Element clone = (Element)elem.clone();
+		System.out.println(clone.toString());
+	}
+
 
 }// Element

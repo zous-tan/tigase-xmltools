@@ -78,7 +78,7 @@ public class DBElement extends Element {
     result.append("<"+name);
     if (attributes != null) {
       for (String key : attributes.keySet()) {
-        result.append(" "+key+"='"+attributes.get(key)+"'");
+        result.append(" "+key+"=\""+attributes.get(key)+"\"");
       } // end of for ()
     } // end of if (attributes != null)
     String childrenStr = childrenFormatedString(indent+step, step);

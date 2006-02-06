@@ -56,7 +56,9 @@ public class DomBuilderHandler implements SimpleHandler {
     Logger.getLogger("tigase.protocols.xmpp.DomBuilderHandler");
 
   private static final String ELEM_STREAM_STREAM = "stream:stream";
-  private ElementFactory customFactory = null;
+	private static ElementFactory defaultFactory = new DefaultElementFactory();
+
+	private ElementFactory customFactory = null;
 
   private Object parserState = null;
   private String top_xmlns = null;
@@ -67,6 +69,10 @@ public class DomBuilderHandler implements SimpleHandler {
 
   public DomBuilderHandler(ElementFactory factory) {
     customFactory = factory;
+  }
+
+  public DomBuilderHandler() {
+    customFactory = defaultFactory;
   }
 
   public Queue<Element> getParsedElements() {
