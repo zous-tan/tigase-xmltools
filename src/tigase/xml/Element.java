@@ -63,30 +63,40 @@ import tigase.annotations.TODO;
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
-  protected Map<String, String> attributes = null;
+  protected HashMap<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
 	public Object clone() {
-		Element clone = null;
+		Element result = null;
 		try {
-			clone = (Element)super.clone();
+			result = (Element)super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new InternalError();
 		} // end of try-catch
-		return clone;
+		if (attributes != null) {
+			result.attributes = (HashMap<String, String>)attributes.clone();
+		} else {
+			result.attributes = null;
+		} // end of else
+		if (children != null) {
+			result.setChildren(children);
+		} else {
+			result.children = null;
+		} // end of else
+		return result;
 	}
 
-	public Element(String argName) {
+	public Element(final String argName) {
     setName(argName);
   }
 
-	public Element(String argName, String argCData) {
+	public Element(final String argName, final String argCData) {
     setName(argName);
     setCData(argCData);
   }
 
-  public Element(String argName, String argCData,
-    StringBuilder[] att_names, StringBuilder[] att_values) {
+  public Element(final String argName, final String argCData,
+    final StringBuilder[] att_names, final StringBuilder[] att_values) {
     setName(argName);
     setCData(argCData);
     if (att_names != null) {
@@ -94,8 +104,8 @@ import tigase.annotations.TODO;
     } // end of if (att_names != null)
   }
 
-  public Element(String argName, String argCData,
-    String[] att_names, String[] att_values) {
+  public Element(final String argName, final String argCData,
+    final String[] att_names, final String[] att_values) {
     setName(argName);
     setCData(argCData);
     if (att_names != null) {
@@ -107,13 +117,28 @@ import tigase.annotations.TODO;
     return children;
   }
 
-  public List<Element> getChildren(String elementPath) {
-    Element child = findChild(elementPath);
+  public List<Element> getChildren(final String elementPath) {
+    final Element child = findChild(elementPath);
     return child != null ? child.getChildren() : null;
   }
 
-  public void setChildren(List<Element> children) {
-    this.children = new LinkedList<Element>(children);
+  public void setChildren(final List<Element> children) {
+    this.children = new LinkedList<Element>();
+		for (Element child: children) {
+			this.children.add((Element)child.clone());
+		} // end of for (Element child: children)
+  }
+
+  public void addChildren(final List<Element> children) {
+		if (children == null) {
+			return;
+		} // end of if (children == null)
+    if (this.children == null) {
+      this.children = new LinkedList<Element>();
+    } // end of if (children == null)
+    synchronized (this.children) {
+      this.children.addAll(children);
+    }
   }
 
   public String toString() {
@@ -124,7 +149,7 @@ import tigase.annotations.TODO;
         result.append(" "+key+"=\""+attributes.get(key)+"\"");
       } // end of for ()
     } // end of if (attributes != null)
-    String childrenStr = childrenToString();
+    final String childrenStr = childrenToString();
     if (cdata != null || childrenStr.length() > 0) {
       result.append(">");
       if (cdata != null) {
@@ -150,7 +175,7 @@ import tigase.annotations.TODO;
     return result.toString();
   }
 
-  public final void addChild(Element child) {
+  public void addChild(final Element child) {
     if (children == null) {
       children = new LinkedList<Element>();
     } // end of if (children == null)
@@ -159,7 +184,7 @@ import tigase.annotations.TODO;
     }
   }
 
-  public final boolean removeChild(Element child) {
+  public boolean removeChild(final Element child) {
     boolean res = false;
     if (children != null) {
       synchronized (children) {
@@ -169,7 +194,7 @@ import tigase.annotations.TODO;
     return res;
   }
 
-  public final Element getChild(String name) {
+  public Element getChild(final String name) {
     if (children != null) {
       synchronized (children) {
         for (Element el : children) {
@@ -182,8 +207,8 @@ import tigase.annotations.TODO;
     return null;
   }
 
-  public final Element findChild(String elementPath) {
-    StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
+  public Element findChild(final String elementPath) {
+    final StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
     if (!strtok.nextToken().equals(getName())) {
       return null;
     } // end of if (!strtok.nextToken().equals(child.getName()))
@@ -194,13 +219,13 @@ import tigase.annotations.TODO;
     return child;
   }
 
-  public String getChildCData(String elementPath) {
-    Element child = findChild(elementPath);
+  public String getChildCData(final String elementPath) {
+    final Element child = findChild(elementPath);
     return child != null ? child.getCData() : null;
   }
 
-  public String getCData(String elementPath) {
-    Element child = findChild(elementPath);
+  public String getCData(final String elementPath) {
+    final Element child = findChild(elementPath);
     return child != null ? child.getCData() : null;
   }
 
@@ -216,11 +241,11 @@ import tigase.annotations.TODO;
    * Set the Attributes value.
    * @param newAttributes The new Attributes value.
    */
-  public void setAttributes(Map<String, String> newAttributes) {
-    this.attributes = newAttributes;
+  public void setAttributes(final Map<String, String> newAttributes) {
+    attributes = new HashMap<String, String>(newAttributes);
   }
 
-  public final String getAttribute(String attName) {
+  public String getAttribute(final String attName) {
     if (attributes != null) {
       synchronized (attributes) {
         return attributes.get(attName);
@@ -229,18 +254,26 @@ import tigase.annotations.TODO;
     return null;
   }
 
-  public final void addAttribute(String attName, String attValue) {
+  public void addAttribute(final String attName, final String attValue) {
     setAttribute(attName, attValue);
   }
 
-  public final void setDefXMLNS(String ns) {
+	public void addAttributes(Map<String, String> attrs) {
+		attributes.putAll(attrs);
+	}
+
+  public void setDefXMLNS(final String ns) {
     xmlns = ns;
   }
+
+	public void setXMLNS(final String ns) {
+		setAttribute("xmlns", ns);
+	}
 
   /**
    *
    */
-  public final String getXMLNS() {
+  public String getXMLNS() {
     String ns = getAttribute("xmlns");
     return ns != null ? ns : xmlns;
   }
@@ -248,25 +281,26 @@ import tigase.annotations.TODO;
   /**
    *
    */
-  public final String getXMLNS(String elementPath) {
+  public String getXMLNS(final String elementPath) {
     Element child = findChild(elementPath);
     return child != null ? child.getXMLNS() : null;
   }
 
-  public final String getAttribute(String elementPath, String att_name) {
-    Element child = findChild(elementPath);
+  public String getAttribute(final String elementPath,
+		final String att_name) {
+    final Element child = findChild(elementPath);
     return child != null ? child.getAttribute(att_name) : null;
   }
 
-  public final void setAttribute(String elementPath,
-    String att_name, String att_value) {
-    Element child = findChild(elementPath);
+  public void setAttribute(final String elementPath,
+    final String att_name, final String att_value) {
+    final Element child = findChild(elementPath);
     if (child != null) {
       child.setAttribute(att_name, att_value);
     } // end of if (child != null)
   }
 
-  public final void setAttribute(String key, String value) {
+  public void setAttribute(final String key, final String value) {
     if (attributes == null) {
       attributes = new HashMap<String, String>();
     } // end of if (attributes == null)
@@ -275,7 +309,8 @@ import tigase.annotations.TODO;
     }
   }
 
-  public void setAttributes(StringBuilder[] names, StringBuilder[] values) {
+  public void setAttributes(final StringBuilder[] names,
+		final StringBuilder[] values) {
     attributes = new HashMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
@@ -286,7 +321,7 @@ import tigase.annotations.TODO;
     }
   }
 
-  public void setAttributes(String[] names, String[] values) {
+  public void setAttributes(final String[] names, final String[] values) {
     attributes = new HashMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
@@ -311,7 +346,7 @@ import tigase.annotations.TODO;
    *
    * @param argName Value to assign to this.name
    */
-  public void setName(String argName) {
+  public void setName(final String argName) {
     this.name = argName;
   }
 
@@ -329,7 +364,7 @@ import tigase.annotations.TODO;
    *
    * @param argCData Value to assign to this.cdata
    */
-  public void setCData(String argCData) {
+  public void setCData(final String argCData) {
     this.cdata = argCData;
   }
 
@@ -341,7 +376,7 @@ import tigase.annotations.TODO;
    * @param elem an <code>Object</code> value
    * @return an <code>int</code> value
    */
-  public final int compareTo(final Element elem) {
+  public int compareTo(final Element elem) {
     return name.compareTo(elem.getName());
   }
 
