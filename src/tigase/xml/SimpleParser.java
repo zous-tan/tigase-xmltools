@@ -68,6 +68,9 @@ public class SimpleParser {
    * such limit but in most cases XML elements don't have too many attributes.
    * For efficiency it is better to use fixed number of attributes and
    * operate on arrays than on lists.
+   * Data structures will automaticly grow if real attributes number is
+   * bigger so there should be no problem with processing XML streams
+   * different than expected.
    */
   public static int MAX_ATTRIBS_NUMBER = 6;
 
