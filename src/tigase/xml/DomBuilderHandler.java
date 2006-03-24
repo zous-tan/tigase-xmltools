@@ -53,9 +53,8 @@ import java.util.logging.Logger;
 public class DomBuilderHandler implements SimpleHandler {
 
   private static Logger log =
-    Logger.getLogger("tigase.protocols.xmpp.DomBuilderHandler");
+    Logger.getLogger("tigase.xml.DomBuilderHandler");
 
-  private static final String ELEM_STREAM_STREAM = "stream:stream";
 	private static ElementFactory defaultFactory = new DefaultElementFactory();
 
 	private ElementFactory customFactory = null;
@@ -105,10 +104,6 @@ public class DomBuilderHandler implements SimpleHandler {
       def_xmlns = ns;
     } // end of if (ns == null) else
     el_stack.push(elem);
-    if (tmp_name.equals(ELEM_STREAM_STREAM)) {
-      top_xmlns = elem.getXMLNS();
-      endElement(name);
-    } // end of if (tmp_name.equals())
   }
 
   public void elementCData(StringBuilder cdata) {
