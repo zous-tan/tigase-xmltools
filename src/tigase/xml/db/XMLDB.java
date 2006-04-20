@@ -119,12 +119,14 @@ public class XMLDB {
 
   private XMLDB() {
     Thread thrd = new Thread(db_saver);
+		thrd.setName("XMLDBSaver");
     thrd.setDaemon(true);
     thrd.start();
   }
 
   public XMLDB(String db_file) throws IOException {
     Thread thrd = new Thread(db_saver);
+		thrd.setName("XMLDBSaver");
     thrd.setDaemon(true);
     thrd.start();
     dbFile = db_file;
