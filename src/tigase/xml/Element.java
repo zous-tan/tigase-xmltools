@@ -66,6 +66,7 @@ import tigase.annotations.TODO;
   protected HashMap<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
+	@SuppressWarnings({"unchecked"})
 	public Object clone() {
 		Element result = null;
 		try {
