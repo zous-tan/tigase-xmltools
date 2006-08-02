@@ -87,6 +87,15 @@ import tigase.annotations.TODO;
 		return result;
 	}
 
+	public Element(final Element element) {
+		Element src =  (Element) element.clone();
+		this.attributes = src.attributes;
+		this.name  = src.name;
+		this.cdata  = src.cdata;
+		this.xmlns  = src.xmlns;
+		this.children  = src.children;
+	}
+
 	public Element(final String argName) {
     setName(argName);
   }
