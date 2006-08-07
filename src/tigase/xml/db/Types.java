@@ -31,7 +31,7 @@ import java.util.TreeMap;
  *
  * Created: Wed Dec 28 21:54:43 2005
  *
- * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
+ * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
  * @version $Rev$
  */
 public abstract class Types {
@@ -45,7 +45,7 @@ public abstract class Types {
 	 *
 	 * Created: Tue Dec  6 17:34:22 2005
 	 *
-	 * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
+	 * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
 	 * @version $Rev$
 	 */
 	public enum DataType {
