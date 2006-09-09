@@ -25,8 +25,10 @@ package tigase.xml;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -65,6 +67,7 @@ public class DomBuilderHandler implements SimpleHandler {
 
   private LinkedList<Element> all_roots = new LinkedList<Element>();
   private Stack<Element> el_stack = new Stack<Element>();
+	private Map<String, String> namespaces = new TreeMap<String, String>();
 
   public DomBuilderHandler(ElementFactory factory) {
     customFactory = factory;
@@ -93,9 +96,26 @@ public class DomBuilderHandler implements SimpleHandler {
     log.finest("Element attributes names: "+Arrays.toString(attr_names));
     log.finest("Element attributes values: "+Arrays.toString(attr_values));
 
+		// Look for 'xmlns:' declarations:
+		if (attr_names != null) {
+			for (int i = 0; i < attr_names.length; ++i) {
+				if (attr_names[i] != null
+					&& attr_names[i].toString().startsWith("xmlns:")) {
+					namespaces.put(attr_names[i].substring("xmlns:".length(),
+							attr_names[i].length()),
+						attr_values[i].toString());
+				} // end of if (att_name.startsWith("xmlns:"))
+			} // end of for (String att_name : attnames)
+		} // end of if (attr_names != null)
+
     String tmp_name = name.toString();
 
     Element elem = newElement(tmp_name, null, attr_names, attr_values);
+		for (String xmlns: namespaces.keySet()) {
+			if (tmp_name.startsWith(xmlns)) {
+				elem.setDefXMLNS(namespaces.get(xmlns));
+			} // end of if (tmp_name.startsWith(xmlns))
+		} // end of for (String xmlns: namespaces.keys())
     String ns = elem.getXMLNS();
     if (ns == null) {
       elem.setDefXMLNS(def_xmlns);
