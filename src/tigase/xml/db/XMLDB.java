@@ -42,41 +42,41 @@ import tigase.xml.SimpleParser;
 import tigase.xml.Element;
 
 /**
- * <code>XMLDB</code> is the main data base access class.
- * It allows you to create new data base in given file, open data base from
+ * <code>XMLDB</code> is the main database access class.
+ * It allows you to create new database in given file, open database from
  * given file, add, delete and retrieve data and data lists. All data or data
- * lists are stored in data base nodes. There are three possible kinds of nodes
- * for each data base:
+ * lists are stored in database nodes. There are three possible kinds of nodes
+ * for each database:
  * <ol>
  * <li><b>root node</b> - this is top node in each <em>XML</em> hierachy tree.
- *  There can be only one root node in data base as there can be only one root
+ *  There can be only one root node in database as there can be only one root
  *  element in <em>XML</em> file. The element name for root node can be defined
- *  by the user when new data base is created or defualt element name
+ *  by the user when new database is created or defualt element name
  *  '<code>root</code>' is used.</li>
  * <li><b>node1 nodes</b> - these are the first level nodes under <em>root</em>
  *  node. There can be any number of nodes on this level. All data added for
- *  this data base are added to first level node unless subnode path is
- *  given. User can define element name of <em>node1</em> when new data base is
+ *  this database are added to first level node unless subnode path is
+ *  given. User can define element name of <em>node1</em> when new database is
  *  created. If not given default element name '<code>node</code>' is used.</li>
  * <li><b>subnodes</b> - node on any deeper level under <em>node1</em>
  *  level. There can be any number of <em>subnodes</em> on any
- *  level. <em>Subnodes</em> has always '<code>node</code>' element name and this
+ *  level. <em>Subnodes</em> have always '<code>node</code>' element name and this
  *  can't be changed.</li>
  * </ol>
  * <p>All <em>node1</em> nodes and <em>subnodes</em> can contains any number of
  * data associated with keys. With some keys there ca be more than one value
  * assigned. Such kind of data are called <em>data lists</em>.<br/>
  * Although element name for <em>subnode</em> can not be defined it is actually not
- * important. Because data base user doesn't use subnode element names. He doesn't
+ * important. Because user database doesn't use subnode element names. He doesn't
  * even use neiher <em>root</em> node element name nor <em>node1</em> element
- * name. Data base user uses <em><b>node name</b></em> what is quite different
+ * name. database user uses <em><b>node name</b></em> what is quite different
  * from <b><em>node element name</em></b>. Let see example below:</p>
  * <pre>&#60;node name='roster'/&#62;</pre>
  * <p>In this example <em>node element name</em> is <b>node</b> and
  * <em>node name</em> is <b>roster.</b><br/>
- * Data base users (actually developers) use only <em>node names</em>.<br/>
+ * database users (actually developers) use only <em>node names</em>.<br/>
  * If you want to access subnode on some level you need to give full path to
- * this subnode. For example, let's assume we have following data base:</p>
+ * this subnode. For example, let's assume we have following database:</p>
  * <pre>  &#60;node name='tigase'>
  * &#60;node name='server'>
  * &#60;/node>
@@ -184,8 +184,8 @@ public class XMLDB {
     }
   }
 
-  protected final DBElement getNode1(String node1_id)
-    throws NodeNotFoundException {
+	public final DBElement findNode1(String node1_id) {
+		DBElement result = null;
     lock.lock();
     try {
       tmp_node1.setAttribute(DBElement.NAME, node1_id);
@@ -204,13 +204,23 @@ public class XMLDB {
         node1s_modified = false;
       } // end of if (idx < 0)
       if (idx >= 0) {
-        return node1s[idx];
+        result = node1s[idx];
       }
-      throw new NodeNotFoundException("Node1: " + node1_id +
-        " has not been found in db.");
     } finally {
       lock.unlock();
     } // end of try-finally
+		return result;
+	}
+
+	protected final DBElement getNode1(String node1_id)
+    throws NodeNotFoundException {
+		DBElement result = findNode1(node1_id);
+		if (result != null) {
+			return result;
+		} else {
+      throw new NodeNotFoundException("Node1: " + node1_id +
+        " has not been found in db.");
+		} // end of if (result != null) else
   }
 
   public void addNode1(String node1_id) throws NodeExistsException {
