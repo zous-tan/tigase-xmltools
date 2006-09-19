@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 
 import tigase.annotations.TODO;
 
@@ -123,6 +124,23 @@ import tigase.annotations.TODO;
     } // end of if (att_names != null)
   }
 
+  public Element(final String argName,
+    final String[] att_names, final String[] att_values) {
+    setName(argName);
+    if (att_names != null) {
+      setAttributes(att_names, att_values);
+    } // end of if (att_names != null)
+  }
+
+  public Element(final String argName, final Element[] children,
+    final String[] att_names, final String[] att_values) {
+    setName(argName);
+    if (att_names != null) {
+      setAttributes(att_names, att_values);
+    } // end of if (att_names != null)
+		addChildren(Arrays.asList(children));
+  }
+
   public List<Element> getChildren() {
     return children;
   }
@@ -147,7 +165,7 @@ import tigase.annotations.TODO;
       this.children = new LinkedList<Element>();
     } // end of if (children == null)
     synchronized (this.children) {
-      this.children.addAll(children);
+			this.children.addAll(children);
     }
   }
 
