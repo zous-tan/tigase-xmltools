@@ -22,9 +22,12 @@
  */
 package tigase.xml.db;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import tigase.xml.Element;
 
 /**
@@ -60,8 +63,7 @@ public class DBElement extends Element {
   }
 
   public DBElement(String argName, String attname, String attvalue) {
-    super(argName, null,
-      new String[] {attname}, new String[] {attvalue});
+    super(argName, new String[] {attname}, new String[] {attvalue});
   }
 
   public DBElement(String argName, String argCData,
@@ -264,30 +266,46 @@ public class DBElement extends Element {
 			switch (type) {
 			case INTEGER_ARR:
 				for (int val : (int[])value) {
-					entry.addChild(new DBElement("item", VALUE, "" + val));
+					entry.addChild(new DBElement("item", VALUE, encode(val)));
 				} // end of for (String val : values)
 				break;
 			case DOUBLE_ARR:
 				for (double val : (double[])value) {
-					entry.addChild(new DBElement("item", VALUE, "" + val));
+					entry.addChild(new DBElement("item", VALUE, encode(val)));
 				} // end of for (String val : values)
 				break;
 			case BOOLEAN_ARR:
 				for (boolean val : (boolean[])value) {
-					entry.addChild(new DBElement("item", VALUE, "" + val));
+					entry.addChild(new DBElement("item", VALUE, encode(val)));
 				} // end of for (String val : values)
 				break;
 			default:
 				for (Object val : (Object[])value) {
-					entry.addChild(new DBElement("item", VALUE, val.toString()));
+					entry.addChild(new DBElement("item", VALUE, encode(val)));
 				} // end of for (String val : values)
 				break;
 			} // end of switch (type)
 		} // end of if (value.getClass().isArray())
 		else {
-			entry.setAttribute(VALUE, value.toString());
+			entry.setAttribute(VALUE,  encode(value));
 		} // end of if (value.getClass().isArray()) else
   }
+
+	private String encode(final Object source) {
+		try {
+			return URLEncoder.encode(source.toString(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return source.toString();
+		} // end of try-catch
+	}
+
+	private String decode(final String source) {
+		try {
+			return URLDecoder.decode(source, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return source;
+		} // end of try-catch
+	}
 
 // 	private void setEntry(String key, Object value, String type) {
 //     DBElement entry = getEntry(key);
@@ -375,7 +393,7 @@ public class DBElement extends Element {
 				break;
 			case STRING:
 			default:
-				result = entry.getAttribute(VALUE);
+				result = decode(entry.getAttribute(VALUE));
 				break;
 			} // end of switch (type)
 		} // end of try
@@ -400,7 +418,7 @@ public class DBElement extends Element {
         String[] result = new String[items.size()];
         int cnt  = 0;
         for (Element item : items) {
-          result[cnt++] = item.getAttribute(VALUE);
+          result[cnt++] = decode(item.getAttribute(VALUE));
         } // end of for (DBElement dbe : entries)
         return result;
       } // end of if (items != null)
