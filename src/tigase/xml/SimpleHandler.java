@@ -43,7 +43,7 @@ import tigase.annotations.TODO;
 
 public interface SimpleHandler {
 
-  void error();
+  void error(String errorMessage);
 
   void startElement(StringBuilder name,
     StringBuilder[] attr_names, StringBuilder[] attr_values);

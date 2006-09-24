@@ -63,7 +63,9 @@ public class XMLFormatter implements SimpleHandler {
    * Describe <code>error</code> method here.
    *
    */
-  public void error() { }
+  public void error(String errorMessage) {
+		System.err.println(errorMessage);
+	}
 
   /**
    * Describe <code>startElement</code> method here.

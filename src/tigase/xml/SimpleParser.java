@@ -192,6 +192,10 @@ public class SimpleParser {
 
         if (chr == ERR_NAME_CHARS[0] || chr == ERR_NAME_CHARS[1]) {
           parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Not allowed character in start element name: " + chr
+            + "\nExisting characters in start element name: "
+            + parser_state.element_name.toString();
           break;
         } // end of if ()
 
@@ -206,6 +210,10 @@ public class SimpleParser {
 
         if (chr == SLASH) {
           parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Not allowed character in close element name: " + chr
+            + "\nExisting characters in close element name: "
+            + parser_state.element_name.toString();
           break;
         } // end of if (chr == SLASH)
 
@@ -218,6 +226,10 @@ public class SimpleParser {
 
         if (chr == ERR_NAME_CHARS[0] || chr == ERR_NAME_CHARS[1]) {
           parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Not allowed character in close element name: " + chr
+            + "\nExisting characters in close element name: "
+            + parser_state.element_name.toString();
           break;
         } // end of if ()
 
@@ -329,8 +341,8 @@ public class SimpleParser {
         break;
 
       case ERROR:
-        parser_state = null;
-        handler.error();
+        handler.error(parser_state.errorMessage);
+				parser_state = null;
         return;
         //        break;
 
@@ -344,7 +356,7 @@ public class SimpleParser {
     handler.saveParserState(parser_state);
   }
 
-  private class ParserState {
+	private class ParserState {
     StringBuilder element_name = null;
     StringBuilder[] attrib_names = null;
     StringBuilder[] attrib_values = null;
@@ -352,6 +364,7 @@ public class SimpleParser {
     int current_attr = -1;
     boolean slash_found = false;
     State state = State.START;
+		String errorMessage = null;
   }
 
 }// SimpleParser
