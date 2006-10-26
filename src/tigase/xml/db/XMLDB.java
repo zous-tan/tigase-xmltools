@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -183,6 +183,15 @@ public class XMLDB {
       db_saver.notifyAll();
     }
   }
+
+	public final List<String> getAllNode1s() {
+		List<Element> children = root.getChildren();
+		List<String> results = new ArrayList<String>(children.size());
+		for (Element child: children) {
+			results.add(child.getAttribute(DBElement.NAME));
+		} // end of for (Element child: children)
+		return results;
+	}
 
 	public final DBElement findNode1(String node1_id) {
 		DBElement result = null;

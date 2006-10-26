@@ -59,7 +59,7 @@ import tigase.annotations.TODO;
  * @version $Rev$
  */
 @TODO(note="Make it a bit lighter.")
-	public class Element implements Comparable<Element>, Cloneable {
+public class Element implements Comparable<Element>, Cloneable {
 
   protected String name = null;
   protected String cdata = null;
