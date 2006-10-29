@@ -102,13 +102,20 @@ public class SimpleParser {
   private static final char[] ERR_NAME_CHARS =
   { OPEN_BRACKET, QUESTION_MARK };
 
+	private static final char[] IGNORE_CHARS = {'\0'};
+
   static {
     Arrays.sort(WHITE_CHARS);
+    Arrays.sort(IGNORE_CHARS);
   }
 
   private boolean isWhite(char chr) {
     return Arrays.binarySearch(WHITE_CHARS, chr) >= 0;
   }
+
+	private boolean ignore(char chr) {
+		return Arrays.binarySearch(IGNORE_CHARS, chr) >= 0;
+	}
 
   private StringBuilder[] initArray(int size) {
     StringBuilder[] array = new StringBuilder[size];
@@ -169,7 +176,11 @@ public class SimpleParser {
 
       case ELEMENT_NAME:
 
-        if (Arrays.binarySearch(WHITE_CHARS, chr) >= 0) {
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
+				if (isWhite(chr)) {
           parser_state.state = State.END_ELEMENT_NAME;
           break;
         } // end of if ()
@@ -204,7 +215,11 @@ public class SimpleParser {
 
       case CLOSE_ELEMENT:
 
-        if (Arrays.binarySearch(WHITE_CHARS, chr) >= 0) {
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
+				if (isWhite(chr)) {
           break;
         } // end of if ()
 
@@ -237,7 +252,12 @@ public class SimpleParser {
         break;
 
       case END_ELEMENT_NAME:
-        if (chr == SLASH) {
+
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
+				if (chr == SLASH) {
           parser_state.slash_found = true;
           break;
         } // end of if (chr == SLASH)
@@ -257,7 +277,7 @@ public class SimpleParser {
           break;
         } // end of if ()
 
-        if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
+        if (!isWhite(chr)) {
           parser_state.state = State.ATTRIB_NAME;
           if (parser_state.attrib_names == null) {
             parser_state.attrib_names = initArray(MAX_ATTRIBS_NUMBER);
@@ -283,8 +303,12 @@ public class SimpleParser {
         break;
 
       case ATTRIB_NAME:
-        if (Arrays.binarySearch(WHITE_CHARS, chr) >= 0 ||
-            chr == EQUALS) {
+
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
+        if (isWhite(chr) || chr == EQUALS) {
           parser_state.state = State.END_OF_ATTR_NAME;
           break;
         } // end of if ()
@@ -292,6 +316,10 @@ public class SimpleParser {
         break;
 
       case END_OF_ATTR_NAME:
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
         if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
           parser_state.state = State.ATTRIB_VALUE;
           parser_state.attrib_values[parser_state.current_attr] =
@@ -301,6 +329,10 @@ public class SimpleParser {
         break;
 
       case ATTRIB_VALUE:
+				if (ignore(chr)) {
+					break;
+				} // end of if (ignore(chr))
+
         if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
           parser_state.state = State.END_ELEMENT_NAME;
           break;
