@@ -307,26 +307,24 @@ public class DBElement extends Element {
 		} // end of try-catch
 	}
 
-// 	private void setEntry(String key, Object value, String type) {
-//     DBElement entry = getEntry(key);
-// 		entry.setAttribute(TYPE, type);
-//     entry.setAttribute(VALUE, value.toString());
-// 	}
-
-//   private void setEntry(String key, Object values[], String type) {
-//     DBElement entry = getEntry(key);
-// 		entry.setAttribute(TYPE, type);
-//     for (Object val : values) {
-//       entry.addChild(new DBElement("item", VALUE, val.toString()));
-//     } // end of for (String val : values)
-//   }
-
 	public final String getEntryStringValue(String key, String def) {
 		return (String)getEntryValue(key, def);
 	}
 
 	public final String[] getEntryStringArrValue(String key, String[] def) {
-		return (String[])getEntryValue(key, def);
+		Object result = getEntryValue(key, def);
+    DBElement entry = findEntry(key);
+		if (entry == null) { return def; }
+		Types.DataType type = Types.DataType.valueof(entry.getAttribute(TYPE));
+		switch (type) {
+		case STRING_ARR:
+			break;
+		case STRING:
+		default:
+			result = new String[] {result.toString()};
+			break;
+		} // end of switch (type)
+		return (String[])result;
 	}
 
 	public final int getEntryIntValue(String key, int def) {
