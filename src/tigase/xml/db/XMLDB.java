@@ -186,11 +186,14 @@ public class XMLDB {
 
 	public final List<String> getAllNode1s() {
 		List<Element> children = root.getChildren();
-		List<String> results = new ArrayList<String>(children.size());
-		for (Element child: children) {
-			results.add(child.getAttribute(DBElement.NAME));
-		} // end of for (Element child: children)
-		return results;
+		if (children != null) {
+			List<String> results = new ArrayList<String>(children.size());
+			for (Element child: children) {
+				results.add(child.getAttribute(DBElement.NAME));
+			} // end of for (Element child: children)
+			return results;
+		} // end of if (children != null)
+		return null;
 	}
 
 	public final DBElement findNode1(String node1_id) {
