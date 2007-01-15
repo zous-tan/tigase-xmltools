@@ -235,6 +235,22 @@ public class Element implements Comparable<Element>, Cloneable {
     return null;
   }
 
+  public Element getChild(final String name, final String child_xmlns) {
+    if (children != null) {
+      synchronized (children) {
+        for (Element el : children) {
+          if (el.getName().equals(name)
+						&& ((el.getXMLNS() == null && child_xmlns == null)
+							|| (el.getXMLNS() != null && child_xmlns != null
+								&& el.getXMLNS().equals(child_xmlns)))) {
+            return el;
+          }
+        }
+      }
+    } // end of if (children != null)
+    return null;
+  }
+
   public Element findChild(final String elementPath) {
     final StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
     if (!strtok.nextToken().equals(getName())) {
