@@ -141,7 +141,9 @@ public class XMLDB {
     return xmldb;
   }
 
-  protected void setupNewDB(String db_file, String root_name,
+	public String getDBFileName() { return dbFile; }
+
+	protected void setupNewDB(String db_file, String root_name,
     String node1_name) {
 
     log.info("Create empty DB.");
