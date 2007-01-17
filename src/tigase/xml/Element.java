@@ -236,6 +236,9 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public Element getChild(final String name, final String child_xmlns) {
+		if (child_xmlns == null) {
+			return getChild(name);
+		}
     if (children != null) {
       synchronized (children) {
         for (Element el : children) {
