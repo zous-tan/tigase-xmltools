@@ -33,8 +33,6 @@ package main.java.tigase.xml;
  */
 public abstract class XMLUtil {
 
-	private XMLUtil() {	}
-
 	public static final String[] decoded = {"&", "<"};
 	public static final String[] encoded = {"&amp;", "&lt;"};
 
