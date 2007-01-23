@@ -20,7 +20,7 @@
  * Last modified by $Author$
  * $Date$
  */
-package main.java.tigase.xml;
+package tigase.xml;
 
 /**
  * Describe class XMLUtil here.
