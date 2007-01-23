@@ -31,7 +31,7 @@ package main.java.tigase.xml;
  * @author <a href="mailto:artur.hefczyc@gmail.com">Artur Hefczyc</a>
  * @version $Rev$
  */
-public abstract class XMLUtil {
+public abstract class XMLUtils {
 
 	public static final String[] decoded = {"&", "<"};
 	public static final String[] encoded = {"&amp;", "&lt;"};
