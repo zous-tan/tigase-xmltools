@@ -424,8 +424,36 @@ public class Element implements Comparable<Element>, Cloneable {
    * @return an <code>int</code> value
    */
   public int compareTo(final Element elem) {
-    return name.compareTo(elem.getName());
+		int result = name.compareTo(elem.getName());
+		if (result == 0) {
+			if (getXMLNS() != null) {
+				if (elem.getXMLNS() != null) {
+					result = getXMLNS().compareTo(elem.getXMLNS());
+				} else {
+					result = 1;
+				}
+			} else {
+				if (elem.getXMLNS() != null) {
+					result = -1;
+				} else {
+					result = 0;
+				}
+			}
+		}
+    return result;
   }
+
+	public boolean equals(final Element elem) {
+		boolean result = name.equals(elem.getName());
+		if (result) {
+			if (getXMLNS() != null && elem.getXMLNS() != null) {
+				result = getXMLNS().equals(elem.getXMLNS());
+			} else {
+				result = getXMLNS() == elem.getXMLNS();
+			}
+		}
+		return result;
+	}
 
 	public static void main(final String[] args) {
 		Element elem = new Element("Test", "This is a test",
