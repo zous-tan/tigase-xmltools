@@ -12,8 +12,8 @@
  '(jde-sourcepath
    (quote
     (
-     "$PROJECTS_HOME/tigase/xmltools/src"
-     "$PROJECTS_HOME/tigase/xmltools/tests/unittests/src"
+     "$PROJECTS_HOME/tigase/xmltools/src/main/java"
+     "$PROJECTS_HOME/tigase/xmltools/src/tests/java"
      "$JAVA_HOME/share/src"
      "$JAVA_HOME/share/tests/src")))
  '(jde-gen-k&r t)
