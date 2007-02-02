@@ -119,14 +119,14 @@ public class XMLDB {
 
   private XMLDB() {
     Thread thrd = new Thread(db_saver);
-		thrd.setName("XMLDBSaver");
+    thrd.setName("XMLDBSaver");
     thrd.setDaemon(true);
     thrd.start();
   }
 
   public XMLDB(String db_file) throws IOException {
     Thread thrd = new Thread(db_saver);
-		thrd.setName("XMLDBSaver");
+    thrd.setName("XMLDBSaver");
     thrd.setDaemon(true);
     thrd.start();
     dbFile = db_file;
@@ -135,16 +135,16 @@ public class XMLDB {
   }
 
   public static XMLDB createDB(String db_file,
-    String root_name, String node1_name) {
+			       String root_name, String node1_name) {
     XMLDB xmldb = new XMLDB();
     xmldb.setupNewDB(db_file, root_name, node1_name);
     return xmldb;
   }
 
-	public String getDBFileName() { return dbFile; }
+  public String getDBFileName() { return dbFile; }
 
-	protected void setupNewDB(String db_file, String root_name,
-    String node1_name) {
+  protected void setupNewDB(String db_file, String root_name,
+			    String node1_name) {
 
     log.info("Create empty DB.");
     this.dbFile = db_file;
@@ -186,20 +186,20 @@ public class XMLDB {
     }
   }
 
-	public final List<String> getAllNode1s() {
-		List<Element> children = root.getChildren();
-		if (children != null) {
-			List<String> results = new ArrayList<String>(children.size());
-			for (Element child: children) {
-				results.add(child.getAttribute(DBElement.NAME));
-			} // end of for (Element child: children)
-			return results;
-		} // end of if (children != null)
-		return null;
-	}
+  public final List<String> getAllNode1s() {
+    List<Element> children = root.getChildren();
+    if (children != null) {
+      List<String> results = new ArrayList<String>(children.size());
+      for (Element child: children) {
+	results.add(child.getAttribute(DBElement.NAME));
+      } // end of for (Element child: children)
+      return results;
+    } // end of if (children != null)
+    return null;
+  }
 
-	public final DBElement findNode1(String node1_id) {
-		DBElement result = null;
+  public final DBElement findNode1(String node1_id) {
+    DBElement result = null;
     lock.lock();
     try {
       tmp_node1.setAttribute(DBElement.NAME, node1_id);
@@ -223,18 +223,18 @@ public class XMLDB {
     } finally {
       lock.unlock();
     } // end of try-finally
-		return result;
-	}
+    return result;
+  }
 
-	protected final DBElement getNode1(String node1_id)
+  protected final DBElement getNode1(String node1_id)
     throws NodeNotFoundException {
-		DBElement result = findNode1(node1_id);
-		if (result != null) {
-			return result;
-		} else {
+    DBElement result = findNode1(node1_id);
+    if (result != null) {
+      return result;
+    } else {
       throw new NodeNotFoundException("Node1: " + node1_id +
-        " has not been found in db.");
-		} // end of if (result != null) else
+				      " has not been found in db.");
+    } // end of if (result != null) else
   }
 
   public void addNode1(String node1_id) throws NodeExistsException {
@@ -303,20 +303,20 @@ public class XMLDB {
     setData(node1_id, null, key, value);
   }
 
-//   /**
-//    * Describe <code>setDataList</code> method here.
-//    *
-//    * @param node1_id a <code>String</code> value
-//    * @param subnode a <code>String</code> value
-//    * @param key a <code>String</code> value
-//    * @param list a <code>String[]</code> value
-//    * @exception NodeNotFoundException if an error occurs
-//    */
-//   public void setDataList(String node1_id, String subnode, String key, String[] list)
-//     throws NodeNotFoundException {
-//     getNode(node1_id, subnode).setEntry(key, list);
-//     saveDB();
-//   }
+  //   /**
+  //    * Describe <code>setDataList</code> method here.
+  //    *
+  //    * @param node1_id a <code>String</code> value
+  //    * @param subnode a <code>String</code> value
+  //    * @param key a <code>String</code> value
+  //    * @param list a <code>String[]</code> value
+  //    * @exception NodeNotFoundException if an error occurs
+  //    */
+  //   public void setDataList(String node1_id, String subnode, String key, String[] list)
+  //     throws NodeNotFoundException {
+  //     getNode(node1_id, subnode).setEntry(key, list);
+  //     saveDB();
+  //   }
 
   /**
    * Describe <code>getDataList</code> method here.
@@ -362,7 +362,7 @@ public class XMLDB {
   }
 
   public double getDataDouble(String node1_id, String subnode, String key,
-		double def)
+			      double def)
     throws NodeNotFoundException {
     return getNode(node1_id, subnode).getEntryDoubleValue(key, def);
   }
@@ -474,24 +474,24 @@ public class XMLDB {
     saveDB();
   }
 
-	public void sync() throws IOException {
-		write();
-	}
+  public void sync() throws IOException {
+    write();
+  }
 
-	private void write() throws IOException {
-		lock.lock();
-		try {
-			String buffer = root.formatedString(0, 1);
-			OutputStreamWriter file =
-				new OutputStreamWriter(new FileOutputStream(dbFile, false),
-					"UTF-8");
-			file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-			file.write(buffer+"\n");
-			file.close();
-		} finally {
-			lock.unlock();
-		} // end of try-finally
-	}
+  private void write() throws IOException {
+    lock.lock();
+    try {
+      String buffer = root.formatedString(0, 1);
+      OutputStreamWriter file =
+	new OutputStreamWriter(new FileOutputStream(dbFile, false),
+			       "UTF-8");
+      file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+      file.write(buffer+"\n");
+      file.close();
+    } finally {
+      lock.unlock();
+    } // end of try-finally
+  }
 
   private class DBElementComparator
     implements Comparator<DBElement> {
@@ -522,8 +522,8 @@ public class XMLDB {
           Thread.sleep(2000);
         } catch (InterruptedException e) { }
         try {
-					sync();
-				} catch (Exception e) {
+	  sync();
+	} catch (Exception e) {
           log.severe("Can't save repository file: " + e);
         }
       } // end of while (true)
