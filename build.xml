@@ -1,4 +1,4 @@
-<project name="tigase" default="jar" basedir=".">
+<project name="tigase-xmltools" default="jar" basedir=".">
 
  <property file="build.properties"/>
 
