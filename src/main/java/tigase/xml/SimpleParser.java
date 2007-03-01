@@ -142,6 +142,10 @@ public class SimpleParser {
     for (int index = off; index < len; index++) {
       char chr = data[index];
 
+			if (ignore(chr)) {
+				break;
+			} // end of if (ignore(chr))
+
       switch (parser_state.state) {
       case START:
         if (chr == OPEN_BRACKET) {
@@ -175,10 +179,6 @@ public class SimpleParser {
         break;
 
       case ELEMENT_NAME:
-
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
 
 				if (isWhite(chr)) {
           parser_state.state = State.END_ELEMENT_NAME;
@@ -215,10 +215,6 @@ public class SimpleParser {
 
       case CLOSE_ELEMENT:
 
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
-
 				if (isWhite(chr)) {
           break;
         } // end of if ()
@@ -252,10 +248,6 @@ public class SimpleParser {
         break;
 
       case END_ELEMENT_NAME:
-
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
 
 				if (chr == SLASH) {
           parser_state.slash_found = true;
@@ -304,10 +296,6 @@ public class SimpleParser {
 
       case ATTRIB_NAME:
 
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
-
         if (isWhite(chr) || chr == EQUALS) {
           parser_state.state = State.END_OF_ATTR_NAME;
           break;
@@ -316,10 +304,6 @@ public class SimpleParser {
         break;
 
       case END_OF_ATTR_NAME:
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
-
         if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
           parser_state.state = State.ATTRIB_VALUE;
           parser_state.attrib_values[parser_state.current_attr] =
@@ -329,10 +313,6 @@ public class SimpleParser {
         break;
 
       case ATTRIB_VALUE:
-				if (ignore(chr)) {
-					break;
-				} // end of if (ignore(chr))
-
         if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
           parser_state.state = State.END_ELEMENT_NAME;
           break;
