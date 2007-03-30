@@ -366,6 +366,16 @@ public class DBElement extends Element {
 				} // end of for (String tmp : tmp_s)
 				result = tmp_i;
 				break;
+			case LONG:
+				result = Long.decode(entry.getAttribute(VALUE));
+				break;
+			case LONG_ARR:
+				long[] tmp_l = new long[tmp_s.length];
+				for (String tmp : tmp_s) {
+					tmp_l[++idx] = Long.decode(tmp).longValue();
+				} // end of for (String tmp : tmp_s)
+				result = tmp_l;
+				break;
 			case STRING_ARR:
 				result = tmp_s;
 				break;

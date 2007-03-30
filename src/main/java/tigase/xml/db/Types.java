@@ -52,6 +52,8 @@ public abstract class Types {
 
 		INTEGER(Integer.class.getSimpleName()),
 			INTEGER_ARR(int[].class.getSimpleName()),
+			LONG(Long.class.getSimpleName()),
+			LONG_ARR(long[].class.getSimpleName()),
 			STRING(String.class.getSimpleName()),
 			STRING_ARR(String[].class.getSimpleName()),
 			DOUBLE(Double.class.getSimpleName()),

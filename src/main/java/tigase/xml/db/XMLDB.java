@@ -135,7 +135,7 @@ public class XMLDB {
   }
 
   public static XMLDB createDB(String db_file,
-			       String root_name, String node1_name) {
+		String root_name, String node1_name) {
     XMLDB xmldb = new XMLDB();
     xmldb.setupNewDB(db_file, root_name, node1_name);
     return xmldb;
@@ -144,7 +144,7 @@ public class XMLDB {
   public String getDBFileName() { return dbFile; }
 
   protected void setupNewDB(String db_file, String root_name,
-			    String node1_name) {
+		String node1_name) {
 
     log.info("Create empty DB.");
     this.dbFile = db_file;
@@ -191,7 +191,7 @@ public class XMLDB {
     if (children != null) {
       List<String> results = new ArrayList<String>(children.size());
       for (Element child: children) {
-	results.add(child.getAttribute(DBElement.NAME));
+				results.add(child.getAttribute(DBElement.NAME));
       } // end of for (Element child: children)
       return results;
     } // end of if (children != null)
@@ -233,7 +233,7 @@ public class XMLDB {
       return result;
     } else {
       throw new NodeNotFoundException("Node1: " + node1_id +
-				      " has not been found in db.");
+				" has not been found in db.");
     } // end of if (result != null) else
   }
 
@@ -362,7 +362,7 @@ public class XMLDB {
   }
 
   public double getDataDouble(String node1_id, String subnode, String key,
-			      double def)
+		double def)
     throws NodeNotFoundException {
     return getNode(node1_id, subnode).getEntryDoubleValue(key, def);
   }
@@ -483,8 +483,8 @@ public class XMLDB {
     try {
       String buffer = root.formatedString(0, 1);
       OutputStreamWriter file =
-	new OutputStreamWriter(new FileOutputStream(dbFile, false),
-			       "UTF-8");
+				new OutputStreamWriter(new FileOutputStream(dbFile, false),
+					"UTF-8");
       file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
       file.write(buffer+"\n");
       file.close();
@@ -522,8 +522,8 @@ public class XMLDB {
           Thread.sleep(2000);
         } catch (InterruptedException e) { }
         try {
-	  sync();
-	} catch (Exception e) {
+					sync();
+				} catch (Exception e) {
           log.severe("Can't save repository file: " + e);
         }
       } // end of while (true)
