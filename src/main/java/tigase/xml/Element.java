@@ -68,7 +68,7 @@ public class Element implements Comparable<Element>, Cloneable {
   protected LinkedList<Element> children = null;
 
 	@SuppressWarnings({"unchecked"})
-	public Object clone() {
+	public Element clone() {
 		Element result = null;
 		try {
 			result = (Element)super.clone();
@@ -89,7 +89,7 @@ public class Element implements Comparable<Element>, Cloneable {
 	}
 
 	public Element(final Element element) {
-		Element src =  (Element) element.clone();
+		Element src =  element.clone();
 		this.attributes = src.attributes;
 		this.name  = src.name;
 		this.cdata  = src.cdata;
@@ -153,7 +153,7 @@ public class Element implements Comparable<Element>, Cloneable {
   public void setChildren(final List<Element> children) {
     this.children = new LinkedList<Element>();
 		for (Element child: children) {
-			this.children.add((Element)child.clone());
+			this.children.add(child.clone());
 		} // end of for (Element child: children)
   }
 
@@ -460,7 +460,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			new String[] {"first-name", "last-name"},
 			new String[] {"Artur", "Hefczyc"});
 		elem.addChild(new Element("Chile-element"));
-		Element clone = (Element)elem.clone();
+		Element clone = elem.clone();
 		System.out.println(clone.toString());
 	}
 
