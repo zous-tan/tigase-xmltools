@@ -64,7 +64,6 @@ public class Element implements Comparable<Element>, Cloneable {
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
-	protected String prefix = null;
   protected HashMap<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
@@ -356,6 +355,14 @@ public class Element implements Comparable<Element>, Cloneable {
       attributes.put(key, value);
     }
   }
+
+	public void removeAttribute(final String key) {
+    if (attributes != null) {
+			synchronized (attributes) {
+				attributes.remove(key);
+			}
+    } // end of if (attributes == null)
+	}
 
   public void setAttributes(final StringBuilder[] names,
 		final StringBuilder[] values) {
