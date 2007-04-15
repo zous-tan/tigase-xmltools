@@ -22,6 +22,9 @@
  */
 package tigase.xml;
 
+import java.util.Queue;
+import java.io.FileReader;
+
 /**
  * Describe class XMLUtil here.
  *
@@ -52,5 +55,27 @@ public abstract class XMLUtils {
 	public static String unescape(String input) {
 		return translateAll(input, encoded, decoded);
 	}
+
+  public static void main(final String[] args) throws Exception {
+
+    if (args.length < 1) {
+      System.err.println("You must give file name as parameter.");
+      System.exit(1);
+    } // end of if (args.length < 1)
+
+    FileReader file = new FileReader(args[0]);
+    char[] buff = new char[16*1024];
+    SimpleParser parser = new SimpleParser();
+    DomBuilderHandler dombuilder = new DomBuilderHandler();
+    int result = -1;
+    while((result = file.read(buff)) != -1) {
+      parser.parse(dombuilder, buff, 0, result);
+    }
+    file.close();
+		Queue<Element> results = dombuilder.getParsedElements();
+		for (Element elem: results) {
+			System.out.println(elem.toString());
+		}
+  }
 
 }
