@@ -64,6 +64,7 @@ public class Element implements Comparable<Element>, Cloneable {
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
+	protected String prefix = null;
   protected HashMap<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
