@@ -173,8 +173,7 @@ public class XMLFormatter implements SimpleHandler {
     XMLFormatter formatter = null;
     if (args.length == 2) {
       formatter = new XMLFormatter(new FileOutputStream(args[1]));
-    } // end of if (args.length == 2)
-    else {
+    } else {
       formatter = new XMLFormatter(System.out);
     } // end of if (args.length == 2) else
     int result = -1;

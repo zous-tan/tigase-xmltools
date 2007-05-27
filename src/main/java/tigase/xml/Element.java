@@ -272,8 +272,7 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public String getCData(final String elementPath) {
-    final Element child = findChild(elementPath);
-    return child != null ? child.getCData() : null;
+		return getChildCData(elementPath);
   }
 
   /**

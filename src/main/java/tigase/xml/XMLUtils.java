@@ -36,8 +36,8 @@ import java.io.FileReader;
  */
 public abstract class XMLUtils {
 
-	public static final String[] decoded = {"&", "<"};
-	public static final String[] encoded = {"&amp;", "&lt;"};
+	public static final String[] decoded = {"&", "<", ">"};
+	public static final String[] encoded = {"&amp;", "&lt;", "&gt;"};
 
 	public static String translateAll(String input,
 		String[] patterns, String[] replacements) {
