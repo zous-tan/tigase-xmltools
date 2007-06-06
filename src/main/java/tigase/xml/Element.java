@@ -450,16 +450,20 @@ public class Element implements Comparable<Element>, Cloneable {
     return result;
   }
 
-	public boolean equals(final Element elem) {
-		boolean result = name.equals(elem.getName());
-		if (result) {
-			if (getXMLNS() != null && elem.getXMLNS() != null) {
-				result = getXMLNS().equals(elem.getXMLNS());
-			} else {
-				result = getXMLNS() == elem.getXMLNS();
+	public boolean equals(Object obj) {
+		if (obj instanceof Element) {
+			Element elem = (Element)obj;
+			boolean result = name.equals(elem.getName());
+			if (result) {
+				if (getXMLNS() != null && elem.getXMLNS() != null) {
+					result = getXMLNS().equals(elem.getXMLNS());
+				} else {
+					result = getXMLNS() == elem.getXMLNS();
+				}
 			}
+			return result;
 		}
-		return result;
+		return false;
 	}
 
 	public int hashCode() {
