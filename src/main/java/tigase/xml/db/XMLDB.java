@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -494,7 +495,9 @@ public class XMLDB {
   }
 
   private static class DBElementComparator
-    implements Comparator<DBElement> {
+    implements Comparator<DBElement>, Serializable {
+
+		private static final long serialVersionUID = 1L;
 
     public int compare(DBElement el1, DBElement el2) {
       String name1 = el1.getAttribute("name");
