@@ -328,7 +328,7 @@ public class DBElement extends Element {
 	}
 
 	public final int getEntryIntValue(String key, int def) {
-		return ((Integer)getEntryValue(key, new Integer(def))).intValue();
+		return ((Integer)getEntryValue(key, Integer.valueOf(def))).intValue();
 	}
 
 	public final int[] getEntryIntArrValue(String key, int[] def) {
@@ -390,7 +390,7 @@ public class DBElement extends Element {
 				result = tmp_f;
 				break;
 			case BOOLEAN:
-				result = new Boolean(parseBool(entry.getAttribute(VALUE)));
+				result = Boolean.valueOf(parseBool(entry.getAttribute(VALUE)));
 				break;
 			case BOOLEAN_ARR:
 				boolean[] tmp_b = new boolean[tmp_s.length];

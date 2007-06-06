@@ -493,7 +493,7 @@ public class XMLDB {
     } // end of try-finally
   }
 
-  private class DBElementComparator
+  private static class DBElementComparator
     implements Comparator<DBElement> {
 
     public int compare(DBElement el1, DBElement el2) {

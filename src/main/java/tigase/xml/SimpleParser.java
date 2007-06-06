@@ -368,7 +368,7 @@ public class SimpleParser {
     handler.saveParserState(parser_state);
   }
 
-	private class ParserState {
+	private static class ParserState {
     StringBuilder element_name = null;
     StringBuilder[] attrib_names = null;
     StringBuilder[] attrib_values = null;
