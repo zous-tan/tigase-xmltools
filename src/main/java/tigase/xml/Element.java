@@ -462,6 +462,11 @@ public class Element implements Comparable<Element>, Cloneable {
 		return result;
 	}
 
+	public int hashCode() {
+		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
+		return hash_str.hashCode();
+	}
+
 	public static void main(final String[] args) {
 		Element elem = new Element("Test", "This is a test",
 			new String[] {"first-name", "last-name"},
