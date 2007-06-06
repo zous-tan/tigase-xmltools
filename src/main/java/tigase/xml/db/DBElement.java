@@ -167,7 +167,8 @@ public class DBElement extends Element {
       node = node.getSubnode(strtok.nextToken());
     } // end of while (strtok.hasMoreTokens())
     if (parent != null && node != null) {
-      boolean res = parent.removeChild(node);
+			//      boolean res = parent.removeChild(node);
+      parent.removeChild(node);
     } // end of if (parent != null && node != null)
   }
 
