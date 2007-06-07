@@ -435,4 +435,26 @@ public class DBElement extends Element {
     return null;
   }
 
+//   /**
+//    * Method <code>compareTo</code> is used to perform 
+//    *
+//    * @param elem an <code>Object</code> value
+//    * @return an <code>int</code> value
+//    */
+//   public int compareTo(final DBElement elem) {
+//     return getAttribute("name").compareTo(elem.getAttribute("name"));
+//   }
+
+// 	public boolean equals(Object obj) {
+// 		if (obj instanceof DBElement) {
+// 			DBElement elem = (DBElement)obj;
+// 			return getAttribute("name").equals(elem.getAttribute("name"));
+// 		}
+// 		return false;
+// 	}
+
+// 	public int hashCode() {
+// 		return getAttribute("name").hashCode();
+// 	}
+
 } // DBElement

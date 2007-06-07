@@ -23,7 +23,8 @@
 
 package tigase.xml;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.TreeMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class Element implements Comparable<Element>, Cloneable {
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
-  protected HashMap<String, String> attributes = null;
+  protected TreeMap<String, String> attributes = null;
   protected LinkedList<Element> children = null;
 
 	@SuppressWarnings({"unchecked"})
@@ -76,7 +77,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			throw new InternalError();
 		} // end of try-catch
 		if (attributes != null) {
-			result.attributes = (HashMap<String, String>)attributes.clone();
+			result.attributes = (TreeMap<String, String>)attributes.clone();
 		} else {
 			result.attributes = null;
 		} // end of else
@@ -152,9 +153,12 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void setChildren(final List<Element> children) {
     this.children = new LinkedList<Element>();
-		for (Element child: children) {
-			this.children.add(child.clone());
-		} // end of for (Element child: children)
+    synchronized (this.children) {
+			for (Element child: children) {
+				this.children.add(child.clone());
+			} // end of for (Element child: children)
+			Collections.sort(children);
+		}
   }
 
   public void addChildren(final List<Element> children) {
@@ -166,6 +170,7 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (children == null)
     synchronized (this.children) {
 			this.children.addAll(children);
+			Collections.sort(children);
     }
   }
 
@@ -209,6 +214,7 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
+			Collections.sort(children);
     }
   }
 
@@ -288,7 +294,7 @@ public class Element implements Comparable<Element>, Cloneable {
    * @param newAttributes The new Attributes value.
    */
   public void setAttributes(final Map<String, String> newAttributes) {
-    attributes = new HashMap<String, String>(newAttributes);
+    attributes = new TreeMap<String, String>(newAttributes);
   }
 
   public String getAttribute(final String attName) {
@@ -348,7 +354,7 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void setAttribute(final String key, final String value) {
     if (attributes == null) {
-      attributes = new HashMap<String, String>();
+      attributes = new TreeMap<String, String>();
     } // end of if (attributes == null)
     synchronized (attributes) {
       attributes.put(key, value);
@@ -365,7 +371,7 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void setAttributes(final StringBuilder[] names,
 		final StringBuilder[] values) {
-    attributes = new HashMap<String, String>();
+    attributes = new TreeMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
@@ -376,7 +382,7 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public void setAttributes(final String[] names, final String[] values) {
-    attributes = new HashMap<String, String>();
+    attributes = new TreeMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
@@ -431,44 +437,47 @@ public class Element implements Comparable<Element>, Cloneable {
    * @return an <code>int</code> value
    */
   public int compareTo(final Element elem) {
-		int result = name.compareTo(elem.getName());
-		if (result == 0) {
-			if (getXMLNS() != null) {
-				if (elem.getXMLNS() != null) {
-					result = getXMLNS().compareTo(elem.getXMLNS());
-				} else {
-					result = 1;
-				}
-			} else {
-				if (elem.getXMLNS() != null) {
-					result = -1;
-				} else {
-					result = 0;
-				}
-			}
-		}
-    return result;
+// 		int result = name.compareTo(elem.getName());
+// 		if (result == 0) {
+// 			if (getXMLNS() != null) {
+// 				if (elem.getXMLNS() != null) {
+// 					result = getXMLNS().compareTo(elem.getXMLNS());
+// 				} else {
+// 					result = 1;
+// 				}
+// 			} else {
+// 				if (elem.getXMLNS() != null) {
+// 					result = -1;
+// 				} else {
+// 					result = 0;
+// 				}
+// 			}
+// 		}
+//     return result;
+		return toString().compareTo(elem.toString());
   }
 
 	public boolean equals(Object obj) {
 		if (obj instanceof Element) {
-			Element elem = (Element)obj;
-			boolean result = name.equals(elem.getName());
-			if (result) {
-				if (getXMLNS() != null && elem.getXMLNS() != null) {
-					result = getXMLNS().equals(elem.getXMLNS());
-				} else {
-					result = getXMLNS() == elem.getXMLNS();
-				}
-			}
-			return result;
+// 			Element elem = (Element)obj;
+// 			boolean result = name.equals(elem.getName());
+// 			if (result) {
+// 				if (getXMLNS() != null && elem.getXMLNS() != null) {
+// 					result = getXMLNS().equals(elem.getXMLNS());
+// 				} else {
+// 					result = getXMLNS() == elem.getXMLNS();
+// 				}
+// 			}
+// 			return result;
+			return toString().equals(obj.toString());
 		}
 		return false;
 	}
 
 	public int hashCode() {
-		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
-		return hash_str.hashCode();
+// 		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
+// 		return hash_str.hashCode();
+		return toString().hashCode();
 	}
 
 	public static void main(final String[] args) {

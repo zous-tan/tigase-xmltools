@@ -156,7 +156,7 @@ public class XMLDB {
       this.node1_name = node1_name;
     } // end of if (node1_name != null)
     tmp_node1 = new DBElement(node1_name);
-    root = new DBElement(root_name);
+    root = new DBElement(this.root_name);
   }
 
   protected void loadDB() throws IOException {
@@ -260,7 +260,7 @@ public class XMLDB {
     lock.lock();
     try {
       DBElement dbel = getNode1(node1_id);
-      node1s_modified = true;
+			node1s_modified = true;
       root.removeChild(dbel);
       dbel.removed = true;
     } finally {
