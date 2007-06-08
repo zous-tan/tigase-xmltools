@@ -174,6 +174,26 @@ public class Element implements Comparable<Element>, Cloneable {
     }
   }
 
+  public String toStringNoChildren() {
+    StringBuilder result = new StringBuilder();
+    result.append("<"+name);
+    if (attributes != null) {
+      for (String key : attributes.keySet()) {
+        result.append(" "+key+"=\""+attributes.get(key)+"\"");
+      } // end of for ()
+    } // end of if (attributes != null)
+    if (cdata != null) {
+      result.append(">");
+      if (cdata != null) {
+        result.append(cdata);
+      } // end of if (cdata != null)
+      result.append("</"+name+">");
+    } else {
+      result.append("/>");
+    }
+    return result.toString();
+  }
+
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append("<"+name);
@@ -454,12 +474,12 @@ public class Element implements Comparable<Element>, Cloneable {
 // 			}
 // 		}
 //     return result;
-		return toString().compareTo(elem.toString());
+		return toStringNoChildren().compareTo(elem.toStringNoChildren());
   }
 
 	public boolean equals(Object obj) {
 		if (obj instanceof Element) {
-// 			Element elem = (Element)obj;
+ 			Element elem = (Element)obj;
 // 			boolean result = name.equals(elem.getName());
 // 			if (result) {
 // 				if (getXMLNS() != null && elem.getXMLNS() != null) {
@@ -469,7 +489,7 @@ public class Element implements Comparable<Element>, Cloneable {
 // 				}
 // 			}
 // 			return result;
-			return toString().equals(obj.toString());
+			return toStringNoChildren().equals(elem.toStringNoChildren());
 		}
 		return false;
 	}
@@ -477,7 +497,7 @@ public class Element implements Comparable<Element>, Cloneable {
 	public int hashCode() {
 // 		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
 // 		return hash_str.hashCode();
-		return toString().hashCode();
+		return toStringNoChildren().hashCode();
 	}
 
 	public static void main(final String[] args) {
