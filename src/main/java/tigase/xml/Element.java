@@ -157,7 +157,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			for (Element child: children) {
 				this.children.add(child.clone());
 			} // end of for (Element child: children)
-			Collections.sort(children);
+			//Collections.sort(children);
 		}
   }
 
@@ -170,7 +170,7 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (children == null)
     synchronized (this.children) {
 			this.children.addAll(children);
-			Collections.sort(children);
+			//Collections.sort(children);
     }
   }
 
@@ -234,7 +234,7 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
-			Collections.sort(children);
+			//Collections.sort(children);
     }
   }
 
