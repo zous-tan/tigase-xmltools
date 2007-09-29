@@ -186,7 +186,11 @@ public class XMLDB {
     }
   }
 
-  public final List<String> getAllNode1s() {
+	public final long getAllNode1sCount() {
+		return root.getChildren().size();
+	}
+
+	public final List<String> getAllNode1s() {
     List<Element> children = root.getChildren();
     if (children != null) {
       List<String> results = new ArrayList<String>(children.size());
