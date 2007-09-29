@@ -23,8 +23,8 @@
 package tigase.xml;
 
 import java.util.Collections;
-import java.util.TreeMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -64,8 +64,8 @@ public class Element implements Comparable<Element>, Cloneable {
   protected String name = null;
   protected String cdata = null;
   protected String xmlns = null;
-  protected TreeMap<String, String> attributes = null;
-  protected LinkedList<Element> children = null;
+  protected LinkedHashMap<String, String> attributes = null;
+  protected ArrayList<Element> children = null;
 
 	@SuppressWarnings({"unchecked"})
 	public Element clone() {
@@ -76,7 +76,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			throw new InternalError();
 		} // end of try-catch
 		if (attributes != null) {
-			result.attributes = (TreeMap<String, String>)attributes.clone();
+			result.attributes = (LinkedHashMap<String, String>)attributes.clone();
 		} else {
 			result.attributes = null;
 		} // end of else
@@ -151,7 +151,7 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public void setChildren(final List<Element> children) {
-    this.children = new LinkedList<Element>();
+    this.children = new ArrayList<Element>();
     synchronized (this.children) {
 			for (Element child: children) {
 				this.children.add(child.clone());
@@ -165,7 +165,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			return;
 		} // end of if (children == null)
     if (this.children == null) {
-      this.children = new LinkedList<Element>();
+      this.children = new ArrayList<Element>();
     } // end of if (children == null)
     synchronized (this.children) {
 			this.children.addAll(children);
@@ -229,7 +229,7 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void addChild(final Element child) {
     if (children == null) {
-      children = new LinkedList<Element>();
+      children = new ArrayList<Element>();
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
@@ -313,7 +313,7 @@ public class Element implements Comparable<Element>, Cloneable {
    * @param newAttributes The new Attributes value.
    */
   public void setAttributes(final Map<String, String> newAttributes) {
-    attributes = new TreeMap<String, String>(newAttributes);
+    attributes = new LinkedHashMap<String, String>(newAttributes);
   }
 
   public String getAttribute(final String attName) {
@@ -373,7 +373,7 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void setAttribute(final String key, final String value) {
     if (attributes == null) {
-      attributes = new TreeMap<String, String>();
+      attributes = new LinkedHashMap<String, String>();
     } // end of if (attributes == null)
     synchronized (attributes) {
       attributes.put(key, value);
@@ -390,7 +390,7 @@ public class Element implements Comparable<Element>, Cloneable {
 
   public void setAttributes(final StringBuilder[] names,
 		final StringBuilder[] values) {
-    attributes = new TreeMap<String, String>();
+    attributes = new LinkedHashMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
@@ -401,7 +401,7 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public void setAttributes(final String[] names, final String[] values) {
-    attributes = new TreeMap<String, String>();
+    attributes = new LinkedHashMap<String, String>();
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
