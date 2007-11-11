@@ -220,7 +220,11 @@ public class Element implements Comparable<Element>, Cloneable {
     if (children != null) {
       synchronized (children) {
         for (Element child : children) {
-          result.append(child.toString());
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if (child != null) {
+						result.append(child.toString());
+					}
         } // end of for ()
       }
     } // end of if (child != null)
