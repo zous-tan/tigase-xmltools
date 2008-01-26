@@ -168,7 +168,10 @@ public class Element implements Comparable<Element>, Cloneable {
       this.children = new ArrayList<Element>();
     } // end of if (children == null)
     synchronized (this.children) {
-			this.children.addAll(children);
+			for (Element child: children) {
+				this.children.add(child.clone());
+			} // end of for (Element child: children)
+			//this.children.addAll(children);
 			//Collections.sort(children);
     }
   }
@@ -232,6 +235,9 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public void addChild(final Element child) {
+		if (child == null) {
+			throw new NullPointerException("Element child can not be null.");
+		}
     if (children == null) {
       children = new ArrayList<Element>();
     } // end of if (children == null)
