@@ -123,7 +123,7 @@ public class DomBuilderHandler implements SimpleHandler {
     String ns = elem.getXMLNS();
     if (ns == null) {
 			if (el_stack.isEmpty() || el_stack.peek().getXMLNS() == null) {
-				elem.setDefXMLNS(top_xmlns);
+				//elem.setDefXMLNS(top_xmlns);
 			} else {
 				elem.setDefXMLNS(el_stack.peek().getXMLNS());
 			}

@@ -24,6 +24,7 @@ package tigase.xml;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +64,9 @@ public class Element implements Comparable<Element>, Cloneable {
 
   protected String name = null;
   protected String cdata = null;
+  protected String defxmlns = null;
   protected String xmlns = null;
-  protected LinkedHashMap<String, String> attributes = null;
+  protected IdentityHashMap<String, String> attributes = null;
   protected ArrayList<Element> children = null;
 
 	@SuppressWarnings({"unchecked"})
@@ -76,7 +78,7 @@ public class Element implements Comparable<Element>, Cloneable {
 			throw new InternalError();
 		} // end of try-catch
 		if (attributes != null) {
-			result.attributes = (LinkedHashMap<String, String>)attributes.clone();
+			result.attributes = (IdentityHashMap<String, String>)attributes.clone();
 		} else {
 			result.attributes = null;
 		} // end of else
@@ -88,35 +90,27 @@ public class Element implements Comparable<Element>, Cloneable {
 		return result;
 	}
 
-	public Element(final Element element) {
+	public Element(Element element) {
 		Element src =  element.clone();
 		this.attributes = src.attributes;
 		this.name  = src.name;
 		this.cdata  = src.cdata;
+		this.defxmlns  = src.defxmlns;
 		this.xmlns  = src.xmlns;
 		this.children  = src.children;
 	}
 
-	public Element(final String argName) {
+	public Element(String argName) {
     setName(argName);
   }
 
-	public Element(final String argName, final String argCData) {
-    setName(argName);
-    setCData(argCData);
-  }
-
-  public Element(final String argName, final String argCData,
-    final StringBuilder[] att_names, final StringBuilder[] att_values) {
+	public Element(String argName, String argCData) {
     setName(argName);
     setCData(argCData);
-    if (att_names != null) {
-      setAttributes(att_names, att_values);
-    } // end of if (att_names != null)
   }
 
-  public Element(final String argName, final String argCData,
-    final String[] att_names, final String[] att_values) {
+  public Element(String argName, String argCData,
+    StringBuilder[] att_names, StringBuilder[] att_values) {
     setName(argName);
     setCData(argCData);
     if (att_names != null) {
@@ -124,16 +118,25 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (att_names != null)
   }
 
-  public Element(final String argName,
-    final String[] att_names, final String[] att_values) {
+  public Element(String argName, String argCData,
+    String[] att_names, String[] att_values) {
+    setName(argName);
+    setCData(argCData);
+    if (att_names != null) {
+      setAttributes(att_names, att_values);
+    } // end of if (att_names != null)
+  }
+
+  public Element(String argName,
+    String[] att_names, String[] att_values) {
     setName(argName);
     if (att_names != null) {
       setAttributes(att_names, att_values);
     } // end of if (att_names != null)
   }
 
-  public Element(final String argName, final Element[] children,
-    final String[] att_names, final String[] att_values) {
+  public Element(String argName, Element[] children,
+    String[] att_names, String[] att_values) {
     setName(argName);
     if (att_names != null) {
       setAttributes(att_names, att_values);
@@ -145,12 +148,12 @@ public class Element implements Comparable<Element>, Cloneable {
     return children;
   }
 
-  public List<Element> getChildren(final String elementPath) {
-    final Element child = findChild(elementPath);
+  public List<Element> getChildren(String elementPath) {
+    Element child = findChild(elementPath);
     return child != null ? child.getChildren() : null;
   }
 
-  public void setChildren(final List<Element> children) {
+  public void setChildren(List<Element> children) {
     this.children = new ArrayList<Element>();
     synchronized (this.children) {
 			for (Element child: children) {
@@ -160,7 +163,7 @@ public class Element implements Comparable<Element>, Cloneable {
 		}
   }
 
-  public void addChildren(final List<Element> children) {
+  public void addChildren(List<Element> children) {
 		if (children == null) {
 			return;
 		} // end of if (children == null)
@@ -204,7 +207,7 @@ public class Element implements Comparable<Element>, Cloneable {
         result.append(" "+key+"=\""+attributes.get(key)+"\"");
       } // end of for ()
     } // end of if (attributes != null)
-    final String childrenStr = childrenToString();
+    String childrenStr = childrenToString();
     if (cdata != null || childrenStr.length() > 0) {
       result.append(">");
       if (cdata != null) {
@@ -234,7 +237,7 @@ public class Element implements Comparable<Element>, Cloneable {
     return result.toString();
   }
 
-  public void addChild(final Element child) {
+  public void addChild(Element child) {
 		if (child == null) {
 			throw new NullPointerException("Element child can not be null.");
 		}
@@ -247,7 +250,7 @@ public class Element implements Comparable<Element>, Cloneable {
     }
   }
 
-  public boolean removeChild(final Element child) {
+  public boolean removeChild(Element child) {
     boolean res = false;
     if (children != null) {
       synchronized (children) {
@@ -257,7 +260,7 @@ public class Element implements Comparable<Element>, Cloneable {
     return res;
   }
 
-  public Element getChild(final String name) {
+  public Element getChild(String name) {
     if (children != null) {
       synchronized (children) {
         for (Element el : children) {
@@ -270,7 +273,7 @@ public class Element implements Comparable<Element>, Cloneable {
     return null;
   }
 
-  public Element getChild(final String name, final String child_xmlns) {
+  public Element getChild(String name, String child_xmlns) {
 		if (child_xmlns == null) {
 			return getChild(name);
 		}
@@ -280,7 +283,7 @@ public class Element implements Comparable<Element>, Cloneable {
           if (el.getName().equals(name)
 						&& ((el.getXMLNS() == null && child_xmlns == null)
 							|| (el.getXMLNS() != null && child_xmlns != null
-								&& el.getXMLNS().equals(child_xmlns)))) {
+								&& el.getXMLNS() == child_xmlns))) {
             return el;
           }
         }
@@ -289,8 +292,8 @@ public class Element implements Comparable<Element>, Cloneable {
     return null;
   }
 
-  public Element findChild(final String elementPath) {
-    final StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
+  public Element findChild(String elementPath) {
+    StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
     if (!strtok.nextToken().equals(getName())) {
       return null;
     } // end of if (!strtok.nextToken().equals(child.getName()))
@@ -301,12 +304,12 @@ public class Element implements Comparable<Element>, Cloneable {
     return child;
   }
 
-  public String getChildCData(final String elementPath) {
-    final Element child = findChild(elementPath);
+  public String getChildCData(String elementPath) {
+    Element child = findChild(elementPath);
     return child != null ? child.getCData() : null;
   }
 
-  public String getCData(final String elementPath) {
+  public String getCData(String elementPath) {
 		return getChildCData(elementPath);
   }
 
@@ -315,18 +318,23 @@ public class Element implements Comparable<Element>, Cloneable {
    * @return the Attributes value.
    */
   public Map<String, String> getAttributes() {
-    return attributes;
+    return new LinkedHashMap<String, String>(attributes);
   }
 
   /**
    * Set the Attributes value.
    * @param newAttributes The new Attributes value.
    */
-  public void setAttributes(final Map<String, String> newAttributes) {
-    attributes = new LinkedHashMap<String, String>(newAttributes);
+  public void setAttributes(Map<String, String> newAttributes) {
+    attributes = new IdentityHashMap<String, String>(newAttributes.size());
+		synchronized (attributes) {
+			for (Map.Entry<String, String> entry: newAttributes.entrySet()) {
+				attributes.put(entry.getKey().intern(), entry.getValue());
+			}
+		}
   }
 
-  public String getAttribute(final String attName) {
+  public String getAttribute(String attName) {
     if (attributes != null) {
       synchronized (attributes) {
         return attributes.get(attName);
@@ -335,19 +343,27 @@ public class Element implements Comparable<Element>, Cloneable {
     return null;
   }
 
-  public void addAttribute(final String attName, final String attValue) {
+  public void addAttribute(String attName, String attValue) {
     setAttribute(attName, attValue);
   }
 
 	public void addAttributes(Map<String, String> attrs) {
-		attributes.putAll(attrs);
+		if (attributes == null) {
+			attributes = new IdentityHashMap<String, String>(attrs.size());
+		}
+		synchronized (attributes) {
+			for (Map.Entry<String, String> entry: attrs.entrySet()) {
+				attributes.put(entry.getKey().intern(), entry.getValue());
+			}
+		}
 	}
 
-  public void setDefXMLNS(final String ns) {
-    xmlns = ns;
+  public void setDefXMLNS(String ns) {
+    defxmlns = ns.intern();
   }
 
-	public void setXMLNS(final String ns) {
+	public void setXMLNS(String ns) {
+		xmlns = ns.intern();
 		setAttribute("xmlns", ns);
 	}
 
@@ -355,42 +371,45 @@ public class Element implements Comparable<Element>, Cloneable {
    *
    */
   public String getXMLNS() {
-    String ns = getAttribute("xmlns");
-    return ns != null ? ns : xmlns;
+		if (xmlns == null) {
+			xmlns = getAttribute("xmlns");
+			xmlns = (xmlns != null ? xmlns.intern() : null);
+		}
+    return xmlns != null ? xmlns : defxmlns;
   }
 
   /**
    *
    */
-  public String getXMLNS(final String elementPath) {
+  public String getXMLNS(String elementPath) {
     Element child = findChild(elementPath);
     return child != null ? child.getXMLNS() : null;
   }
 
-  public String getAttribute(final String elementPath,
-		final String att_name) {
-    final Element child = findChild(elementPath);
+  public String getAttribute(String elementPath,
+		String att_name) {
+    Element child = findChild(elementPath);
     return child != null ? child.getAttribute(att_name) : null;
   }
 
-  public void setAttribute(final String elementPath,
-    final String att_name, final String att_value) {
-    final Element child = findChild(elementPath);
+  public void setAttribute(String elementPath,
+    String att_name, String att_value) {
+    Element child = findChild(elementPath);
     if (child != null) {
-      child.setAttribute(att_name, att_value);
+      child.setAttribute(att_name.intern(), att_value);
     } // end of if (child != null)
   }
 
-  public void setAttribute(final String key, final String value) {
+  public void setAttribute(String key, String value) {
     if (attributes == null) {
-      attributes = new LinkedHashMap<String, String>();
+      attributes = new IdentityHashMap<String, String>();
     } // end of if (attributes == null)
     synchronized (attributes) {
-      attributes.put(key, value);
+      attributes.put(key.intern(), value);
     }
   }
 
-	public void removeAttribute(final String key) {
+	public void removeAttribute(String key) {
     if (attributes != null) {
 			synchronized (attributes) {
 				attributes.remove(key);
@@ -398,24 +417,24 @@ public class Element implements Comparable<Element>, Cloneable {
     } // end of if (attributes == null)
 	}
 
-  public void setAttributes(final StringBuilder[] names,
-		final StringBuilder[] values) {
-    attributes = new LinkedHashMap<String, String>();
+  public void setAttributes(StringBuilder[] names,
+		StringBuilder[] values) {
+    attributes = new IdentityHashMap<String, String>(names.length);
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
-          attributes.put(names[i].toString(), values[i].toString());
+          attributes.put(names[i].toString().intern(), values[i].toString());
         } // end of if (names[i] != null)
       } // end of for (int i = 0; i < names.length; i++)
     }
   }
 
-  public void setAttributes(final String[] names, final String[] values) {
-    attributes = new LinkedHashMap<String, String>();
+  public void setAttributes(String[] names, String[] values) {
+    attributes = new IdentityHashMap<String, String>(names.length);
     synchronized (attributes) {
       for (int i = 0; i < names.length; i++) {
         if (names[i] != null) {
-          attributes.put(names[i], values[i]);
+          attributes.put(names[i].intern(), values[i]);
         } // end of if (names[i] != null)
       } // end of for (int i = 0; i < names.length; i++)
     }
@@ -435,8 +454,8 @@ public class Element implements Comparable<Element>, Cloneable {
    *
    * @param argName Value to assign to this.name
    */
-  public void setName(final String argName) {
-    this.name = argName;
+  public void setName(String argName) {
+    this.name = argName.intern();
   }
 
   /**
@@ -453,7 +472,7 @@ public class Element implements Comparable<Element>, Cloneable {
    *
    * @param argCData Value to assign to this.cdata
    */
-  public void setCData(final String argCData) {
+  public void setCData(String argCData) {
     this.cdata = argCData;
   }
 
@@ -465,7 +484,7 @@ public class Element implements Comparable<Element>, Cloneable {
    * @param elem an <code>Object</code> value
    * @return an <code>int</code> value
    */
-  public int compareTo(final Element elem) {
+  public int compareTo(Element elem) {
 // 		int result = name.compareTo(elem.getName());
 // 		if (result == 0) {
 // 			if (getXMLNS() != null) {
@@ -509,7 +528,7 @@ public class Element implements Comparable<Element>, Cloneable {
 		return toStringNoChildren().hashCode();
 	}
 
-	public static void main(final String[] args) {
+	public static void main(String[] args) {
 		Element elem = new Element("Test", "This is a test",
 			new String[] {"first-name", "last-name"},
 			new String[] {"Artur", "Hefczyc"});
