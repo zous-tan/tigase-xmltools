@@ -318,7 +318,8 @@ public class Element implements Comparable<Element>, Cloneable {
    * @return the Attributes value.
    */
   public Map<String, String> getAttributes() {
-    return new LinkedHashMap<String, String>(attributes);
+    return
+      (attributes != null ? new LinkedHashMap<String, String>(attributes) : null);
   }
 
   /**
