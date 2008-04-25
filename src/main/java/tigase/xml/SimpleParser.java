@@ -141,9 +141,9 @@ public class SimpleParser {
     for (int index = off; index < len; index++) {
       char chr = data[index];
 
-// 			if (ignore(chr)) {
-// 				break;
-// 			} // end of if (ignore(chr))
+			if (ignore(chr)) {
+				break;
+			} // end of if (ignore(chr))
 
       switch (parser_state.state) {
       case START:
