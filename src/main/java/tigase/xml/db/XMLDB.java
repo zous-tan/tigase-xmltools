@@ -272,10 +272,11 @@ public class XMLDB {
     saveDB();
   }
 
-  protected final DBElement getNode(String node1_id, String subnode)
+  protected final DBElement getNode(String node1_id, String subnode,
+		boolean auto_create)
     throws NodeNotFoundException {
     DBElement node = getNode1(node1_id);
-    if (subnode != null) {
+    if (subnode != null && auto_create) {
       node = node.buildNodesTree(subnode);
     } // end of if (subnode != null)
     return node;
@@ -291,7 +292,7 @@ public class XMLDB {
    */
   public void setData(String node1_id, String subnode, String key, Object value)
     throws NodeNotFoundException {
-    getNode(node1_id, subnode).setEntry(key, value);
+    getNode(node1_id, subnode, true).setEntry(key, value);
     saveDB();
   }
 
@@ -333,17 +334,20 @@ public class XMLDB {
    */
   public String[] getDataList(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryStringArrValue(key, null);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryStringArrValue(key, null) : null);
   }
 
   public int[] getDataIntList(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryIntArrValue(key, null);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryIntArrValue(key, null) : null);
   }
 
   public double[] getDataDoubleList(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryDoubleArrValue(key, null);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryDoubleArrValue(key, null) : null);
   }
 
   /**
@@ -357,18 +361,21 @@ public class XMLDB {
    */
   public Object getData(String node1_id, String subnode, String key, Object def)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryValue(key, def);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryValue(key, def) : null);
   }
 
   public int getDataInt(String node1_id, String subnode, String key, int def)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryIntValue(key, def);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryIntValue(key, def) : null);
   }
 
   public double getDataDouble(String node1_id, String subnode, String key,
 		double def)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryDoubleValue(key, def);
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryDoubleValue(key, def) : null);
   }
 
   /**
@@ -405,7 +412,8 @@ public class XMLDB {
    */
   public String[] getSubnodes(String node1_id, String subnode)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getSubnodes();
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getSubnodes() : null);
   }
 
   /**
@@ -428,7 +436,8 @@ public class XMLDB {
    */
   public String[] getKeys(String node1_id, String subnode)
     throws NodeNotFoundException {
-    return getNode(node1_id, subnode).getEntryKeys();
+		DBElement node = getNode(node1_id, subnode, false);
+    return (node != null ? node.getEntryKeys() : null);
   }
 
   /**
@@ -451,8 +460,11 @@ public class XMLDB {
    */
   public void removeData(String node1_id, String subnode, String key)
     throws NodeNotFoundException {
-    getNode(node1_id, subnode).removeEntry(key);
-    saveDB();
+		DBElement node = getNode(node1_id, subnode, false);
+		if (node != null) {
+			node.removeEntry(key);
+			saveDB();
+		}
   }
 
   /**
@@ -474,8 +486,11 @@ public class XMLDB {
    */
   public void removeSubnode(String node1_id, String subnode)
     throws NodeNotFoundException {
-    getNode1(node1_id).removeNode(subnode);
-    saveDB();
+		DBElement node = getNode(node1_id, subnode, false);
+		if (node != null) {
+			node.removeNode(subnode);
+			saveDB();
+		}
   }
 
   public void sync() throws IOException {
