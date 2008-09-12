@@ -171,6 +171,21 @@ public class DBElement extends Element {
     } // end of if (parent != null && node != null)
   }
 
+  public final DBElement getSubnodePath(String nodePath) {
+    StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
+    DBElement node = this;
+    while (strtok.hasMoreTokens()) {
+      String token = strtok.nextToken();
+      DBElement tmp = node.getSubnode(token);
+      if (tmp != null) {
+        node = tmp;
+      } else {
+				return null;
+      } // end of if (node.getSubnode() != null) else
+    } // end of while (strtok.hasMoreTokens())
+    return node;
+  }
+
   public final DBElement buildNodesTree(String nodePath) {
     StringTokenizer strtok = new StringTokenizer(nodePath, "/", false);
     DBElement node = this;

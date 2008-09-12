@@ -275,11 +275,15 @@ public class XMLDB {
   protected final DBElement getNode(String node1_id, String subnode,
 		boolean auto_create)
     throws NodeNotFoundException {
-    DBElement node = getNode1(node1_id);
-    if (subnode != null && auto_create) {
-      node = node.buildNodesTree(subnode);
-    } // end of if (subnode != null)
-    return node;
+    DBElement node1 = getNode1(node1_id);
+		if (subnode != null) {
+			DBElement node = node1.getSubnodePath(subnode);
+			if (node == null && auto_create) {
+				node = node1.buildNodesTree(subnode);
+			} // end of if (subnode != null)
+			return node;
+		}
+		return node1;
   }
 
   /**
@@ -412,6 +416,7 @@ public class XMLDB {
    */
   public String[] getSubnodes(String node1_id, String subnode)
     throws NodeNotFoundException {
+		//log.finest("node1_id: " + node1_id + ", subnode: " + subnode);
 		DBElement node = getNode(node1_id, subnode, false);
     return (node != null ? node.getSubnodes() : null);
   }
