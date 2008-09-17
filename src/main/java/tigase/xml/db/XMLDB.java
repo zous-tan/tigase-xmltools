@@ -124,7 +124,7 @@ public class XMLDB {
     thrd.start();
   }
 
-  public XMLDB(String db_file) throws IOException {
+  public XMLDB(String db_file) throws IOException, XMLDBException {
     Thread thrd = new Thread(db_saver);
     thrd.setName("XMLDBSaver");
     thrd.setDaemon(true);
@@ -158,7 +158,7 @@ public class XMLDB {
     root = new DBElement(this.root_name);
   }
 
-  protected void loadDB() throws IOException {
+  protected void loadDB() throws IOException, XMLDBException {
     InputStreamReader file =
       new InputStreamReader(new FileInputStream(dbFile), "UTF-8");
     char[] buff = new char[16*1024];
@@ -172,6 +172,8 @@ public class XMLDB {
     file.close();
     root = (DBElement)domHandler.getParsedElements().poll();
     //    node1s = root.getChildren();
+		if(root == null)
+    	throw new XMLDBException("Invalid XML DB File");
     this.root_name = root.getName();
     List<Element> children = root.getChildren();
     if (children != null && children.size() > 0) {
