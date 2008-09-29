@@ -167,7 +167,7 @@ public class XMLFormatter implements SimpleHandler {
     } // end of if (args.length < 1)
 
     FileReader file = new FileReader(args[0]);
-    char[] buff = new char[16*1024];
+    char[] buff = new char[1];
     SimpleParser parser = new SimpleParser();
     XMLFormatter formatter = null;
     if (args.length == 2) {

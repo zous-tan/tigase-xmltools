@@ -149,7 +149,7 @@ public class SimpleParser {
       case START:
         if (chr == OPEN_BRACKET) {
           parser_state.state = State.OPEN_BRACKET;
-          parser_state.slash_found = false;
+          //parser_state.slash_found = false;
         } // end of if (chr == OPEN_BRACKET)
         // Skip everything up to open bracket
         break;
@@ -190,13 +190,17 @@ public class SimpleParser {
         } // end of if (chr == SLASH)
 
         if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.ELEMENT_CDATA;
+          //parser_state.state = State.ELEMENT_CDATA;
           handler.startElement(parser_state.element_name, null, null);
           if (parser_state.slash_found) {
+            //parser_state.state = State.START;
             handler.endElement(parser_state.element_name);
-            parser_state.state = State.START;
-          } // end of if (slash_found)
-          parser_state.element_name = null;
+						parser_state = new ParserState();
+          } else {
+						parser_state = new ParserState();
+						parser_state.state = State.ELEMENT_CDATA;
+						//parser_state.element_name = null;
+					}
           break;
         } // end of if ()
 
@@ -228,9 +232,10 @@ public class SimpleParser {
         } // end of if (chr == SLASH)
 
         if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.START;
+          //parser_state.state = State.START;
           handler.endElement(parser_state.element_name);
-          parser_state.element_name = null;
+					parser_state = new ParserState();
+          //parser_state.element_name = null;
           break;
         } // end of if ()
 
@@ -254,17 +259,21 @@ public class SimpleParser {
         } // end of if (chr == SLASH)
 
         if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.ELEMENT_CDATA;
+          //parser_state.state = State.ELEMENT_CDATA;
           handler.startElement(parser_state.element_name,
             parser_state.attrib_names, parser_state.attrib_values);
           if (parser_state.slash_found) {
+            //parser_state.state = State.START;
             handler.endElement(parser_state.element_name);
-            parser_state.state = State.START;
-          } // end of if (slash_found)
-          parser_state.element_name = null;
-          parser_state.attrib_names = null;
-          parser_state.attrib_values = null;
-          parser_state.current_attr = -1;
+						parser_state = new ParserState();
+          } else {
+						parser_state = new ParserState();
+						parser_state.state = State.ELEMENT_CDATA;
+// 						parser_state.element_name = null;
+// 						parser_state.attrib_names = null;
+// 						parser_state.attrib_values = null;
+// 						parser_state.current_attr = -1;
+					}
           break;
         } // end of if ()
 
