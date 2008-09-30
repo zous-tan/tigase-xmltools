@@ -80,7 +80,12 @@ public class SimpleParser {
     CLOSE_ELEMENT
   };
 
-  private static final char OPEN_BRACKET = '<';
+	private static final int MAX_ELEMENT_NAME_SIZE = 1024;
+	private static final int MAX_ATTRIBUTE_NAME_SIZE = 1024;
+	private static final int MAX_ATTRIBUTE_VALUE_SIZE = 10*1024;
+	private static final int MAX_CDATA_SIZE = 1024*1024;
+
+	private static final char OPEN_BRACKET = '<';
   private static final char CLOSE_BRACKET = '>';
   private static final char QUESTION_MARK = '?';
   private static final char EXCLAMATION_MARK = '!';
@@ -215,6 +220,13 @@ public class SimpleParser {
         } // end of if ()
 
         parser_state.element_name.append(chr);
+				if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
+          parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
+            + "\nreceived: "
+            + parser_state.element_name.toString();
+				}
         break;
 
       case CLOSE_ELEMENT:
@@ -250,6 +262,13 @@ public class SimpleParser {
         } // end of if ()
 
         parser_state.element_name.append(chr);
+				if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
+          parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
+            + "\nreceived: "
+            + parser_state.element_name.toString();
+				}
         break;
 
       case END_ELEMENT_NAME:
@@ -311,6 +330,14 @@ public class SimpleParser {
           break;
         } // end of if ()
         parser_state.attrib_names[parser_state.current_attr].append(chr);
+				if (parser_state.attrib_names[parser_state.current_attr].length()
+					> MAX_ATTRIBUTE_NAME_SIZE) {
+          parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Max attribute name size exceeded: " + MAX_ATTRIBUTE_NAME_SIZE
+            + "\nreceived: "
+            + parser_state.attrib_names[parser_state.current_attr].toString();
+				}
         break;
 
       case END_OF_ATTR_NAME:
@@ -328,6 +355,14 @@ public class SimpleParser {
           break;
         } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
         parser_state.attrib_values[parser_state.current_attr].append(chr);
+				if (parser_state.attrib_values[parser_state.current_attr].length()
+					> MAX_ATTRIBUTE_VALUE_SIZE) {
+          parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Max attribute value size exceeded: " + MAX_ATTRIBUTE_VALUE_SIZE
+            + "\nreceived: "
+            + parser_state.attrib_values[parser_state.current_attr].toString();
+				}
         break;
 
       case ELEMENT_CDATA:
@@ -339,17 +374,23 @@ public class SimpleParser {
             parser_state.element_cdata = null;
           } // end of if (parser_state.element_cdata != null)
           break;
-        } // end of if (chr == OPEN_BRACKET)
-        if (parser_state.element_cdata == null) {
-          // Skip leading white characters
-          if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
-            parser_state.element_cdata = new StringBuilder();
-            parser_state.element_cdata.append(chr);
-          } // end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
-        } // end of if (parser_state.element_cdata == null)
-        else {
-          parser_state.element_cdata.append(chr);
-        } // end of if (parser_state.element_cdata == null) else
+        } else {
+					if (parser_state.element_cdata == null) {
+// 						// Skip leading white characters
+// 						if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
+							parser_state.element_cdata = new StringBuilder();
+// 							parser_state.element_cdata.append(chr);
+// 						} // end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
+					} // end of if (parser_state.element_cdata == null) else
+					parser_state.element_cdata.append(chr);
+					if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage =
+              "Max cdata size exceeded: " + MAX_CDATA_SIZE
+              + "\nreceived: "
+              + parser_state.element_cdata.toString();
+					}
+				}
         break;
 
       case OTHER_XML:
@@ -359,7 +400,17 @@ public class SimpleParser {
           parser_state.element_cdata = null;
           break;
         } // end of if (chr == CLOSE_BRACKET)
+				if (parser_state.element_cdata == null) {
+					parser_state.element_cdata = new StringBuilder();
+				} // end of if (parser_state.element_cdata == null) else
         parser_state.element_cdata.append(chr);
+				if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
+					parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+              "Max cdata size exceeded: " + MAX_CDATA_SIZE
+              + "\nreceived: "
+              + parser_state.element_cdata.toString();
+				}
         break;
 
       case ERROR:
