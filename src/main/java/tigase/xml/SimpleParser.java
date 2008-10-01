@@ -200,11 +200,6 @@ public class SimpleParser {
           if (parser_state.slash_found) {
             parser_state.state = State.START;
             handler.endElement(parser_state.element_name);
-						//parser_state = new ParserState();
-//           } else {
-						//parser_state = new ParserState();
-						//parser_state.state = State.ELEMENT_CDATA;
-						//parser_state.element_name = null;
 					}
 					parser_state.element_name = null;
           break;
@@ -282,17 +277,12 @@ public class SimpleParser {
           parser_state.state = State.ELEMENT_CDATA;
           handler.startElement(parser_state.element_name,
             parser_state.attrib_names, parser_state.attrib_values);
+					parser_state.attrib_names = null;
+					parser_state.attrib_values = null;
+					parser_state.current_attr = -1;
           if (parser_state.slash_found) {
             parser_state.state = State.START;
             handler.endElement(parser_state.element_name);
-						//parser_state = new ParserState();
-          } else {
-						//parser_state = new ParserState();
-						//parser_state.state = State.ELEMENT_CDATA;
-						//parser_state.element_name = null;
-						parser_state.attrib_names = null;
-						parser_state.attrib_values = null;
-						parser_state.current_attr = -1;
 					}
 					parser_state.element_name = null;
           break;
