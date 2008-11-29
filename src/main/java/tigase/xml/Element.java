@@ -22,7 +22,6 @@
 
 package tigase.xml;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.ArrayList;
@@ -70,6 +69,7 @@ public class Element implements Comparable<Element>, Cloneable {
   protected ArrayList<Element> children = null;
 
 	@SuppressWarnings({"unchecked"})
+	@Override
 	public Element clone() {
 		Element result = null;
 		try {
@@ -370,7 +370,8 @@ public class Element implements Comparable<Element>, Cloneable {
 
   /**
    *
-   */
+	 * @return
+	 */
   public String getXMLNS() {
 		if (xmlns == null) {
 			xmlns = getAttribute("xmlns");
@@ -381,7 +382,9 @@ public class Element implements Comparable<Element>, Cloneable {
 
   /**
    *
-   */
+	 * @param elementPath
+	 * @return 
+	 */
   public String getXMLNS(String elementPath) {
     Element child = findChild(elementPath);
     return child != null ? child.getXMLNS() : null;
