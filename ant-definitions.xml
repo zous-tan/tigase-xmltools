@@ -112,11 +112,6 @@
       <copy
         file="package.html"
         tofile="${dist}/@{packagename}-${version}/README.html"/>
-      <mkdir dir="${dist}/@{packagename}-${version}/certs"/>
-      <copy todir="${dist}/@{packagename}-${version}/certs">
-        <fileset dir="certs" includes="*"/>
-      </copy>
-      <mkdir dir="${dist}/@{packagename}-${version}/etc"/>
       <copy
         file="etc/tigase.conf"
         tofile="${dist}/@{packagename}-${version}/etc/tigase.conf"/>
@@ -165,7 +160,7 @@
 <!--         date="today"/> -->
       <mkdir dir="@{packagename}-${version}.src/@{packagename}-${version}.src"/>
       <move todir="@{packagename}-${version}.src/@{packagename}-${version}.src">
-        <fileset dir="@{cvspackage}"/>
+        <fileset dir="@{packagename}"/>
       </move>
       <zip
         zipfile="@{packagename}-${version}.src.zip"
