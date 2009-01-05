@@ -112,13 +112,20 @@ public class DomBuilderHandler implements SimpleHandler {
     String tmp_name = name.toString();
 		String new_xmlns = null;
 		String prefix = null;
-		for (String pref: namespaces.keySet()) {
-			if (tmp_name.startsWith(pref)) {
-				new_xmlns = namespaces.get(pref);
-				tmp_name = tmp_name.substring(pref.length()+1, tmp_name.length());
-				prefix = pref;
-			} // end of if (tmp_name.startsWith(xmlns))
-		} // end of for (String xmlns: namespaces.keys())
+		String tmp_name_prefix = null;
+		int idx = tmp_name.indexOf(':');
+		if (idx > 0) {
+			tmp_name_prefix = tmp_name.substring(0, idx);
+		}
+		if (tmp_name_prefix != null) {
+			for (String pref : namespaces.keySet()) {
+				if (tmp_name_prefix.equals(pref)) {
+					new_xmlns = namespaces.get(pref);
+					tmp_name = tmp_name.substring(pref.length() + 1, tmp_name.length());
+					prefix = pref;
+				} // end of if (tmp_name.startsWith(xmlns))
+			} // end of for (String xmlns: namespaces.keys())
+		}
     Element elem = newElement(tmp_name, null, attr_names, attr_values);
     String ns = elem.getXMLNS();
     if (ns == null) {
