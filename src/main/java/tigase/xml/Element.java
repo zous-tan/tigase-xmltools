@@ -22,6 +22,7 @@
 
 package tigase.xml;
 
+import java.io.FileReader;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Arrays;
 
+import java.util.Queue;
 import tigase.annotations.TODO;
 
 /**
@@ -59,14 +61,14 @@ import tigase.annotations.TODO;
  * @version $Rev$
  */
 @TODO(note="Make it a bit lighter.")
-public class Element implements Comparable<Element>, Cloneable {
+public class Element implements XMLNodeIfc<Element> {
 
   protected String name = null;
-  protected String cdata = null;
+  //protected String cdata = null;
   protected String defxmlns = null;
   protected String xmlns = null;
   protected IdentityHashMap<String, String> attributes = null;
-  protected ArrayList<Element> children = null;
+  protected ArrayList<XMLNodeIfc> children = null;
 
 	@SuppressWarnings({"unchecked"})
 	@Override
@@ -94,7 +96,7 @@ public class Element implements Comparable<Element>, Cloneable {
 		Element src =  element.clone();
 		this.attributes = src.attributes;
 		this.name  = src.name;
-		this.cdata  = src.cdata;
+		//this.cdata  = src.cdata;
 		this.defxmlns  = src.defxmlns;
 		this.xmlns  = src.xmlns;
 		this.children  = src.children;
@@ -106,13 +108,17 @@ public class Element implements Comparable<Element>, Cloneable {
 
 	public Element(String argName, String argCData) {
     setName(argName);
-    setCData(argCData);
+		if (argCData != null) {
+			setCData(argCData);
+		}
   }
 
   public Element(String argName, String argCData,
     StringBuilder[] att_names, StringBuilder[] att_values) {
     setName(argName);
-    setCData(argCData);
+		if (argCData != null) {
+			setCData(argCData);
+		}
     if (att_names != null) {
       setAttributes(att_names, att_values);
     } // end of if (att_names != null)
@@ -121,7 +127,9 @@ public class Element implements Comparable<Element>, Cloneable {
   public Element(String argName, String argCData,
     String[] att_names, String[] att_values) {
     setName(argName);
-    setCData(argCData);
+		if (argCData != null) {
+			setCData(argCData);
+		}
     if (att_names != null) {
       setAttributes(att_names, att_values);
     } // end of if (att_names != null)
@@ -145,7 +153,13 @@ public class Element implements Comparable<Element>, Cloneable {
   }
 
   public List<Element> getChildren() {
-    return children;
+    ArrayList<Element> result = new ArrayList<Element>();
+		for (XMLNodeIfc node : children) {
+			if (node instanceof Element) {
+				result.add((Element)node);
+			}
+		}
+		return result;
   }
 
   public List<Element> getChildren(String elementPath) {
@@ -153,10 +167,10 @@ public class Element implements Comparable<Element>, Cloneable {
     return child != null ? child.getChildren() : null;
   }
 
-  public void setChildren(List<Element> children) {
-    this.children = new ArrayList<Element>();
+  public void setChildren(List<XMLNodeIfc> children) {
+    this.children = new ArrayList<XMLNodeIfc>();
     synchronized (this.children) {
-			for (Element child: children) {
+			for (XMLNodeIfc child: children) {
 				this.children.add(child.clone());
 			} // end of for (Element child: children)
 			//Collections.sort(children);
@@ -168,10 +182,10 @@ public class Element implements Comparable<Element>, Cloneable {
 			return;
 		} // end of if (children == null)
     if (this.children == null) {
-      this.children = new ArrayList<Element>();
+      this.children = new ArrayList<XMLNodeIfc>();
     } // end of if (children == null)
     synchronized (this.children) {
-			for (Element child: children) {
+			for (XMLNodeIfc child: children) {
 				this.children.add(child.clone());
 			} // end of for (Element child: children)
 			//this.children.addAll(children);
@@ -187,6 +201,7 @@ public class Element implements Comparable<Element>, Cloneable {
         result.append(" "+key+"=\""+attributes.get(key)+"\"");
       } // end of for ()
     } // end of if (attributes != null)
+		String cdata = cdataToString();
     if (cdata != null) {
       result.append(">");
       if (cdata != null) {
@@ -199,6 +214,7 @@ public class Element implements Comparable<Element>, Cloneable {
     return result.toString();
   }
 
+	@Override
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append("<"+name);
@@ -208,11 +224,8 @@ public class Element implements Comparable<Element>, Cloneable {
       } // end of for ()
     } // end of if (attributes != null)
     String childrenStr = childrenToString();
-    if (cdata != null || childrenStr.length() > 0) {
+    if (childrenStr != null && childrenStr.length() > 0) {
       result.append(">");
-      if (cdata != null) {
-        result.append(cdata);
-      } // end of if (cdata != null)
       result.append(childrenStr);
       result.append("</"+name+">");
     } else {
@@ -221,11 +234,27 @@ public class Element implements Comparable<Element>, Cloneable {
     return result.toString();
   }
 
-  public String childrenToString() {
+	protected String cdataToString() {
     StringBuilder result = new StringBuilder();
     if (children != null) {
       synchronized (children) {
-        for (Element child : children) {
+        for (XMLNodeIfc child : children) {
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if (child != null && child instanceof CData) {
+						result.append(child.toString());
+					}
+        } // end of for ()
+      }
+    } // end of if (child != null)
+    return result.length() > 0 ? result.toString() : null;
+	}
+
+  public String childrenToString() {
+		StringBuilder result = new StringBuilder();
+    if (children != null) {
+      synchronized (children) {
+        for (XMLNodeIfc child : children) {
 					// This is weird but if there is a bug in some other component
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
@@ -234,15 +263,15 @@ public class Element implements Comparable<Element>, Cloneable {
         } // end of for ()
       }
     } // end of if (child != null)
-    return result.toString();
+    return result.length() > 0 ? result.toString() : null;
   }
 
-  public void addChild(Element child) {
+  public void addChild(XMLNodeIfc child) {
 		if (child == null) {
 			throw new NullPointerException("Element child can not be null.");
 		}
     if (children == null) {
-      children = new ArrayList<Element>();
+      children = new ArrayList<XMLNodeIfc>();
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
@@ -263,10 +292,13 @@ public class Element implements Comparable<Element>, Cloneable {
   public Element getChild(String name) {
     if (children != null) {
       synchronized (children) {
-        for (Element el : children) {
-          if (el.getName().equals(name)) {
-            return el;
-          }
+        for (XMLNodeIfc el : children) {
+					if (el instanceof Element) {
+						Element elem = (Element)el;
+						if (elem.getName().equals(name)) {
+							return elem;
+						}
+					}
         }
       }
     } // end of if (children != null)
@@ -279,13 +311,16 @@ public class Element implements Comparable<Element>, Cloneable {
 		}
     if (children != null) {
       synchronized (children) {
-        for (Element el : children) {
-          if (el.getName().equals(name)
-						&& ((el.getXMLNS() == null && child_xmlns == null)
-							|| (el.getXMLNS() != null && child_xmlns != null
-								&& el.getXMLNS() == child_xmlns))) {
-            return el;
-          }
+        for (XMLNodeIfc el : children) {
+					if (el instanceof Element) {
+						Element elem = (Element) el;
+						if (elem.getName().equals(name) &&
+										((elem.getXMLNS() == child_xmlns) ||
+										(elem.getXMLNS() != null &&
+										elem.getXMLNS().equals(child_xmlns)))) {
+							return elem;
+						}
+					}
         }
       }
     } // end of if (children != null)
@@ -468,7 +503,7 @@ public class Element implements Comparable<Element>, Cloneable {
    * @return the value of cdata
    */
   public String getCData()  {
-    return this.cdata;
+    return cdataToString();
   }
 
   /**
@@ -477,7 +512,7 @@ public class Element implements Comparable<Element>, Cloneable {
    * @param argCData Value to assign to this.cdata
    */
   public void setCData(String argCData) {
-    this.cdata = argCData;
+    addChild(new CData(argCData));
   }
 
   // Implementation of java.lang.Comparable
@@ -509,6 +544,7 @@ public class Element implements Comparable<Element>, Cloneable {
 		return toStringNoChildren().compareTo(elem.toStringNoChildren());
   }
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Element) {
  			Element elem = (Element)obj;
@@ -526,19 +562,33 @@ public class Element implements Comparable<Element>, Cloneable {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 // 		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
 // 		return hash_str.hashCode();
 		return toStringNoChildren().hashCode();
 	}
 
-	public static void main(String[] args) {
-		Element elem = new Element("Test", "This is a test",
-			new String[] {"first-name", "last-name"},
-			new String[] {"Artur", "Hefczyc"});
-		elem.addChild(new Element("Chile-element"));
-		Element clone = elem.clone();
-		System.out.println(clone.toString());
+	public static void main(String[] args) throws Exception {
+    if (args.length < 1) {
+      System.err.println("You must give file name as parameter.");
+      System.exit(1);
+    } // end of if (args.length < 1)
+
+    FileReader file = new FileReader(args[0]);
+    char[] buff = new char[1];
+    SimpleParser parser = new SimpleParser();
+		DomBuilderHandler dom = new DomBuilderHandler();
+		int result = -1;
+    while((result = file.read(buff)) != -1) {
+      parser.parse(dom, buff, 0, result);
+    }
+    file.close();
+		Queue<Element> elems = dom.getParsedElements();
+		for (Element elem : elems) {
+			Element clone = elem.clone();
+			System.out.println(elem.toString());
+		}
 	}
 
 

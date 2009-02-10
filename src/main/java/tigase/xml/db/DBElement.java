@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import tigase.xml.Element;
+import tigase.xml.XMLNodeIfc;
 
 /**
  * <code>DBElement</code> class extends <code>tigase.xml.Element</code>. It
@@ -83,6 +84,7 @@ public class DBElement extends Element {
       } // end of for ()
     } // end of if (attributes != null)
     String childrenStr = childrenFormatedString(indent+step, step);
+		String cdata = getCData();
     if (cdata != null || childrenStr.length() > 0) {
       result.append(">");
       if (cdata != null) {
@@ -104,8 +106,12 @@ public class DBElement extends Element {
     StringBuilder result = new StringBuilder();
     if (children != null) {
       synchronized (children) {
-        for (Element child : children) {
-          result.append(((DBElement)child).formatedString(indent, step));
+        for (XMLNodeIfc child : children) {
+          if (child instanceof DBElement) {
+						result.append(((DBElement) child).formatedString(indent, step));
+					} else {
+						result.append(child.toString());
+					}
         } // end of for ()
       }
     } // end of if (child != null)
@@ -117,11 +123,14 @@ public class DBElement extends Element {
       return null;
     } // end of if (children == null)
     synchronized (children) {
-      for (Element elem : children) {
-        if (elem.getName().equals(NODE) &&
-          elem.getAttribute(NAME).equals(name)) {
-          return (DBElement)elem;
-        } //
+      for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element)el;
+					if (elem.getName().equals(NODE) &&
+									elem.getAttribute(NAME).equals(name)) {
+						return (DBElement) elem;
+					} //
+				}
       } // end of for (DBElement node : children)
     }
     return null;
@@ -135,10 +144,13 @@ public class DBElement extends Element {
     String[] result = new String[children.size()-1];
     synchronized (children) {
       int idx = 0;
-      for (Element elem : children) {
-        if (elem.getName().equals(NODE)) {
-          result[idx++] = elem.getAttribute(NAME);
-        } //
+      for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element) el;
+					if (elem.getName().equals(NODE)) {
+						result[idx++] = elem.getAttribute(NAME);
+					} //
+				}
       } // end of for (DBElement node : children)
     }
     return result;
