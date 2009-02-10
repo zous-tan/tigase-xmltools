@@ -198,7 +198,7 @@ public class SimpleParser {
           parser_state.state = State.ELEMENT_CDATA;
           handler.startElement(parser_state.element_name, null, null);
           if (parser_state.slash_found) {
-            parser_state.state = State.START;
+            //parser_state.state = State.START;
             handler.endElement(parser_state.element_name);
 					}
 					parser_state.element_name = null;
@@ -240,7 +240,7 @@ public class SimpleParser {
         } // end of if (chr == SLASH)
 
         if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.START;
+          parser_state.state = State.ELEMENT_CDATA;;
           handler.endElement(parser_state.element_name);
 					//parser_state = new ParserState();
           parser_state.element_name = null;

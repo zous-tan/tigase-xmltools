@@ -95,6 +95,9 @@ public class DomBuilderHandler implements SimpleHandler {
     log.finest("Start element name: "+name);
     log.finest("Element attributes names: "+Arrays.toString(attr_names));
     log.finest("Element attributes values: "+Arrays.toString(attr_values));
+    //System.out.println("Start element name: "+name);
+    //System.out.println("Element attributes names: "+Arrays.toString(attr_names));
+    //System.out.println("Element attributes values: "+Arrays.toString(attr_values));
 
 		// Look for 'xmlns:' declarations:
 		if (attr_names != null) {
@@ -112,13 +115,20 @@ public class DomBuilderHandler implements SimpleHandler {
     String tmp_name = name.toString();
 		String new_xmlns = null;
 		String prefix = null;
-		for (String pref: namespaces.keySet()) {
-			if (tmp_name.startsWith(pref)) {
-				new_xmlns = namespaces.get(pref);
-				tmp_name = tmp_name.substring(pref.length()+1, tmp_name.length());
-				prefix = pref;
-			} // end of if (tmp_name.startsWith(xmlns))
-		} // end of for (String xmlns: namespaces.keys())
+		String tmp_name_prefix = null;
+		int idx = tmp_name.indexOf(':');
+		if (idx > 0) {
+			tmp_name_prefix = tmp_name.substring(0, idx);
+		}
+		if (tmp_name_prefix != null) {
+			for (String pref : namespaces.keySet()) {
+				if (tmp_name_prefix.equals(pref)) {
+					new_xmlns = namespaces.get(pref);
+					tmp_name = tmp_name.substring(pref.length() + 1, tmp_name.length());
+					prefix = pref;
+				} // end of if (tmp_name.startsWith(xmlns))
+			} // end of for (String xmlns: namespaces.keys())
+		}
     Element elem = newElement(tmp_name, null, attr_names, attr_values);
     String ns = elem.getXMLNS();
     if (ns == null) {
@@ -137,6 +147,7 @@ public class DomBuilderHandler implements SimpleHandler {
 
   public void elementCData(StringBuilder cdata) {
     log.finest("Element CDATA: "+cdata);
+		//System.out.println("Element CDATA: "+cdata);
 		try {
 			el_stack.peek().setCData(cdata.toString());
 		} catch (EmptyStackException e) {
@@ -147,6 +158,7 @@ public class DomBuilderHandler implements SimpleHandler {
 
   public void endElement(StringBuilder name) {
     log.finest("End element name: "+name);
+    //System.out.println("End element name: "+name);
 
     if (el_stack.isEmpty()) {
       el_stack.push(newElement(name.toString(), null, null, null));

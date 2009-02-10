@@ -1,0 +1,21 @@
+<message from="bartlomiej.jarocki@nasza-klasa.pl/HomeCC71561E" type="chat" id="purplef683bb53" to="kobit@tigase.org/Psi" >
+<active xmlns="http://jabber.org/protocol/chatstates"/>
+<body>w inicie jest domyślnie tak :
+
+config-type=--gen-config-def
+--admins=admin@$HOST_NAME
+--virt-hosts = $HOST_NAME
+--debug=server
+</body>
+<html xmlns="http://jabber.org/protocol/xhtml-im">
+<body xmlns="http://www.w3.org/1999/xhtml">w inicie jest domyślnie tak :<br/>
+config-type=--gen-config-def<br/>
+--admins=admin@$HOST_NAME<br/>
+--virt-hosts = $HOST_NAME<br/>
+--debug=server<br/>
+<br/>
+</body>
+</html>
+<x xmlns="google:nosave" value="disabled" />
+<record xmlns="http://jabber.org/protocol/archive" otr="false" />
+</message>
