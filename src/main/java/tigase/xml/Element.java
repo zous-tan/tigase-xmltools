@@ -153,13 +153,16 @@ public class Element implements XMLNodeIfc<Element> {
   }
 
   public List<Element> getChildren() {
-    ArrayList<Element> result = new ArrayList<Element>();
-		for (XMLNodeIfc node : children) {
-			if (node instanceof Element) {
-				result.add((Element)node);
+    if (children != null) {
+			ArrayList<Element> result = new ArrayList<Element>();
+			for (XMLNodeIfc node : children) {
+				if (node instanceof Element) {
+					result.add((Element) node);
+				}
 			}
+			return result;
 		}
-		return result;
+		return null;
   }
 
   public List<Element> getChildren(String elementPath) {
