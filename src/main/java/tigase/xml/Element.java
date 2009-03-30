@@ -25,7 +25,7 @@ package tigase.xml;
 import java.io.FileReader;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -68,7 +68,7 @@ public class Element implements XMLNodeIfc<Element> {
   protected String defxmlns = null;
   protected String xmlns = null;
   protected IdentityHashMap<String, String> attributes = null;
-  protected ArrayList<XMLNodeIfc> children = null;
+  protected LinkedList<XMLNodeIfc> children = null;
 
 	@SuppressWarnings({"unchecked"})
 	@Override
@@ -154,7 +154,7 @@ public class Element implements XMLNodeIfc<Element> {
 
   public List<Element> getChildren() {
     if (children != null) {
-			ArrayList<Element> result = new ArrayList<Element>();
+			LinkedList<Element> result = new LinkedList<Element>();
 			for (XMLNodeIfc node : children) {
 				if (node instanceof Element) {
 					result.add((Element) node);
@@ -171,7 +171,7 @@ public class Element implements XMLNodeIfc<Element> {
   }
 
   public void setChildren(List<XMLNodeIfc> children) {
-    this.children = new ArrayList<XMLNodeIfc>();
+    this.children = new LinkedList<XMLNodeIfc>();
     synchronized (this.children) {
 			for (XMLNodeIfc child: children) {
 				this.children.add(child.clone());
@@ -185,7 +185,7 @@ public class Element implements XMLNodeIfc<Element> {
 			return;
 		} // end of if (children == null)
     if (this.children == null) {
-      this.children = new ArrayList<XMLNodeIfc>();
+      this.children = new LinkedList<XMLNodeIfc>();
     } // end of if (children == null)
     synchronized (this.children) {
 			for (XMLNodeIfc child: children) {
@@ -198,10 +198,10 @@ public class Element implements XMLNodeIfc<Element> {
 
   public String toStringNoChildren() {
     StringBuilder result = new StringBuilder();
-    result.append("<"+name);
+    result.append("<").append(name);
     if (attributes != null) {
       for (String key : attributes.keySet()) {
-        result.append(" "+key+"=\""+attributes.get(key)+"\"");
+        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
       } // end of for ()
     } // end of if (attributes != null)
 		String cdata = cdataToString();
@@ -210,7 +210,7 @@ public class Element implements XMLNodeIfc<Element> {
       if (cdata != null) {
         result.append(cdata);
       } // end of if (cdata != null)
-      result.append("</"+name+">");
+      result.append("</").append(name).append(">");
     } else {
       result.append("/>");
     }
@@ -220,17 +220,17 @@ public class Element implements XMLNodeIfc<Element> {
 	@Override
   public String toString() {
     StringBuilder result = new StringBuilder();
-    result.append("<"+name);
+    result.append("<").append(name);
     if (attributes != null) {
       for (String key : attributes.keySet()) {
-        result.append(" "+key+"=\""+attributes.get(key)+"\"");
+        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
       } // end of for ()
     } // end of if (attributes != null)
     String childrenStr = childrenToString();
     if (childrenStr != null && childrenStr.length() > 0) {
       result.append(">");
       result.append(childrenStr);
-      result.append("</"+name+">");
+      result.append("</").append(name).append(">");
     } else {
       result.append("/>");
     }
@@ -274,7 +274,7 @@ public class Element implements XMLNodeIfc<Element> {
 			throw new NullPointerException("Element child can not be null.");
 		}
     if (children == null) {
-      children = new ArrayList<XMLNodeIfc>();
+      children = new LinkedList<XMLNodeIfc>();
     } // end of if (children == null)
     synchronized (children) {
       children.add(child);
@@ -444,7 +444,7 @@ public class Element implements XMLNodeIfc<Element> {
 
   public void setAttribute(String key, String value) {
     if (attributes == null) {
-      attributes = new IdentityHashMap<String, String>();
+      attributes = new IdentityHashMap<String, String>(5);
     } // end of if (attributes == null)
     synchronized (attributes) {
       attributes.put(key.intern(), value);
