@@ -1,0 +1,15 @@
+Source: tigase-xmltools
+Section: net
+Priority: extra
+Maintainer: Tomasz Sterna <tomek@xiaoka.com>
+Build-Depends: cdbs, debhelper (>= 5), sun-java6-jdk, maven2
+Standards-Version: 3.7.2
+
+Package: tigase-xmltools
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tigase Java XML-Tools
+ This is mainly XML parser dedicated for XMPP stream handling.
+ Lightweight and offering high performance parser doesn't handle
+ full XML specification.
+ The implementation covers only elements used in the XMPP protocol.
