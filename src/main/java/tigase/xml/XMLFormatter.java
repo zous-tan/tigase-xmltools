@@ -61,7 +61,9 @@ public class XMLFormatter implements SimpleHandler {
   /**
    * Describe <code>error</code> method here.
    *
-   */
+	 * @param errorMessage
+	 */
+	@Override
   public void error(String errorMessage) {
 		System.err.println(errorMessage);
 	}
@@ -73,6 +75,7 @@ public class XMLFormatter implements SimpleHandler {
    * @param att_names a <code>StringBuilder[]</code> value
    * @param att_values a <code>StringBuilder[]</code> value
    */
+	@Override
   public void startElement(final StringBuilder name,
     final StringBuilder[] att_names,
     final StringBuilder[] att_values) {
@@ -102,6 +105,7 @@ public class XMLFormatter implements SimpleHandler {
    *
    * @param cdata a <code>StringBuilder</code> value
    */
+	@Override
   public void elementCData(final StringBuilder cdata) {
     output.print(">");
     openedElement = false;
@@ -114,6 +118,7 @@ public class XMLFormatter implements SimpleHandler {
    *
    * @param name a <code>StringBuilder</code> value
    */
+	@Override
   public void endElement(final StringBuilder name) {
     if (cdataWritten) {
       output.println("");
@@ -134,6 +139,7 @@ public class XMLFormatter implements SimpleHandler {
    *
    * @param other a <code>StringBuilder</code> value
    */
+	@Override
   public void otherXML(final StringBuilder other) {
     output.println("<"+other+">");
   }
@@ -143,6 +149,7 @@ public class XMLFormatter implements SimpleHandler {
    *
    * @param object an <code>Object</code> value
    */
+	@Override
   public void saveParserState(final Object object) { parserData = object; }
 
   /**
@@ -150,6 +157,7 @@ public class XMLFormatter implements SimpleHandler {
    *
    * @return an <code>Object</code> value
    */
+	@Override
   public Object restoreParserState() { return parserData; }
 
   public void outputExtraData(String extra) { output.println(extra); }
