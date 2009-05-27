@@ -103,7 +103,7 @@ public class XMLDB {
   private String node1_name = "node";
   private DBElementComparator comparator = new DBElementComparator();
   private Lock lock = new ReentrantLock();
-  private DBSaver db_saver = new DBSaver();
+  private final DBSaver db_saver = new DBSaver();
 
   private String dbFile = "xml_db.xml";
   private DBElement root = null;
@@ -523,6 +523,7 @@ public class XMLDB {
 
 		private static final long serialVersionUID = 1L;
 
+		@Override
     public int compare(DBElement el1, DBElement el2) {
       String name1 = el1.getAttribute("name");
       String name2 = el2.getAttribute("name");
@@ -542,6 +543,7 @@ public class XMLDB {
      * Describe <code>run</code> method here.
      *
      */
+		@Override
     public void run() {
       while (true) {
         try {
