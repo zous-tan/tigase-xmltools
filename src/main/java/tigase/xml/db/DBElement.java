@@ -88,7 +88,7 @@ public class DBElement extends Element {
     if (cdata != null || childrenStr.length() > 0) {
       result.append(">");
       if (cdata != null) {
-        result.append(cdata);
+        result.append(cdata.trim());
       } // end of if (cdata != null)
       result.append(childrenStr);
       result.append("\n");
