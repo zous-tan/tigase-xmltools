@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tigase</groupId>
 	<artifactId>tigase-xmltools</artifactId>
-	<version>3.3.0</version>
+	<version>3.3.1-SNAPSHOT</version>
 	<description>Tigase XML Tools</description>
 	<name>TigaseXMLTools</name>
 	<url>http://xmltools.tigase.org/</url>
@@ -12,9 +12,9 @@
     	<url>http://www.tigase.org</url>
 	</organization>
 	<scm>
-		<connection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.0</connection>
-		<developerConnection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.0</developerConnection>
-		<url>https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.0</url>
+		<connection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/trunk</connection>
+		<developerConnection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/trunk</developerConnection>
+		<url>https://svn.tigase.org/reps/tigase-xmltools</url>
 	</scm>        
 	<developers>
 		<developer>
