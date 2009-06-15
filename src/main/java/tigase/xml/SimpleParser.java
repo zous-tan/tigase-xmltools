@@ -76,8 +76,8 @@ public class SimpleParser {
   private static enum State
   {
     START, OPEN_BRACKET, ELEMENT_NAME, END_ELEMENT_NAME, ATTRIB_NAME,
-    END_OF_ATTR_NAME, ATTRIB_VALUE, ELEMENT_CDATA, OTHER_XML, ERROR,
-    CLOSE_ELEMENT
+    END_OF_ATTR_NAME, ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML,
+		ERROR, CLOSE_ELEMENT
   };
 
 	private static final int MAX_ELEMENT_NAME_SIZE = 1024;
@@ -331,16 +331,37 @@ public class SimpleParser {
         break;
 
       case END_OF_ATTR_NAME:
-        if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
-          parser_state.state = State.ATTRIB_VALUE;
+        if (chr == SINGLE_QUOTE) {
+          parser_state.state = State.ATTRIB_VALUE_S;
+          parser_state.attrib_values[parser_state.current_attr] =
+            new StringBuilder();
+        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+        if (chr == DOUBLE_QUOTE) {
+          parser_state.state = State.ATTRIB_VALUE_D;
           parser_state.attrib_values[parser_state.current_attr] =
             new StringBuilder();
         } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
         // Skip white characters and actually everything except quotes
         break;
 
-      case ATTRIB_VALUE:
-        if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE) {
+      case ATTRIB_VALUE_S:
+        if (chr == SINGLE_QUOTE) {
+          parser_state.state = State.END_ELEMENT_NAME;
+          break;
+        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+        parser_state.attrib_values[parser_state.current_attr].append(chr);
+				if (parser_state.attrib_values[parser_state.current_attr].length()
+					> MAX_ATTRIBUTE_VALUE_SIZE) {
+          parser_state.state = State.ERROR;
+					parser_state.errorMessage =
+            "Max attribute value size exceeded: " + MAX_ATTRIBUTE_VALUE_SIZE
+            + "\nreceived: "
+            + parser_state.attrib_values[parser_state.current_attr].toString();
+				}
+        break;
+
+      case ATTRIB_VALUE_D:
+        if (chr == DOUBLE_QUOTE) {
           parser_state.state = State.END_ELEMENT_NAME;
           break;
         } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
