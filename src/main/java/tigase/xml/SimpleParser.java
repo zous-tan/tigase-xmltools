@@ -100,7 +100,7 @@ public class SimpleParser {
   private static final char[] QUOTES =
   { SINGLE_QUOTE, DOUBLE_QUOTE };
   private static final char[] WHITE_CHARS =
-  { SPACE, TAB, LF, CR };
+  { SPACE, LF, CR, TAB };
   private static final char[] END_NAME_CHARS =
   { CLOSE_BRACKET, SLASH, SPACE, TAB, LF, CR };
   private static final char[] ERR_NAME_CHARS =
@@ -109,17 +109,25 @@ public class SimpleParser {
 	private static final char[] IGNORE_CHARS = {'\0'};
 
   static {
-    Arrays.sort(WHITE_CHARS);
+    //Arrays.sort(WHITE_CHARS);
     Arrays.sort(IGNORE_CHARS);
   }
 
   private boolean isWhite(char chr) {
-    return Arrays.binarySearch(WHITE_CHARS, chr) >= 0;
+    // In most cases the white character is just a space, in such a case
+		// below loop would be faster than a binary search
+		for (char c : WHITE_CHARS) {
+			if (chr == c) {
+				return true;
+			}
+		}
+		return false;
+		//return Arrays.binarySearch(WHITE_CHARS, chr) >= 0;
   }
 
-	private boolean ignore(char chr) {
-		return Arrays.binarySearch(IGNORE_CHARS, chr) >= 0;
-	}
+//	private boolean ignore(char chr) {
+//		return Arrays.binarySearch(IGNORE_CHARS, chr) >= 0;
+//	}
 
   private StringBuilder[] initArray(int size) {
     StringBuilder[] array = new StringBuilder[size];
@@ -146,9 +154,13 @@ public class SimpleParser {
     for (int index = off; index < len; index++) {
       char chr = data[index];
 
-			if (ignore(chr)) {
+			// Only one character to ignore right now, let's do it more efficiently
+//			if (ignore(chr)) {
+//				break;
+//			} // end of if (ignore(chr))
+			if (chr == IGNORE_CHARS[0]) {
 				break;
-			} // end of if (ignore(chr))
+			}
 
       switch (parser_state.state) {
       case START:
@@ -164,18 +176,18 @@ public class SimpleParser {
         case QUESTION_MARK:
         case EXCLAMATION_MARK:
           parser_state.state = State.OTHER_XML;
-          parser_state.element_cdata = new StringBuilder();
+          parser_state.element_cdata = new StringBuilder(100);
           parser_state.element_cdata.append(chr);
           break;
         case SLASH:
           parser_state.state = State.CLOSE_ELEMENT;
-          parser_state.element_name = new StringBuilder();
+          parser_state.element_name = new StringBuilder(10);
           parser_state.slash_found = true;
           break;
         default:
           if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
             parser_state.state = State.ELEMENT_NAME;
-            parser_state.element_name = new StringBuilder();
+            parser_state.element_name = new StringBuilder(10);
             parser_state.element_name.append(chr);
           } // end of if ()
           break;
@@ -305,7 +317,7 @@ public class SimpleParser {
             }
           } // end of else
           parser_state.attrib_names[++parser_state.current_attr] =
-            new StringBuilder();
+            new StringBuilder(8);
           parser_state.attrib_names[parser_state.current_attr].append(chr);
           break;
         } // end of if ()
@@ -334,12 +346,12 @@ public class SimpleParser {
         if (chr == SINGLE_QUOTE) {
           parser_state.state = State.ATTRIB_VALUE_S;
           parser_state.attrib_values[parser_state.current_attr] =
-            new StringBuilder();
+            new StringBuilder(64);
         } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
         if (chr == DOUBLE_QUOTE) {
           parser_state.state = State.ATTRIB_VALUE_D;
           parser_state.attrib_values[parser_state.current_attr] =
-            new StringBuilder();
+            new StringBuilder(64);
         } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
         // Skip white characters and actually everything except quotes
         break;
@@ -389,7 +401,7 @@ public class SimpleParser {
 					if (parser_state.element_cdata == null) {
 // 						// Skip leading white characters
 // 						if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
-							parser_state.element_cdata = new StringBuilder();
+							parser_state.element_cdata = new StringBuilder(100);
 // 							parser_state.element_cdata.append(chr);
 // 						} // end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
 					} // end of if (parser_state.element_cdata == null) else
@@ -412,7 +424,7 @@ public class SimpleParser {
           break;
         } // end of if (chr == CLOSE_BRACKET)
 				if (parser_state.element_cdata == null) {
-					parser_state.element_cdata = new StringBuilder();
+					parser_state.element_cdata = new StringBuilder(100);
 				} // end of if (parser_state.element_cdata == null) else
         parser_state.element_cdata.append(chr);
 				if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
