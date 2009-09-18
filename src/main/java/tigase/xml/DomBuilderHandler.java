@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -92,9 +93,11 @@ public class DomBuilderHandler implements SimpleHandler {
 
   public void startElement(StringBuilder name,
     StringBuilder[] attr_names, StringBuilder[] attr_values) {
-    log.finest("Start element name: "+name);
-    log.finest("Element attributes names: "+Arrays.toString(attr_names));
-    log.finest("Element attributes values: "+Arrays.toString(attr_values));
+		if (log.isLoggable(Level.FINEST)) {
+			log.finest("Start element name: " + name);
+			log.finest("Element attributes names: " + Arrays.toString(attr_names));
+			log.finest("Element attributes values: " + Arrays.toString(attr_values));
+		}
     //System.out.println("Start element name: "+name);
     //System.out.println("Element attributes names: "+Arrays.toString(attr_names));
     //System.out.println("Element attributes values: "+Arrays.toString(attr_values));
@@ -146,7 +149,9 @@ public class DomBuilderHandler implements SimpleHandler {
   }
 
   public void elementCData(StringBuilder cdata) {
-    log.finest("Element CDATA: "+cdata);
+		if (log.isLoggable(Level.FINEST)) {
+			log.finest("Element CDATA: " + cdata);
+		}
 		//System.out.println("Element CDATA: "+cdata);
 		try {
 			el_stack.peek().setCData(cdata.toString());
@@ -157,7 +162,9 @@ public class DomBuilderHandler implements SimpleHandler {
   }
 
   public void endElement(StringBuilder name) {
-    log.finest("End element name: "+name);
+		if (log.isLoggable(Level.FINEST)) {
+			log.finest("End element name: " + name);
+		}
     //System.out.println("End element name: "+name);
 
     if (el_stack.isEmpty()) {
@@ -167,7 +174,9 @@ public class DomBuilderHandler implements SimpleHandler {
     Element elem = el_stack.pop();
     if (el_stack.isEmpty()) {
       all_roots.offer(elem);
-      log.finest("Adding new request: "+elem.toString());
+			if (log.isLoggable(Level.FINEST)) {
+				log.finest("Adding new request: " + elem.toString());
+			}
     } // end of if (el_stack.isEmpty())
     else {
       el_stack.peek().addChild(elem);
@@ -175,8 +184,9 @@ public class DomBuilderHandler implements SimpleHandler {
   }
 
   public void otherXML(StringBuilder other) {
-    log.finest("Other XML content: "+other);
-
+		if (log.isLoggable(Level.FINEST)) {
+			log.finest("Other XML content: " + other);
+		}
     // Just ignore
   }
 
