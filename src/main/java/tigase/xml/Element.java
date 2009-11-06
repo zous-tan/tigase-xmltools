@@ -237,6 +237,25 @@ public class Element implements XMLNodeIfc<Element> {
     return result.toString();
   }
 
+  public String toStringSecure() {
+    StringBuilder result = new StringBuilder();
+    result.append("<").append(name);
+    if (attributes != null) {
+      for (String key : attributes.keySet()) {
+        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
+      } // end of for ()
+    } // end of if (attributes != null)
+    String childrenStr = childrenToString();
+    if (childrenStr != null && childrenStr.length() > 0) {
+      result.append(">");
+      result.append(childrenStr);
+      result.append("</").append(name).append(">");
+    } else {
+      result.append("/>");
+    }
+    return result.toString();
+  }
+
 	protected String cdataToString() {
     StringBuilder result = new StringBuilder();
     if (children != null) {
@@ -262,6 +281,26 @@ public class Element implements XMLNodeIfc<Element> {
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
 						result.append(child.toString());
+					}
+        } // end of for ()
+      }
+    } // end of if (child != null)
+    return result.length() > 0 ? result.toString() : null;
+  }
+
+  public String childrenToStringSecure() {
+		StringBuilder result = new StringBuilder();
+    if (children != null) {
+      synchronized (children) {
+        for (XMLNodeIfc child : children) {
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if (child != null) {
+						if (child instanceof CData) {
+							result.append("CData size: " + child.toString().length());
+						} else {
+							result.append(child.toString());
+						}
 					}
         } // end of for ()
       }
