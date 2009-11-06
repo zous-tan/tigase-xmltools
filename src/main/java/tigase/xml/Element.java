@@ -245,7 +245,7 @@ public class Element implements XMLNodeIfc<Element> {
         result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
       } // end of for ()
     } // end of if (attributes != null)
-    String childrenStr = childrenToString();
+    String childrenStr = childrenToStringSecure();
     if (childrenStr != null && childrenStr.length() > 0) {
       result.append(">");
       result.append(childrenStr);
