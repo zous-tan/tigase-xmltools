@@ -56,6 +56,11 @@ public class CData implements XMLNodeIfc<CData> {
 		return cdata;
 	}
 
+	@Override
+	public String toStringSecure() {
+		return (cdata != null && cdata.length() > 2 ? "CData size: " + cdata.length() : cdata);
+	}
+
 	public int compareTo(CData o) {
 		return cdata.compareTo(o.cdata);
 	}

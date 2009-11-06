@@ -34,4 +34,6 @@ public interface XMLNodeIfc<T extends XMLNodeIfc>
 
 	T clone();
 
+	String toStringSecure();
+
 }

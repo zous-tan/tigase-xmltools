@@ -245,7 +245,7 @@ public class Element implements XMLNodeIfc<Element> {
         result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
       } // end of for ()
     } // end of if (attributes != null)
-    String childrenStr = childrenToString();
+    String childrenStr = childrenToStringSecure();
     if (childrenStr != null && childrenStr.length() > 0) {
       result.append(">");
       result.append(childrenStr);
@@ -296,11 +296,7 @@ public class Element implements XMLNodeIfc<Element> {
 					// This is weird but if there is a bug in some other component
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
-						if (child instanceof CData) {
-							result.append("CData size: " + child.toString().length());
-						} else {
-							result.append(child.toString());
-						}
+						result.append(child.toStringSecure());
 					}
         } // end of for ()
       }
