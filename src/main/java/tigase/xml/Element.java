@@ -296,11 +296,7 @@ public class Element implements XMLNodeIfc<Element> {
 					// This is weird but if there is a bug in some other component
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
-						if (child instanceof CData) {
-							result.append("CData size: " + child.toString().length());
-						} else {
-							result.append(child.toString());
-						}
+						result.append(child.toStringSecure());
 					}
         } // end of for ()
       }
