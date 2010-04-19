@@ -22,17 +22,24 @@
 
 package tigase.xml;
 
+//~--- non-JDK imports --------------------------------------------------------
+
+import tigase.annotations.TODO;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.FileReader;
-import java.util.LinkedHashMap;
+
+import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-
 import java.util.Queue;
-import tigase.annotations.TODO;
+import java.util.StringTokenizer;
+
+//~--- classes ----------------------------------------------------------------
 
 /**
  * <code>Element</code> - basic document tree node implementation.
@@ -60,574 +67,963 @@ import tigase.annotations.TODO;
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
  * @version $Rev$
  */
-@TODO(note="Make it a bit lighter.")
+@TODO(note = "Make it a bit lighter.")
 public class Element implements XMLNodeIfc<Element> {
+	protected XMLIdentityHashMap<String, String> attributes = null;
+	protected LinkedList<XMLNodeIfc> children = null;
 
-  protected String name = null;
-  //protected String cdata = null;
-  protected String defxmlns = null;
-  protected String xmlns = null;
-  protected IdentityHashMap<String, String> attributes = null;
-  protected LinkedList<XMLNodeIfc> children = null;
+	// protected String cdata = null;
+	protected String defxmlns = null;
+	protected String name = null;
+	protected String xmlns = null;
 
-	@SuppressWarnings({"unchecked"})
-	@Override
-	public Element clone() {
-		Element result = null;
-		try {
-			result = (Element)super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw new InternalError();
-		} // end of try-catch
-		if (attributes != null) {
-			result.attributes = (IdentityHashMap<String, String>)attributes.clone();
-		} else {
-			result.attributes = null;
-		} // end of else
-		if (children != null) {
-			result.setChildren(children);
-		} else {
-			result.children = null;
-		} // end of else
-		return result;
-	}
+	//~--- constructors ---------------------------------------------------------
 
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param element
+	 */
 	public Element(Element element) {
-		Element src =  element.clone();
+		Element src = element.clone();
+
 		this.attributes = src.attributes;
-		this.name  = src.name;
-		//this.cdata  = src.cdata;
-		this.defxmlns  = src.defxmlns;
-		this.xmlns  = src.xmlns;
-		this.children  = src.children;
+		this.name = src.name;
+
+		// this.cdata  = src.cdata;
+		this.defxmlns = src.defxmlns;
+		this.xmlns = src.xmlns;
+		this.children = src.children;
 	}
 
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 */
 	public Element(String argName) {
-    setName(argName);
-  }
+		setName(argName);
+	}
 
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 * @param argCData
+	 */
 	public Element(String argName, String argCData) {
-    setName(argName);
+		setName(argName);
+
 		if (argCData != null) {
 			setCData(argCData);
 		}
-  }
+	}
 
-  public Element(String argName, String argCData,
-    StringBuilder[] att_names, StringBuilder[] att_values) {
-    setName(argName);
-		if (argCData != null) {
-			setCData(argCData);
-		}
-    if (att_names != null) {
-      setAttributes(att_names, att_values);
-    } // end of if (att_names != null)
-  }
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 * @param att_names
+	 * @param att_values
+	 */
+	public Element(String argName, String[] att_names, String[] att_values) {
+		setName(argName);
 
-  public Element(String argName, String argCData,
-    String[] att_names, String[] att_values) {
-    setName(argName);
-		if (argCData != null) {
-			setCData(argCData);
-		}
-    if (att_names != null) {
-      setAttributes(att_names, att_values);
-    } // end of if (att_names != null)
-  }
+		if (att_names != null) {
+			setAttributes(att_names, att_values);
+		}    // end of if (att_names != null)
+	}
 
-  public Element(String argName,
-    String[] att_names, String[] att_values) {
-    setName(argName);
-    if (att_names != null) {
-      setAttributes(att_names, att_values);
-    } // end of if (att_names != null)
-  }
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 * @param children
+	 * @param att_names
+	 * @param att_values
+	 */
+	public Element(String argName, Element[] children, String[] att_names, String[] att_values) {
+		setName(argName);
 
-  public Element(String argName, Element[] children,
-    String[] att_names, String[] att_values) {
-    setName(argName);
-    if (att_names != null) {
-      setAttributes(att_names, att_values);
-    } // end of if (att_names != null)
+		if (att_names != null) {
+			setAttributes(att_names, att_values);
+		}    // end of if (att_names != null)
+
 		addChildren(Arrays.asList(children));
-  }
+	}
 
-  public List<Element> getChildren() {
-    if (children != null) {
-			LinkedList<Element> result = new LinkedList<Element>();
-			for (XMLNodeIfc node : children) {
-				if (node instanceof Element) {
-					result.add((Element) node);
-				}
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 * @param argCData
+	 * @param att_names
+	 * @param att_values
+	 */
+	public Element(String argName, String argCData, String[] att_names, String[] att_values) {
+		setName(argName);
+
+		if (argCData != null) {
+			setCData(argCData);
+		}
+
+		if (att_names != null) {
+			setAttributes(att_names, att_values);
+		}    // end of if (att_names != null)
+	}
+
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param argName
+	 * @param argCData
+	 * @param att_names
+	 * @param att_values
+	 */
+	public Element(String argName, String argCData, StringBuilder[] att_names,
+			StringBuilder[] att_values) {
+		setName(argName);
+
+		if (argCData != null) {
+			setCData(argCData);
+		}
+
+		if (att_names != null) {
+			setAttributes(att_names, att_values);
+		}    // end of if (att_names != null)
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param args
+	 *
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		if (args.length < 1) {
+			System.err.println("You must give file name as parameter.");
+			System.exit(1);
+		}    // end of if (args.length < 1)
+
+		FileReader file = new FileReader(args[0]);
+		char[] buff = new char[1];
+		SimpleParser parser = new SimpleParser();
+		DomBuilderHandler dom = new DomBuilderHandler();
+		int result = -1;
+
+		while ((result = file.read(buff)) != -1) {
+			parser.parse(dom, buff, 0, result);
+		}
+
+		file.close();
+
+		Queue<Element> elems = dom.getParsedElements();
+
+		for (Element elem : elems) {
+			Element clone = elem.clone();
+
+			System.out.println(elem.toString());
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param attName
+	 * @param attValue
+	 */
+	public void addAttribute(String attName, String attValue) {
+		setAttribute(attName, attValue);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param attrs
+	 */
+	public void addAttributes(Map<String, String> attrs) {
+		if (attributes == null) {
+			attributes = new XMLIdentityHashMap<String, String>(attrs.size());
+		}
+
+		synchronized (attributes) {
+			for (Map.Entry<String, String> entry : attrs.entrySet()) {
+				attributes.put(entry.getKey().intern(), entry.getValue());
 			}
-			return result;
 		}
-		return null;
-  }
+	}
 
-  public List<Element> getChildren(String elementPath) {
-    Element child = findChild(elementPath);
-    return child != null ? child.getChildren() : null;
-  }
-
-  public void setChildren(List<XMLNodeIfc> children) {
-    this.children = new LinkedList<XMLNodeIfc>();
-    synchronized (this.children) {
-			for (XMLNodeIfc child: children) {
-				this.children.add(child.clone());
-			} // end of for (Element child: children)
-			//Collections.sort(children);
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param child
+	 */
+	public void addChild(XMLNodeIfc child) {
+		if (child == null) {
+			throw new NullPointerException("Element child can not be null.");
 		}
-  }
 
-  public void addChildren(List<Element> children) {
+		if (children == null) {
+			children = new LinkedList<XMLNodeIfc>();
+		}    // end of if (children == null)
+
+		synchronized (children) {
+			children.add(child);
+
+			// Collections.sort(children);
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param children
+	 */
+	public void addChildren(List<Element> children) {
 		if (children == null) {
 			return;
-		} // end of if (children == null)
-    if (this.children == null) {
-      this.children = new LinkedList<XMLNodeIfc>();
-    } // end of if (children == null)
-    synchronized (this.children) {
-			for (XMLNodeIfc child: children) {
+		}    // end of if (children == null)
+
+		if (this.children == null) {
+			this.children = new LinkedList<XMLNodeIfc>();
+		}    // end of if (children == null)
+
+		synchronized (this.children) {
+			for (XMLNodeIfc child : children) {
 				this.children.add(child.clone());
-			} // end of for (Element child: children)
-			//this.children.addAll(children);
-			//Collections.sort(children);
-    }
-  }
+			}    // end of for (Element child: children)
 
-  public String toStringNoChildren() {
-    StringBuilder result = new StringBuilder();
-    result.append("<").append(name);
-    if (attributes != null) {
-      for (String key : attributes.keySet()) {
-        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-      } // end of for ()
-    } // end of if (attributes != null)
-		String cdata = cdataToString();
-    if (cdata != null) {
-      result.append(">");
-      if (cdata != null) {
-        result.append(cdata);
-      } // end of if (cdata != null)
-      result.append("</").append(name).append(">");
-    } else {
-      result.append("/>");
-    }
-    return result.toString();
-  }
-
-	@Override
-  public String toString() {
-    StringBuilder result = new StringBuilder();
-    result.append("<").append(name);
-    if (attributes != null) {
-      for (String key : attributes.keySet()) {
-        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-      } // end of for ()
-    } // end of if (attributes != null)
-    String childrenStr = childrenToString();
-    if (childrenStr != null && childrenStr.length() > 0) {
-      result.append(">");
-      result.append(childrenStr);
-      result.append("</").append(name).append(">");
-    } else {
-      result.append("/>");
-    }
-    return result.toString();
-  }
-
-  public String toStringSecure() {
-    StringBuilder result = new StringBuilder();
-    result.append("<").append(name);
-    if (attributes != null) {
-      for (String key : attributes.keySet()) {
-        result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-      } // end of for ()
-    } // end of if (attributes != null)
-    String childrenStr = childrenToStringSecure();
-    if (childrenStr != null && childrenStr.length() > 0) {
-      result.append(">");
-      result.append(childrenStr);
-      result.append("</").append(name).append(">");
-    } else {
-      result.append("/>");
-    }
-    return result.toString();
-  }
-
-	protected String cdataToString() {
-    StringBuilder result = new StringBuilder();
-    if (children != null) {
-      synchronized (children) {
-        for (XMLNodeIfc child : children) {
-					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if (child != null && child instanceof CData) {
-						result.append(child.toString());
-					}
-        } // end of for ()
-      }
-    } // end of if (child != null)
-    return result.length() > 0 ? result.toString() : null;
+			// this.children.addAll(children);
+			// Collections.sort(children);
+		}
 	}
 
-  public String childrenToString() {
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	public String childrenToString() {
 		StringBuilder result = new StringBuilder();
-    if (children != null) {
-      synchronized (children) {
-        for (XMLNodeIfc child : children) {
+
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc child : children) {
+
 					// This is weird but if there is a bug in some other component
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
 						result.append(child.toString());
 					}
-        } // end of for ()
-      }
-    } // end of if (child != null)
-    return result.length() > 0 ? result.toString() : null;
-  }
+				}    // end of for ()
+			}
+		}        // end of if (child != null)
 
-  public String childrenToStringSecure() {
+		return (result.length() > 0) ? result.toString() : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	public String childrenToStringSecure() {
 		StringBuilder result = new StringBuilder();
-    if (children != null) {
-      synchronized (children) {
-        for (XMLNodeIfc child : children) {
+
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc child : children) {
+
 					// This is weird but if there is a bug in some other component
 					// it may add null children to the element, let's be save here.
 					if (child != null) {
 						result.append(child.toStringSecure());
 					}
-        } // end of for ()
-      }
-    } // end of if (child != null)
-    return result.length() > 0 ? result.toString() : null;
-  }
+				}    // end of for ()
+			}
+		}        // end of if (child != null)
 
-  public void addChild(XMLNodeIfc child) {
-		if (child == null) {
-			throw new NullPointerException("Element child can not be null.");
+		return (result.length() > 0) ? result.toString() : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked" })
+	@Override
+	public Element clone() {
+		Element result = null;
+
+		try {
+			result = (Element) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new InternalError();
+		}    // end of try-catch
+
+		if (attributes != null) {
+			result.attributes = (XMLIdentityHashMap<String, String>) attributes.clone();
+		} else {
+			result.attributes = null;
+		}    // end of else
+
+		if (children != null) {
+			result.setChildren(children);
+		} else {
+			result.children = null;
+		}    // end of else
+
+		return result;
+	}
+
+	// Implementation of java.lang.Comparable
+
+	/**
+	 * Method <code>compareTo</code> is used to perform
+	 *
+	 * @param elem an <code>Object</code> value
+	 * @return an <code>int</code> value
+	 */
+	public int compareTo(Element elem) {
+
+//  int result = name.compareTo(elem.getName());
+//  if (result == 0) {
+//    if (getXMLNS() != null) {
+//      if (elem.getXMLNS() != null) {
+//        result = getXMLNS().compareTo(elem.getXMLNS());
+//      } else {
+//        result = 1;
+//      }
+//    } else {
+//      if (elem.getXMLNS() != null) {
+//        result = -1;
+//      } else {
+//        result = 0;
+//      }
+//    }
+//  }
+//   return result;
+		return toStringNoChildren().compareTo(elem.toStringNoChildren());
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param obj
+	 *
+	 * @return
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Element) {
+			Element elem = (Element) obj;
+
+//    boolean result = name.equals(elem.getName());
+//    if (result) {
+//      if (getXMLNS() != null && elem.getXMLNS() != null) {
+//        result = getXMLNS().equals(elem.getXMLNS());
+//      } else {
+//        result = getXMLNS() == elem.getXMLNS();
+//      }
+//    }
+//    return result;
+			return toStringNoChildren().equals(elem.toStringNoChildren());
 		}
-    if (children == null) {
-      children = new LinkedList<XMLNodeIfc>();
-    } // end of if (children == null)
-    synchronized (children) {
-      children.add(child);
-			//Collections.sort(children);
-    }
-  }
 
-  public boolean removeChild(Element child) {
-    boolean res = false;
-    if (children != null) {
-      synchronized (children) {
-        res = children.remove(child);
-      }
-    } // end of if (children == null)
-    return res;
-  }
+		return false;
+	}
 
-  public Element getChild(String name) {
-    if (children != null) {
-      synchronized (children) {
-        for (XMLNodeIfc el : children) {
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public Element findChild(String elementPath) {
+		StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
+
+		if ( !strtok.nextToken().equals(getName())) {
+			return null;
+		}    // end of if (!strtok.nextToken().equals(child.getName()))
+
+		Element child = this;
+
+		while (strtok.hasMoreTokens() && (child != null)) {
+			child = child.getChild(strtok.nextToken());
+		}    // end of while (strtok.hasMoreTokens())
+
+		return child;
+	}
+
+	//~--- get methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param attName
+	 *
+	 * @return
+	 */
+	public String getAttribute(String attName) {
+		if (attributes != null) {
+			synchronized (attributes) {
+				return attributes.get(attName);
+			}
+		}    // end of if (attributes != null)
+
+		return null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 * @param att_name
+	 *
+	 * @return
+	 */
+	public String getAttribute(String elementPath, String att_name) {
+		Element child = findChild(elementPath);
+
+		return (child != null) ? child.getAttribute(att_name) : null;
+	}
+
+	/**
+	 * Get the Attributes value.
+	 * @return the Attributes value.
+	 */
+	public Map<String, String> getAttributes() {
+		return ((attributes != null) ? new LinkedHashMap<String, String>(attributes) : null);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getCData(String elementPath) {
+		return getChildCData(elementPath);
+	}
+
+	/**
+	 * Gets the value of cdata
+	 *
+	 * @return the value of cdata
+	 */
+	public String getCData() {
+		return cdataToString();
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param name
+	 *
+	 * @return
+	 */
+	public Element getChild(String name) {
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc el : children) {
 					if (el instanceof Element) {
-						Element elem = (Element)el;
+						Element elem = (Element) el;
+
 						if (elem.getName().equals(name)) {
 							return elem;
 						}
 					}
-        }
-      }
-    } // end of if (children != null)
-    return null;
-  }
+				}
+			}
+		}    // end of if (children != null)
 
-  public Element getChild(String name, String child_xmlns) {
+		return null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param name
+	 * @param child_xmlns
+	 *
+	 * @return
+	 */
+	public Element getChild(String name, String child_xmlns) {
 		if (child_xmlns == null) {
 			return getChild(name);
 		}
-    if (children != null) {
-      synchronized (children) {
-        for (XMLNodeIfc el : children) {
+
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc el : children) {
 					if (el instanceof Element) {
 						Element elem = (Element) el;
-						if (elem.getName().equals(name) &&
-										((elem.getXMLNS() == child_xmlns) ||
-										(elem.getXMLNS() != null &&
-										elem.getXMLNS().equals(child_xmlns)))) {
+
+						if (elem.getName().equals(name)
+								&& ((elem.getXMLNS() == child_xmlns)
+									|| ((elem.getXMLNS() != null) && elem.getXMLNS().equals(child_xmlns)))) {
 							return elem;
 						}
 					}
-        }
-      }
-    } // end of if (children != null)
-    return null;
-  }
-
-  public Element findChild(String elementPath) {
-    StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
-    if (!strtok.nextToken().equals(getName())) {
-      return null;
-    } // end of if (!strtok.nextToken().equals(child.getName()))
-    Element child = this;
-    while (strtok.hasMoreTokens() && child != null) {
-      child = child.getChild(strtok.nextToken());
-    } // end of while (strtok.hasMoreTokens())
-    return child;
-  }
-
-  public String getChildCData(String elementPath) {
-    Element child = findChild(elementPath);
-    return child != null ? child.getCData() : null;
-  }
-
-  public String getCData(String elementPath) {
-		return getChildCData(elementPath);
-  }
-
-  /**
-   * Get the Attributes value.
-   * @return the Attributes value.
-   */
-  public Map<String, String> getAttributes() {
-    return
-      (attributes != null ? new LinkedHashMap<String, String>(attributes) : null);
-  }
-
-  /**
-   * Set the Attributes value.
-   * @param newAttributes The new Attributes value.
-   */
-  public void setAttributes(Map<String, String> newAttributes) {
-    attributes = new IdentityHashMap<String, String>(newAttributes.size());
-		synchronized (attributes) {
-			for (Map.Entry<String, String> entry: newAttributes.entrySet()) {
-				attributes.put(entry.getKey().intern(), entry.getValue());
+				}
 			}
+		}    // end of if (children != null)
+
+		return null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getChildCData(String elementPath) {
+		Element child = findChild(elementPath);
+
+		return (child != null) ? child.getCData() : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	public List<Element> getChildren() {
+		if (children != null) {
+			LinkedList<Element> result = new LinkedList<Element>();
+
+			for (XMLNodeIfc node : children) {
+				if (node instanceof Element) {
+					result.add((Element) node);
+				}
+			}
+
+			return result;
 		}
-  }
 
-  public String getAttribute(String attName) {
-    if (attributes != null) {
-      synchronized (attributes) {
-        return attributes.get(attName);
-      }
-    } // end of if (attributes != null)
-    return null;
-  }
+		return null;
+	}
 
-  public void addAttribute(String attName, String attValue) {
-    setAttribute(attName, attValue);
-  }
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public List<Element> getChildren(String elementPath) {
+		Element child = findChild(elementPath);
 
-	public void addAttributes(Map<String, String> attrs) {
+		return (child != null) ? child.getChildren() : null;
+	}
+
+	/**
+	 * Gets the value of name
+	 *
+	 * @return the value of name
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public String getXMLNS() {
+		if (xmlns == null) {
+			xmlns = getAttribute("xmlns");
+			xmlns = ((xmlns != null) ? xmlns.intern() : null);
+		}
+
+		return (xmlns != null) ? xmlns : defxmlns;
+	}
+
+	/**
+	 *
+	 * @param elementPath
+	 * @return
+	 */
+	public String getXMLNS(String elementPath) {
+		Element child = findChild(elementPath);
+
+		return (child != null) ? child.getXMLNS() : null;
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	@Override
+	public int hashCode() {
+
+//  String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
+//  return hash_str.hashCode();
+		return toStringNoChildren().hashCode();
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param key
+	 */
+	public void removeAttribute(String key) {
+		if (attributes != null) {
+			synchronized (attributes) {
+				attributes.remove(key);
+			}
+		}    // end of if (attributes == null)
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param child
+	 *
+	 * @return
+	 */
+	public boolean removeChild(Element child) {
+		boolean res = false;
+
+		if (children != null) {
+			synchronized (children) {
+				res = children.remove(child);
+			}
+		}    // end of if (children == null)
+
+		return res;
+	}
+
+	//~--- set methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 * @param att_name
+	 * @param att_value
+	 */
+	public void setAttribute(String elementPath, String att_name, String att_value) {
+		Element child = findChild(elementPath);
+
+		if (child != null) {
+			child.setAttribute(att_name.intern(), att_value);
+		}    // end of if (child != null)
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void setAttribute(String key, String value) {
 		if (attributes == null) {
-			attributes = new IdentityHashMap<String, String>(attrs.size());
-		}
+			attributes = new XMLIdentityHashMap<String, String>(5);
+		}    // end of if (attributes == null)
+
 		synchronized (attributes) {
-			for (Map.Entry<String, String> entry: attrs.entrySet()) {
+			attributes.put(key.intern(), value);
+		}
+	}
+
+	/**
+	 * Set the Attributes value.
+	 * @param newAttributes The new Attributes value.
+	 */
+	public void setAttributes(Map<String, String> newAttributes) {
+		attributes = new XMLIdentityHashMap<String, String>(newAttributes.size());
+
+		synchronized (attributes) {
+			for (Map.Entry<String, String> entry : newAttributes.entrySet()) {
 				attributes.put(entry.getKey().intern(), entry.getValue());
 			}
 		}
 	}
 
-  public void setDefXMLNS(String ns) {
-    defxmlns = ns.intern();
-  }
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param names
+	 * @param values
+	 */
+	public void setAttributes(StringBuilder[] names, StringBuilder[] values) {
+		attributes = new XMLIdentityHashMap<String, String>(names.length);
 
+		synchronized (attributes) {
+			for (int i = 0; i < names.length; i++) {
+				if (names[i] != null) {
+					attributes.put(names[i].toString().intern(), values[i].toString());
+				}    // end of if (names[i] != null)
+			}      // end of for (int i = 0; i < names.length; i++)
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param names
+	 * @param values
+	 */
+	public void setAttributes(String[] names, String[] values) {
+		attributes = new XMLIdentityHashMap<String, String>(names.length);
+
+		synchronized (attributes) {
+			for (int i = 0; i < names.length; i++) {
+				if (names[i] != null) {
+					attributes.put(names[i].intern(), values[i]);
+				}    // end of if (names[i] != null)
+			}      // end of for (int i = 0; i < names.length; i++)
+		}
+	}
+
+	/**
+	 * Sets the value of cdata
+	 *
+	 * @param argCData Value to assign to this.cdata
+	 */
+	public void setCData(String argCData) {
+		addChild(new CData(argCData));
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param children
+	 */
+	public void setChildren(List<XMLNodeIfc> children) {
+		this.children = new LinkedList<XMLNodeIfc>();
+
+		synchronized (this.children) {
+			for (XMLNodeIfc child : children) {
+				this.children.add(child.clone());
+			}    // end of for (Element child: children)
+
+			// Collections.sort(children);
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param ns
+	 */
+	public void setDefXMLNS(String ns) {
+		defxmlns = ns.intern();
+	}
+
+	/**
+	 * Sets the value of name
+	 *
+	 * @param argName Value to assign to this.name
+	 */
+	public void setName(String argName) {
+		this.name = argName.intern();
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param ns
+	 */
 	public void setXMLNS(String ns) {
 		xmlns = ns.intern();
 		setAttribute("xmlns", ns);
 	}
 
-  /**
-   *
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
 	 * @return
 	 */
-  public String getXMLNS() {
-		if (xmlns == null) {
-			xmlns = getAttribute("xmlns");
-			xmlns = (xmlns != null ? xmlns.intern() : null);
-		}
-    return xmlns != null ? xmlns : defxmlns;
-  }
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
 
-  /**
-   *
-	 * @param elementPath
-	 * @return 
+		result.append("<").append(name);
+
+		if (attributes != null) {
+			for (String key : attributes.keySet()) {
+				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
+			}    // end of for ()
+		}      // end of if (attributes != null)
+
+		String childrenStr = childrenToString();
+
+		if ((childrenStr != null) && (childrenStr.length() > 0)) {
+			result.append(">");
+			result.append(childrenStr);
+			result.append("</").append(name).append(">");
+		} else {
+			result.append("/>");
+		}
+
+		return result.toString();
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
 	 */
-  public String getXMLNS(String elementPath) {
-    Element child = findChild(elementPath);
-    return child != null ? child.getXMLNS() : null;
-  }
+	public String toStringNoChildren() {
+		StringBuilder result = new StringBuilder();
 
-  public String getAttribute(String elementPath,
-		String att_name) {
-    Element child = findChild(elementPath);
-    return child != null ? child.getAttribute(att_name) : null;
-  }
+		result.append("<").append(name);
 
-  public void setAttribute(String elementPath,
-    String att_name, String att_value) {
-    Element child = findChild(elementPath);
-    if (child != null) {
-      child.setAttribute(att_name.intern(), att_value);
-    } // end of if (child != null)
-  }
+		if (attributes != null) {
+			for (String key : attributes.keySet()) {
+				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
+			}    // end of for ()
+		}      // end of if (attributes != null)
 
-  public void setAttribute(String key, String value) {
-    if (attributes == null) {
-      attributes = new IdentityHashMap<String, String>(5);
-    } // end of if (attributes == null)
-    synchronized (attributes) {
-      attributes.put(key.intern(), value);
-    }
-  }
+		String cdata = cdataToString();
 
-	public void removeAttribute(String key) {
-    if (attributes != null) {
-			synchronized (attributes) {
-				attributes.remove(key);
+		if (cdata != null) {
+			result.append(">");
+
+			if (cdata != null) {
+				result.append(cdata);
+			}    // end of if (cdata != null)
+
+			result.append("</").append(name).append(">");
+		} else {
+			result.append("/>");
+		}
+
+		return result.toString();
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	public String toStringSecure() {
+		StringBuilder result = new StringBuilder();
+
+		result.append("<").append(name);
+
+		if (attributes != null) {
+			for (String key : attributes.keySet()) {
+				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
+			}    // end of for ()
+		}      // end of if (attributes != null)
+
+		String childrenStr = childrenToStringSecure();
+
+		if ((childrenStr != null) && (childrenStr.length() > 0)) {
+			result.append(">");
+			result.append(childrenStr);
+			result.append("</").append(name).append(">");
+		} else {
+			result.append("/>");
+		}
+
+		return result.toString();
+	}
+
+	protected String cdataToString() {
+		StringBuilder result = new StringBuilder();
+
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc child : children) {
+
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if ((child != null) && (child instanceof CData)) {
+						result.append(child.toString());
+					}
+				}    // end of for ()
 			}
-    } // end of if (attributes == null)
+		}        // end of if (child != null)
+
+		return (result.length() > 0) ? result.toString() : null;
 	}
 
-  public void setAttributes(StringBuilder[] names,
-		StringBuilder[] values) {
-    attributes = new IdentityHashMap<String, String>(names.length);
-    synchronized (attributes) {
-      for (int i = 0; i < names.length; i++) {
-        if (names[i] != null) {
-          attributes.put(names[i].toString().intern(), values[i].toString());
-        } // end of if (names[i] != null)
-      } // end of for (int i = 0; i < names.length; i++)
-    }
-  }
+	//~--- inner classes --------------------------------------------------------
 
-  public void setAttributes(String[] names, String[] values) {
-    attributes = new IdentityHashMap<String, String>(names.length);
-    synchronized (attributes) {
-      for (int i = 0; i < names.length; i++) {
-        if (names[i] != null) {
-          attributes.put(names[i].intern(), values[i]);
-        } // end of if (names[i] != null)
-      } // end of for (int i = 0; i < names.length; i++)
-    }
-  }
-
-  /**
-   * Gets the value of name
-   *
-   * @return the value of name
-   */
-  public String getName()  {
-    return this.name;
-  }
-
-  /**
-   * Sets the value of name
-   *
-   * @param argName Value to assign to this.name
-   */
-  public void setName(String argName) {
-    this.name = argName.intern();
-  }
-
-  /**
-   * Gets the value of cdata
-   *
-   * @return the value of cdata
-   */
-  public String getCData()  {
-    return cdataToString();
-  }
-
-  /**
-   * Sets the value of cdata
-   *
-   * @param argCData Value to assign to this.cdata
-   */
-  public void setCData(String argCData) {
-    addChild(new CData(argCData));
-  }
-
-  // Implementation of java.lang.Comparable
-
-  /**
-   * Method <code>compareTo</code> is used to perform 
-   *
-   * @param elem an <code>Object</code> value
-   * @return an <code>int</code> value
-   */
-  public int compareTo(Element elem) {
-// 		int result = name.compareTo(elem.getName());
-// 		if (result == 0) {
-// 			if (getXMLNS() != null) {
-// 				if (elem.getXMLNS() != null) {
-// 					result = getXMLNS().compareTo(elem.getXMLNS());
-// 				} else {
-// 					result = 1;
-// 				}
-// 			} else {
-// 				if (elem.getXMLNS() != null) {
-// 					result = -1;
-// 				} else {
-// 					result = 0;
-// 				}
-// 			}
-// 		}
-//     return result;
-		return toStringNoChildren().compareTo(elem.toStringNoChildren());
-  }
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof Element) {
- 			Element elem = (Element)obj;
-// 			boolean result = name.equals(elem.getName());
-// 			if (result) {
-// 				if (getXMLNS() != null && elem.getXMLNS() != null) {
-// 					result = getXMLNS().equals(elem.getXMLNS());
-// 				} else {
-// 					result = getXMLNS() == elem.getXMLNS();
-// 				}
-// 			}
-// 			return result;
-			return toStringNoChildren().equals(elem.toStringNoChildren());
+	protected class XMLIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
+		private XMLIdentityHashMap(int size) {
+			super(size);
 		}
-		return false;
-	}
 
-	@Override
-	public int hashCode() {
-// 		String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
-// 		return hash_str.hashCode();
-		return toStringNoChildren().hashCode();
-	}
+		//~--- methods ------------------------------------------------------------
 
-	public static void main(String[] args) throws Exception {
-    if (args.length < 1) {
-      System.err.println("You must give file name as parameter.");
-      System.exit(1);
-    } // end of if (args.length < 1)
+		/**
+		 * Method description
+		 *
+		 *
+		 * @param key
+		 * @param value
+		 *
+		 * @return
+		 */
+		@Override
+		public V put(K key, V value) {
+			if ((key == null) || (value == null)) {
+				throw new NullPointerException("Neither attribute key or value can be set to null.");
+			}
 
-    FileReader file = new FileReader(args[0]);
-    char[] buff = new char[1];
-    SimpleParser parser = new SimpleParser();
-		DomBuilderHandler dom = new DomBuilderHandler();
-		int result = -1;
-    while((result = file.read(buff)) != -1) {
-      parser.parse(dom, buff, 0, result);
-    }
-    file.close();
-		Queue<Element> elems = dom.getParsedElements();
-		for (Element elem : elems) {
-			Element clone = elem.clone();
-			System.out.println(elem.toString());
+			return super.put(key, value);
 		}
 	}
+}    // Element
 
 
-}// Element
+//~ Formatted in Sun Code Convention
+
+
+//~ Formatted by Jindent --- http://www.jindent.com
