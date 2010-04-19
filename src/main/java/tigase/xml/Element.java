@@ -996,6 +996,10 @@ public class Element implements XMLNodeIfc<Element> {
 	//~--- inner classes --------------------------------------------------------
 
 	protected class XMLIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
+		private static final long serialVersionUID = 1L;
+
+		//~--- constructors -------------------------------------------------------
+
 		private XMLIdentityHashMap(int size) {
 			super(size);
 		}
