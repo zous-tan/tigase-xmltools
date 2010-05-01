@@ -588,8 +588,7 @@ public class Element implements XMLNodeIfc<Element> {
 						Element elem = (Element) el;
 
 						if (elem.getName().equals(name)
-								&& ((elem.getXMLNS() == child_xmlns)
-									|| ((elem.getXMLNS() != null) && elem.getXMLNS().equals(child_xmlns)))) {
+								&& ((elem.getXMLNS() == child_xmlns) || child_xmlns.equals(elem.getXMLNS()))) {
 							return elem;
 						}
 					}
