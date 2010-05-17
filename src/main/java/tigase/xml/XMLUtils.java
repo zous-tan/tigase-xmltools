@@ -19,10 +19,16 @@
  * Last modified by $Author$
  * $Date$
  */
+
 package tigase.xml;
 
-import java.util.Queue;
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.FileReader;
+
+import java.util.Queue;
+
+//~--- classes ----------------------------------------------------------------
 
 /**
  * Describe class XMLUtil here.
@@ -34,47 +40,91 @@ import java.io.FileReader;
  * @version $Rev$
  */
 public abstract class XMLUtils {
+	private static final String[] decoded = { "&", "<", ">", "\"", "\'" };
+	private static final String[] encoded = { "&amp;", "&lt;", "&gt;", "&quot;", "&apos;" };
 
-	private static final String[] decoded = {"&", "<", ">"};
-	private static final String[] encoded = {"&amp;", "&lt;", "&gt;"};
+	//~--- methods --------------------------------------------------------------
 
-	public static String translateAll(String input,
-		String[] patterns, String[] replacements) {
-		String result = input;
-		for (int i = 0; i < patterns.length; i++) {
-			result = result.replaceAll(patterns[i], replacements[i]);
-		}
-		return result;
-	}
-
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param input
+	 *
+	 * @return
+	 */
 	public static String escape(String input) {
 		return translateAll(input, decoded, encoded);
 	}
 
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param args
+	 *
+	 * @throws Exception
+	 */
+	public static void main(final String[] args) throws Exception {
+		if (args.length < 1) {
+			System.err.println("You must give file name as parameter.");
+			System.exit(1);
+		}    // end of if (args.length < 1)
+
+		FileReader file = new FileReader(args[0]);
+		char[] buff = new char[16 * 1024];
+		SimpleParser parser = new SimpleParser();
+		DomBuilderHandler dombuilder = new DomBuilderHandler();
+		int result = -1;
+
+		while ((result = file.read(buff)) != -1) {
+			parser.parse(dombuilder, buff, 0, result);
+		}
+
+		file.close();
+
+		Queue<Element> results = dombuilder.getParsedElements();
+
+		for (Element elem : results) {
+			System.out.println(elem.toString());
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param input
+	 * @param patterns
+	 * @param replacements
+	 *
+	 * @return
+	 */
+	public static String translateAll(String input, String[] patterns, String[] replacements) {
+		String result = input;
+
+		for (int i = 0; i < patterns.length; i++) {
+			result = result.replaceAll(patterns[i], replacements[i]);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param input
+	 *
+	 * @return
+	 */
 	public static String unescape(String input) {
 		return translateAll(input, encoded, decoded);
 	}
-
-  public static void main(final String[] args) throws Exception {
-
-    if (args.length < 1) {
-      System.err.println("You must give file name as parameter.");
-      System.exit(1);
-    } // end of if (args.length < 1)
-
-    FileReader file = new FileReader(args[0]);
-    char[] buff = new char[16*1024];
-    SimpleParser parser = new SimpleParser();
-    DomBuilderHandler dombuilder = new DomBuilderHandler();
-    int result = -1;
-    while((result = file.read(buff)) != -1) {
-      parser.parse(dombuilder, buff, 0, result);
-    }
-    file.close();
-		Queue<Element> results = dombuilder.getParsedElements();
-		for (Element elem: results) {
-			System.out.println(elem.toString());
-		}
-  }
-
 }
+
+
+//~ Formatted in Sun Code Convention
+
+
+//~ Formatted by Jindent --- http://www.jindent.com
