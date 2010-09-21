@@ -873,7 +873,7 @@ public class Element implements XMLNodeIfc<Element> {
 	 */
 	public void setXMLNS(String ns) {
 		xmlns = ns.intern();
-		setAttribute("xmlns", ns);
+		setAttribute("xmlns", xmlns);
 	}
 
 	//~--- methods --------------------------------------------------------------
