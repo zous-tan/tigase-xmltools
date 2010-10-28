@@ -22,8 +22,15 @@
 
 package tigase.xml;
 
-import java.util.Arrays;
+//~--- non-JDK imports --------------------------------------------------------
+
 import tigase.annotations.TODO;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Arrays;
+
+//~--- classes ----------------------------------------------------------------
 
 /**
  * <code>SimpleParser</code> - implementation of <em>SAX</em> parser.
@@ -58,409 +65,469 @@ import tigase.annotations.TODO;
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
  * @version $Rev$
  */
-
 public class SimpleParser {
 
-  /**
-   * Variable constant <code>MAX_ATTRIBS_NUMBER</code> keeps value of
-   * maximum possible attributes number. Real XML parser shouldn't have
-   * such limit but in most cases XML elements don't have too many attributes.
-   * For efficiency it is better to use fixed number of attributes and
-   * operate on arrays than on lists.
-   * Data structures will automaticly grow if real attributes number is
-   * bigger so there should be no problem with processing XML streams
-   * different than expected.
-   */
-  public static int MAX_ATTRIBS_NUMBER = 6;
-
-  private static enum State
-  {
-    START, OPEN_BRACKET, ELEMENT_NAME, END_ELEMENT_NAME, ATTRIB_NAME,
-    END_OF_ATTR_NAME, ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML,
-		ERROR, CLOSE_ELEMENT
-  };
-
+	/**
+	 * Variable constant <code>MAX_ATTRIBS_NUMBER</code> keeps value of
+	 * maximum possible attributes number. Real XML parser shouldn't have
+	 * such limit but in most cases XML elements don't have too many attributes.
+	 * For efficiency it is better to use fixed number of attributes and
+	 * operate on arrays than on lists.
+	 * Data structures will automaticly grow if real attributes number is
+	 * bigger so there should be no problem with processing XML streams
+	 * different than expected.
+	 */
+	public static int MAX_ATTRIBS_NUMBER = 6;
 	private static final int MAX_ELEMENT_NAME_SIZE = 1024;
 	private static final int MAX_ATTRIBUTE_NAME_SIZE = 1024;
-	private static final int MAX_ATTRIBUTE_VALUE_SIZE = 10*1024;
-	private static final int MAX_CDATA_SIZE = 1024*1024;
-
+	private static final int MAX_ATTRIBUTE_VALUE_SIZE = 10 * 1024;
+	private static final int MAX_CDATA_SIZE = 1024 * 1024;
 	private static final char OPEN_BRACKET = '<';
-  private static final char CLOSE_BRACKET = '>';
-  private static final char QUESTION_MARK = '?';
-  private static final char EXCLAMATION_MARK = '!';
-  private static final char SLASH = '/';
-  private static final char SPACE = ' ';
-  private static final char TAB = '\t';
-  private static final char LF = '\n';
-  private static final char CR = '\r';
-  private static final char EQUALS = '=';
-  private static final char SINGLE_QUOTE = '\'';
-  private static final char DOUBLE_QUOTE = '"';
-  private static final char[] QUOTES =
-  { SINGLE_QUOTE, DOUBLE_QUOTE };
-  private static final char[] WHITE_CHARS =
-  { SPACE, LF, CR, TAB };
-  private static final char[] END_NAME_CHARS =
-  { CLOSE_BRACKET, SLASH, SPACE, TAB, LF, CR };
-  private static final char[] ERR_NAME_CHARS =
-  { OPEN_BRACKET, QUESTION_MARK };
+	private static final char CLOSE_BRACKET = '>';
+	private static final char QUESTION_MARK = '?';
+	private static final char EXCLAMATION_MARK = '!';
+	private static final char SLASH = '/';
+	private static final char SPACE = ' ';
+	private static final char TAB = '\t';
+	private static final char LF = '\n';
+	private static final char CR = '\r';
+	private static final char EQUALS = '=';
+	private static final char SINGLE_QUOTE = '\'';
+	private static final char DOUBLE_QUOTE = '"';
+	private static final char[] QUOTES = { SINGLE_QUOTE, DOUBLE_QUOTE };
+	private static final char[] WHITE_CHARS = { SPACE, LF, CR, TAB };
+	private static final char[] END_NAME_CHARS = {
+		CLOSE_BRACKET, SLASH, SPACE, TAB, LF, CR
+	};
+	private static final char[] ERR_NAME_CHARS = { OPEN_BRACKET, QUESTION_MARK };
+	private static final char[] IGNORE_CHARS = { '\0' };
 
-	private static final char[] IGNORE_CHARS = {'\0'};
+	//~--- constant enums -------------------------------------------------------
 
-  static {
-    //Arrays.sort(WHITE_CHARS);
-    Arrays.sort(IGNORE_CHARS);
-  }
+	private static enum State {
+		START, OPEN_BRACKET, ELEMENT_NAME, END_ELEMENT_NAME, ATTRIB_NAME, END_OF_ATTR_NAME,
+		ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML, ERROR, CLOSE_ELEMENT
+	}
 
-  private boolean isWhite(char chr) {
-    // In most cases the white character is just a space, in such a case
+	;
+
+	//~--- static initializers --------------------------------------------------
+
+	static {
+
+		// Arrays.sort(WHITE_CHARS);
+		Arrays.sort(IGNORE_CHARS);
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param handler
+	 * @param data
+	 * @param off
+	 * @param len
+	 */
+	@TODO(note = "1. Better XML errors detection. 2. Add XML comments handling. "
+			+ "3. Character overflow detection i.e. limit max number of characters for each entity.")
+	public final void parse(SimpleHandler handler, char[] data, int off, int len) {
+		ParserState parser_state = (ParserState) handler.restoreParserState();
+
+		if (parser_state == null) {
+			parser_state = new ParserState();
+		}    // end of if (parser_state == null)
+
+		for (int index = off; index < len; index++) {
+			char chr = data[index];
+
+			// Only one character to ignore right now, let's do it more efficiently
+//    if (ignore(chr)) {
+//      break;
+//    } // end of if (ignore(chr))
+			if (chr == IGNORE_CHARS[0]) {
+				break;
+			}
+
+			switch (parser_state.state) {
+				case START :
+					if (chr == OPEN_BRACKET) {
+						parser_state.state = State.OPEN_BRACKET;
+						parser_state.slash_found = false;
+					}    // end of if (chr == OPEN_BRACKET)
+
+					// Skip everything up to open bracket
+					break;
+
+				case OPEN_BRACKET :
+					switch (chr) {
+						case QUESTION_MARK :
+						case EXCLAMATION_MARK :
+							parser_state.state = State.OTHER_XML;
+							parser_state.element_cdata = new StringBuilder(100);
+							parser_state.element_cdata.append(chr);
+
+							break;
+
+						case SLASH :
+							parser_state.state = State.CLOSE_ELEMENT;
+							parser_state.element_name = new StringBuilder(10);
+							parser_state.slash_found = true;
+
+							break;
+
+						default :
+							if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
+								parser_state.state = State.ELEMENT_NAME;
+								parser_state.element_name = new StringBuilder(10);
+								parser_state.element_name.append(chr);
+							}    // end of if ()
+
+							break;
+					}        // end of switch (chr)
+
+					break;
+
+				case ELEMENT_NAME :
+					if (isWhite(chr)) {
+						parser_state.state = State.END_ELEMENT_NAME;
+
+						break;
+					}        // end of if ()
+
+					if (chr == SLASH) {
+						parser_state.slash_found = true;
+
+						break;
+					}        // end of if (chr == SLASH)
+
+					if (chr == CLOSE_BRACKET) {
+						parser_state.state = State.ELEMENT_CDATA;
+						handler.startElement(parser_state.element_name, null, null);
+
+						if (parser_state.slash_found) {
+
+							// parser_state.state = State.START;
+							handler.endElement(parser_state.element_name);
+						}
+
+						parser_state.element_name = null;
+
+						break;
+					}    // end of if ()
+
+					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1])) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Not allowed character in start element name: " + chr
+								+ "\nExisting characters in start element name: "
+									+ parser_state.element_name.toString();
+
+						break;
+					}    // end of if ()
+
+					parser_state.element_name.append(chr);
+
+					if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
+								+ "\nreceived: " + parser_state.element_name.toString();
+					}
+
+					break;
+
+				case CLOSE_ELEMENT :
+					if (isWhite(chr)) {
+						break;
+					}    // end of if ()
+
+					if (chr == SLASH) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Not allowed character in close element name: " + chr
+								+ "\nExisting characters in close element name: "
+									+ parser_state.element_name.toString();
+
+						break;
+					}    // end of if (chr == SLASH)
+
+					if (chr == CLOSE_BRACKET) {
+						parser_state.state = State.ELEMENT_CDATA;;
+						handler.endElement(parser_state.element_name);
+
+						// parser_state = new ParserState();
+						parser_state.element_name = null;
+
+						break;
+					}    // end of if ()
+
+					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1])) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Not allowed character in close element name: " + chr
+								+ "\nExisting characters in close element name: "
+									+ parser_state.element_name.toString();
+
+						break;
+					}    // end of if ()
+
+					parser_state.element_name.append(chr);
+
+					if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
+								+ "\nreceived: " + parser_state.element_name.toString();
+					}
+
+					break;
+
+				case END_ELEMENT_NAME :
+					if (chr == SLASH) {
+						parser_state.slash_found = true;
+
+						break;
+					}    // end of if (chr == SLASH)
+
+					if (chr == CLOSE_BRACKET) {
+						parser_state.state = State.ELEMENT_CDATA;
+						handler.startElement(parser_state.element_name, parser_state.attrib_names,
+								parser_state.attrib_values);
+						parser_state.attrib_names = null;
+						parser_state.attrib_values = null;
+						parser_state.current_attr = -1;
+
+						if (parser_state.slash_found) {
+
+							// parser_state.state = State.START;
+							handler.endElement(parser_state.element_name);
+						}
+
+						parser_state.element_name = null;
+
+						break;
+					}      // end of if ()
+
+					if ( !isWhite(chr)) {
+						parser_state.state = State.ATTRIB_NAME;
+
+						if (parser_state.attrib_names == null) {
+							parser_state.attrib_names = initArray(MAX_ATTRIBS_NUMBER);
+							parser_state.attrib_values = initArray(MAX_ATTRIBS_NUMBER);
+						} else {
+							if (parser_state.current_attr == parser_state.attrib_names.length - 1) {
+								int new_size = parser_state.attrib_names.length + MAX_ATTRIBS_NUMBER;
+
+								parser_state.attrib_names = resizeArray(parser_state.attrib_names, new_size);
+								parser_state.attrib_values = resizeArray(parser_state.attrib_values, new_size);
+							}
+						}    // end of else
+
+						parser_state.attrib_names[++parser_state.current_attr] = new StringBuilder(8);
+						parser_state.attrib_names[parser_state.current_attr].append(chr);
+
+						break;
+					}      // end of if ()
+
+					// do nothing, skip white chars
+					break;
+
+				case ATTRIB_NAME :
+					if (isWhite(chr) || (chr == EQUALS)) {
+						parser_state.state = State.END_OF_ATTR_NAME;
+
+						break;
+					}    // end of if ()
+
+					parser_state.attrib_names[parser_state.current_attr].append(chr);
+
+					if (parser_state.attrib_names[parser_state.current_attr].length()
+							> MAX_ATTRIBUTE_NAME_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max attribute name size exceeded: "
+								+ MAX_ATTRIBUTE_NAME_SIZE + "\nreceived: "
+									+ parser_state.attrib_names[parser_state.current_attr].toString();
+					}
+
+					break;
+
+				case END_OF_ATTR_NAME :
+					if (chr == SINGLE_QUOTE) {
+						parser_state.state = State.ATTRIB_VALUE_S;
+						parser_state.attrib_values[parser_state.current_attr] = new StringBuilder(64);
+					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+
+					if (chr == DOUBLE_QUOTE) {
+						parser_state.state = State.ATTRIB_VALUE_D;
+						parser_state.attrib_values[parser_state.current_attr] = new StringBuilder(64);
+					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+
+					// Skip white characters and actually everything except quotes
+					break;
+
+				case ATTRIB_VALUE_S :
+					if (chr == SINGLE_QUOTE) {
+						parser_state.state = State.END_ELEMENT_NAME;
+
+						break;
+					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+
+					parser_state.attrib_values[parser_state.current_attr].append(chr);
+
+					if (parser_state.attrib_values[parser_state.current_attr].length()
+							> MAX_ATTRIBUTE_VALUE_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max attribute value size exceeded: "
+								+ MAX_ATTRIBUTE_VALUE_SIZE + "\nreceived: "
+									+ parser_state.attrib_values[parser_state.current_attr].toString();
+					}
+
+					break;
+
+				case ATTRIB_VALUE_D :
+					if (chr == DOUBLE_QUOTE) {
+						parser_state.state = State.END_ELEMENT_NAME;
+
+						break;
+					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
+
+					parser_state.attrib_values[parser_state.current_attr].append(chr);
+
+					if (parser_state.attrib_values[parser_state.current_attr].length()
+							> MAX_ATTRIBUTE_VALUE_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max attribute value size exceeded: "
+								+ MAX_ATTRIBUTE_VALUE_SIZE + "\nreceived: "
+									+ parser_state.attrib_values[parser_state.current_attr].toString();
+					}
+
+					break;
+
+				case ELEMENT_CDATA :
+					if (chr == OPEN_BRACKET) {
+						parser_state.state = State.OPEN_BRACKET;
+						parser_state.slash_found = false;
+
+						if (parser_state.element_cdata != null) {
+							handler.elementCData(parser_state.element_cdata);
+							parser_state.element_cdata = null;
+						}    // end of if (parser_state.element_cdata != null)
+
+						break;
+					} else {
+						if (parser_state.element_cdata == null) {
+
+//            // Skip leading white characters
+//            if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
+							parser_state.element_cdata = new StringBuilder(100);
+
+//            parser_state.element_cdata.append(chr);
+//            }// end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
+						}    // end of if (parser_state.element_cdata == null) else
+
+						parser_state.element_cdata.append(chr);
+
+						if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
+							parser_state.state = State.ERROR;
+							parser_state.errorMessage = "Max cdata size exceeded: " + MAX_CDATA_SIZE
+									+ "\nreceived: " + parser_state.element_cdata.toString();
+						}
+					}
+
+					break;
+
+				case OTHER_XML :
+					if (chr == CLOSE_BRACKET) {
+						parser_state.state = State.START;
+						handler.otherXML(parser_state.element_cdata);
+						parser_state.element_cdata = null;
+
+						break;
+					}    // end of if (chr == CLOSE_BRACKET)
+
+					if (parser_state.element_cdata == null) {
+						parser_state.element_cdata = new StringBuilder(100);
+					}    // end of if (parser_state.element_cdata == null) else
+
+					parser_state.element_cdata.append(chr);
+
+					if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Max cdata size exceeded: " + MAX_CDATA_SIZE
+								+ "\nreceived: " + parser_state.element_cdata.toString();
+					}
+
+					break;
+
+				case ERROR :
+					handler.error(parser_state.errorMessage);
+					parser_state = null;
+
+					return;
+
+				// break;
+				default :
+					assert false : "Unknown SimpleParser state: " + parser_state.state;
+
+					break;
+			}    // end of switch (state)
+		}      // end of for ()
+
+		handler.saveParserState(parser_state);
+	}
+
+//private boolean ignore(char chr) {
+//  return Arrays.binarySearch(IGNORE_CHARS, chr) >= 0;
+//}
+	private StringBuilder[] initArray(int size) {
+		StringBuilder[] array = new StringBuilder[size];
+
+		Arrays.fill(array, null);
+
+		return array;
+	}
+
+	//~--- get methods ----------------------------------------------------------
+
+	private boolean isWhite(char chr) {
+
+		// In most cases the white character is just a space, in such a case
 		// below loop would be faster than a binary search
 		for (char c : WHITE_CHARS) {
 			if (chr == c) {
 				return true;
 			}
 		}
+
 		return false;
-		//return Arrays.binarySearch(WHITE_CHARS, chr) >= 0;
-  }
 
-//	private boolean ignore(char chr) {
-//		return Arrays.binarySearch(IGNORE_CHARS, chr) >= 0;
-//	}
+		// return Arrays.binarySearch(WHITE_CHARS, chr) >= 0;
+	}
 
-  private StringBuilder[] initArray(int size) {
-    StringBuilder[] array = new StringBuilder[size];
-    Arrays.fill(array, null);
-    return array;
-  }
+	//~--- methods --------------------------------------------------------------
 
-  private StringBuilder[] resizeArray(StringBuilder[] src, int size) {
-    StringBuilder[] array = new StringBuilder[size];
-    System.arraycopy(src, 0, array, 0, src.length);
-    Arrays.fill(array, src.length, array.length, null);
-    return array;
-  }
+	private StringBuilder[] resizeArray(StringBuilder[] src, int size) {
+		StringBuilder[] array = new StringBuilder[size];
 
-  @TODO(note="1. Better XML errors detection. 2. Add XML comments handling. 3. Character overflow detection i.e. limit max number of characters for each entity.")
-  public final void parse(SimpleHandler handler, char[] data,
-    int off, int len) {
+		System.arraycopy(src, 0, array, 0, src.length);
+		Arrays.fill(array, src.length, array.length, null);
 
-    ParserState parser_state = (ParserState)handler.restoreParserState();
-    if (parser_state == null) {
-      parser_state = new ParserState();
-    } // end of if (parser_state == null)
+		return array;
+	}
 
-    for (int index = off; index < len; index++) {
-      char chr = data[index];
-
-			// Only one character to ignore right now, let's do it more efficiently
-//			if (ignore(chr)) {
-//				break;
-//			} // end of if (ignore(chr))
-			if (chr == IGNORE_CHARS[0]) {
-				break;
-			}
-
-      switch (parser_state.state) {
-      case START:
-        if (chr == OPEN_BRACKET) {
-          parser_state.state = State.OPEN_BRACKET;
-          parser_state.slash_found = false;
-        } // end of if (chr == OPEN_BRACKET)
-        // Skip everything up to open bracket
-        break;
-
-      case OPEN_BRACKET:
-        switch (chr) {
-        case QUESTION_MARK:
-        case EXCLAMATION_MARK:
-          parser_state.state = State.OTHER_XML;
-          parser_state.element_cdata = new StringBuilder(100);
-          parser_state.element_cdata.append(chr);
-          break;
-        case SLASH:
-          parser_state.state = State.CLOSE_ELEMENT;
-          parser_state.element_name = new StringBuilder(10);
-          parser_state.slash_found = true;
-          break;
-        default:
-          if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
-            parser_state.state = State.ELEMENT_NAME;
-            parser_state.element_name = new StringBuilder(10);
-            parser_state.element_name.append(chr);
-          } // end of if ()
-          break;
-        } // end of switch (chr)
-        break;
-
-      case ELEMENT_NAME:
-
-				if (isWhite(chr)) {
-          parser_state.state = State.END_ELEMENT_NAME;
-          break;
-        } // end of if ()
-
-        if (chr == SLASH) {
-          parser_state.slash_found = true;
-          break;
-        } // end of if (chr == SLASH)
-
-        if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.ELEMENT_CDATA;
-          handler.startElement(parser_state.element_name, null, null);
-          if (parser_state.slash_found) {
-            //parser_state.state = State.START;
-            handler.endElement(parser_state.element_name);
-					}
-					parser_state.element_name = null;
-          break;
-        } // end of if ()
-
-        if (chr == ERR_NAME_CHARS[0] || chr == ERR_NAME_CHARS[1]) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Not allowed character in start element name: " + chr
-            + "\nExisting characters in start element name: "
-            + parser_state.element_name.toString();
-          break;
-        } // end of if ()
-
-        parser_state.element_name.append(chr);
-				if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
-            + "\nreceived: "
-            + parser_state.element_name.toString();
-				}
-        break;
-
-      case CLOSE_ELEMENT:
-
-				if (isWhite(chr)) {
-          break;
-        } // end of if ()
-
-        if (chr == SLASH) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Not allowed character in close element name: " + chr
-            + "\nExisting characters in close element name: "
-            + parser_state.element_name.toString();
-          break;
-        } // end of if (chr == SLASH)
-
-        if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.ELEMENT_CDATA;;
-          handler.endElement(parser_state.element_name);
-					//parser_state = new ParserState();
-          parser_state.element_name = null;
-          break;
-        } // end of if ()
-
-        if (chr == ERR_NAME_CHARS[0] || chr == ERR_NAME_CHARS[1]) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Not allowed character in close element name: " + chr
-            + "\nExisting characters in close element name: "
-            + parser_state.element_name.toString();
-          break;
-        } // end of if ()
-
-        parser_state.element_name.append(chr);
-				if (parser_state.element_name.length() > MAX_ELEMENT_NAME_SIZE) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Max element name size exceeded: " + MAX_ELEMENT_NAME_SIZE
-            + "\nreceived: "
-            + parser_state.element_name.toString();
-				}
-        break;
-
-      case END_ELEMENT_NAME:
-
-				if (chr == SLASH) {
-          parser_state.slash_found = true;
-          break;
-        } // end of if (chr == SLASH)
-
-        if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.ELEMENT_CDATA;
-          handler.startElement(parser_state.element_name,
-            parser_state.attrib_names, parser_state.attrib_values);
-					parser_state.attrib_names = null;
-					parser_state.attrib_values = null;
-					parser_state.current_attr = -1;
-          if (parser_state.slash_found) {
-            parser_state.state = State.START;
-            handler.endElement(parser_state.element_name);
-					}
-					parser_state.element_name = null;
-          break;
-        } // end of if ()
-
-        if (!isWhite(chr)) {
-          parser_state.state = State.ATTRIB_NAME;
-          if (parser_state.attrib_names == null) {
-            parser_state.attrib_names = initArray(MAX_ATTRIBS_NUMBER);
-            parser_state.attrib_values = initArray(MAX_ATTRIBS_NUMBER);
-          } else {
-            if (parser_state.current_attr ==
-              parser_state.attrib_names.length - 1) {
-              int new_size =
-                parser_state.attrib_names.length + MAX_ATTRIBS_NUMBER;
-              parser_state.attrib_names =
-                resizeArray(parser_state.attrib_names, new_size);
-              parser_state.attrib_values =
-                resizeArray(parser_state.attrib_values, new_size);
-            }
-          } // end of else
-          parser_state.attrib_names[++parser_state.current_attr] =
-            new StringBuilder(8);
-          parser_state.attrib_names[parser_state.current_attr].append(chr);
-          break;
-        } // end of if ()
-
-        // do nothing, skip white chars
-        break;
-
-      case ATTRIB_NAME:
-
-        if (isWhite(chr) || chr == EQUALS) {
-          parser_state.state = State.END_OF_ATTR_NAME;
-          break;
-        } // end of if ()
-        parser_state.attrib_names[parser_state.current_attr].append(chr);
-				if (parser_state.attrib_names[parser_state.current_attr].length()
-					> MAX_ATTRIBUTE_NAME_SIZE) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Max attribute name size exceeded: " + MAX_ATTRIBUTE_NAME_SIZE
-            + "\nreceived: "
-            + parser_state.attrib_names[parser_state.current_attr].toString();
-				}
-        break;
-
-      case END_OF_ATTR_NAME:
-        if (chr == SINGLE_QUOTE) {
-          parser_state.state = State.ATTRIB_VALUE_S;
-          parser_state.attrib_values[parser_state.current_attr] =
-            new StringBuilder(64);
-        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
-        if (chr == DOUBLE_QUOTE) {
-          parser_state.state = State.ATTRIB_VALUE_D;
-          parser_state.attrib_values[parser_state.current_attr] =
-            new StringBuilder(64);
-        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
-        // Skip white characters and actually everything except quotes
-        break;
-
-      case ATTRIB_VALUE_S:
-        if (chr == SINGLE_QUOTE) {
-          parser_state.state = State.END_ELEMENT_NAME;
-          break;
-        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
-        parser_state.attrib_values[parser_state.current_attr].append(chr);
-				if (parser_state.attrib_values[parser_state.current_attr].length()
-					> MAX_ATTRIBUTE_VALUE_SIZE) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Max attribute value size exceeded: " + MAX_ATTRIBUTE_VALUE_SIZE
-            + "\nreceived: "
-            + parser_state.attrib_values[parser_state.current_attr].toString();
-				}
-        break;
-
-      case ATTRIB_VALUE_D:
-        if (chr == DOUBLE_QUOTE) {
-          parser_state.state = State.END_ELEMENT_NAME;
-          break;
-        } // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
-        parser_state.attrib_values[parser_state.current_attr].append(chr);
-				if (parser_state.attrib_values[parser_state.current_attr].length()
-					> MAX_ATTRIBUTE_VALUE_SIZE) {
-          parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-            "Max attribute value size exceeded: " + MAX_ATTRIBUTE_VALUE_SIZE
-            + "\nreceived: "
-            + parser_state.attrib_values[parser_state.current_attr].toString();
-				}
-        break;
-
-      case ELEMENT_CDATA:
-        if (chr == OPEN_BRACKET) {
-          parser_state.state = State.OPEN_BRACKET;
-          parser_state.slash_found = false;
-          if (parser_state.element_cdata != null) {
-            handler.elementCData(parser_state.element_cdata);
-            parser_state.element_cdata = null;
-          } // end of if (parser_state.element_cdata != null)
-          break;
-        } else {
-					if (parser_state.element_cdata == null) {
-// 						// Skip leading white characters
-// 						if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
-							parser_state.element_cdata = new StringBuilder(100);
-// 							parser_state.element_cdata.append(chr);
-// 						} // end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
-					} // end of if (parser_state.element_cdata == null) else
-					parser_state.element_cdata.append(chr);
-					if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
-						parser_state.state = State.ERROR;
-						parser_state.errorMessage =
-              "Max cdata size exceeded: " + MAX_CDATA_SIZE
-              + "\nreceived: "
-              + parser_state.element_cdata.toString();
-					}
-				}
-        break;
-
-      case OTHER_XML:
-        if (chr == CLOSE_BRACKET) {
-          parser_state.state = State.START;
-          handler.otherXML(parser_state.element_cdata);
-          parser_state.element_cdata = null;
-          break;
-        } // end of if (chr == CLOSE_BRACKET)
-				if (parser_state.element_cdata == null) {
-					parser_state.element_cdata = new StringBuilder(100);
-				} // end of if (parser_state.element_cdata == null) else
-        parser_state.element_cdata.append(chr);
-				if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
-					parser_state.state = State.ERROR;
-					parser_state.errorMessage =
-              "Max cdata size exceeded: " + MAX_CDATA_SIZE
-              + "\nreceived: "
-              + parser_state.element_cdata.toString();
-				}
-        break;
-
-      case ERROR:
-        handler.error(parser_state.errorMessage);
-				parser_state = null;
-        return;
-        //        break;
-
-      default:
-        assert false : "Unknown SimpleParser state: "+parser_state.state;
-        break;
-      } // end of switch (state)
-
-    } // end of for ()
-
-    handler.saveParserState(parser_state);
-  }
+	//~--- inner classes --------------------------------------------------------
 
 	private static class ParserState {
-    StringBuilder element_name = null;
-    StringBuilder[] attrib_names = null;
-    StringBuilder[] attrib_values = null;
-    StringBuilder element_cdata = null;
-    int current_attr = -1;
-    boolean slash_found = false;
-    State state = State.START;
+		StringBuilder[] attrib_names = null;
+		StringBuilder[] attrib_values = null;
+		int current_attr = -1;
+		StringBuilder element_cdata = null;
+		StringBuilder element_name = null;
 		String errorMessage = null;
-  }
+		boolean slash_found = false;
+		State state = State.START;
+	}
+}    // SimpleParser
 
-}// SimpleParser
+
+//~ Formatted in Sun Code Convention
+
+
+//~ Formatted by Jindent --- http://www.jindent.com
