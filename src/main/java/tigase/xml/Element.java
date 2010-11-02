@@ -746,7 +746,7 @@ public class Element implements XMLNodeIfc<Element> {
 		Element child = findChild(elementPath);
 
 		if (child != null) {
-			child.setAttribute(att_name.intern(), att_value);
+			child.setAttribute(att_name, att_value);
 		}    // end of if (child != null)
 	}
 
@@ -763,7 +763,15 @@ public class Element implements XMLNodeIfc<Element> {
 		}    // end of if (attributes == null)
 
 		synchronized (attributes) {
-			attributes.put(key.intern(), value);
+			String k = key.intern();
+			String v = value;
+
+			if (k == "xmlns") {
+				xmlns = value.intern();
+				v = xmlns;
+			}
+
+			attributes.put(k, v);
 		}
 	}
 
@@ -776,7 +784,9 @@ public class Element implements XMLNodeIfc<Element> {
 
 		synchronized (attributes) {
 			for (Map.Entry<String, String> entry : newAttributes.entrySet()) {
-				attributes.put(entry.getKey().intern(), entry.getValue());
+				setAttribute(entry.getKey(), entry.getValue());
+
+				// attributes.put(entry.getKey().intern(), entry.getValue());
 			}
 		}
 	}
@@ -794,7 +804,9 @@ public class Element implements XMLNodeIfc<Element> {
 		synchronized (attributes) {
 			for (int i = 0; i < names.length; i++) {
 				if (names[i] != null) {
-					attributes.put(names[i].toString().intern(), values[i].toString());
+					setAttribute(names[i].toString(), values[i].toString());
+
+					// attributes.put(names[i].toString().intern(), values[i].toString());
 				}    // end of if (names[i] != null)
 			}      // end of for (int i = 0; i < names.length; i++)
 		}
@@ -813,7 +825,9 @@ public class Element implements XMLNodeIfc<Element> {
 		synchronized (attributes) {
 			for (int i = 0; i < names.length; i++) {
 				if (names[i] != null) {
-					attributes.put(names[i].intern(), values[i]);
+					setAttribute(names[i], values[i]);
+
+					// attributes.put(names[i].intern(), values[i]);
 				}    // end of if (names[i] != null)
 			}      // end of for (int i = 0; i < names.length; i++)
 		}
