@@ -67,7 +67,7 @@ public abstract class XMLUtils {
 	 */
 	public static void main(final String[] args) throws Exception {
 		if (args.length < 1) {
-			System.err.println("You must give file name as parameter.");
+			System.err.println("You must give a file name as a parameter.");
 			System.exit(1);
 		}    // end of if (args.length < 1)
 
