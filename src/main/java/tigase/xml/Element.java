@@ -24,12 +24,7 @@ package tigase.xml;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import tigase.annotations.TODO;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.FileReader;
-
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -39,31 +34,32 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
+import tigase.annotations.TODO;
+
 //~--- classes ----------------------------------------------------------------
 
 /**
- * <code>Element</code> - basic document tree node implementation.
- *  Supports Java 5.0 generic feature to make it easier to extend this class and
- *  still preserve some useful functionality. Sufficient for simple cases but
- *  probably in the most more advanced cases should be extended with additional
- *  features. Look in API documentation for more details and information about
- *  existing extensions. The most important features apart from abvious tree
- *  implementation are:
- *  <ul>
- *   <li><code>toString()</code> implementation so it can generate valid
- *    <em>XML</em> content from this element and all children.</li>
- *   <li><code>addChild(...)</code>, <code>getChild(childName)</code> supporting
- *    generic types.</li>
- *   <li><code>findChild(childPath)</code> finding child in subtree by given
- *    path to element.</li>
- *   <li><code>getChildCData(childPath)</code>, <code>getAttribute(childPath,
+ * <code>Element</code> - basic document tree node implementation. Supports Java
+ * 5.0 generic feature to make it easier to extend this class and still preserve
+ * some useful functionality. Sufficient for simple cases but probably in the
+ * most more advanced cases should be extended with additional features. Look in
+ * API documentation for more details and information about existing extensions.
+ * The most important features apart from abvious tree implementation are:
+ * <ul>
+ * <li><code>toString()</code> implementation so it can generate valid
+ * <em>XML</em> content from this element and all children.</li>
+ * <li><code>addChild(...)</code>, <code>getChild(childName)</code> supporting
+ * generic types.</li>
+ * <li><code>findChild(childPath)</code> finding child in subtree by given path
+ * to element.</li>
+ * <li><code>getChildCData(childPath)</code>, <code>getAttribute(childPath,
  *     attName)</code> returning element CData from child in subtree by given
- *    path to element.</li>
- *  </ul>
- *
+ * path to element.</li>
+ * </ul>
  * <p>
- * Created: Mon Oct  4 17:55:16 2004
+ * Created: Mon Oct 4 17:55:16 2004
  * </p>
+ * 
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
  * @version $Rev$
  */
@@ -77,12 +73,11 @@ public class Element implements XMLNodeIfc<Element> {
 	protected String name = null;
 	protected String xmlns = null;
 
-	//~--- constructors ---------------------------------------------------------
+	// ~--- constructors ---------------------------------------------------------
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param element
 	 */
 	public Element(Element element) {
@@ -91,7 +86,7 @@ public class Element implements XMLNodeIfc<Element> {
 		this.attributes = src.attributes;
 		this.name = src.name;
 
-		// this.cdata  = src.cdata;
+		// this.cdata = src.cdata;
 		this.defxmlns = src.defxmlns;
 		this.xmlns = src.xmlns;
 		this.children = src.children;
@@ -99,8 +94,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 */
 	public Element(String argName) {
@@ -109,8 +103,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 * @param argCData
 	 */
@@ -124,8 +117,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 * @param att_names
 	 * @param att_values
@@ -135,32 +127,31 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (att_names != null) {
 			setAttributes(att_names, att_values);
-		}    // end of if (att_names != null)
+		} // end of if (att_names != null)
 	}
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 * @param children
 	 * @param att_names
 	 * @param att_values
 	 */
-	public Element(String argName, Element[] children, String[] att_names, String[] att_values) {
+	public Element(String argName, Element[] children, String[] att_names,
+			String[] att_values) {
 		setName(argName);
 
 		if (att_names != null) {
 			setAttributes(att_names, att_values);
-		}    // end of if (att_names != null)
+		} // end of if (att_names != null)
 
 		addChildren(Arrays.asList(children));
 	}
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 * @param argCData
 	 * @param att_names
@@ -175,13 +166,12 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (att_names != null) {
 			setAttributes(att_names, att_values);
-		}    // end of if (att_names != null)
+		} // end of if (att_names != null)
 	}
 
 	/**
 	 * Constructs ...
-	 *
-	 *
+	 * 
 	 * @param argName
 	 * @param argCData
 	 * @param att_names
@@ -197,24 +187,22 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (att_names != null) {
 			setAttributes(att_names, att_values);
-		}    // end of if (att_names != null)
+		} // end of if (att_names != null)
 	}
 
-	//~--- methods --------------------------------------------------------------
+	// ~--- methods --------------------------------------------------------------
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param args
-	 *
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
 			System.err.println("You must give file name as parameter.");
 			System.exit(1);
-		}    // end of if (args.length < 1)
+		} // end of if (args.length < 1)
 
 		FileReader file = new FileReader(args[0]);
 		char[] buff = new char[1];
@@ -231,7 +219,7 @@ public class Element implements XMLNodeIfc<Element> {
 		Queue<Element> elems = dom.getParsedElements();
 
 		for (Element elem : elems) {
-			Element clone = elem.clone();
+			elem.clone();
 
 			System.out.println(elem.toString());
 		}
@@ -239,8 +227,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param attName
 	 * @param attValue
 	 */
@@ -250,8 +237,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param attrs
 	 */
 	public void addAttributes(Map<String, String> attrs) {
@@ -268,8 +254,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param child
 	 */
 	public void addChild(XMLNodeIfc child) {
@@ -279,7 +264,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (children == null) {
 			children = new LinkedList<XMLNodeIfc>();
-		}    // end of if (children == null)
+		} // end of if (children == null)
 
 		synchronized (children) {
 			children.add(child);
@@ -290,23 +275,22 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param children
 	 */
 	public void addChildren(List<Element> children) {
 		if (children == null) {
 			return;
-		}    // end of if (children == null)
+		} // end of if (children == null)
 
 		if (this.children == null) {
 			this.children = new LinkedList<XMLNodeIfc>();
-		}    // end of if (children == null)
+		} // end of if (children == null)
 
 		synchronized (this.children) {
 			for (XMLNodeIfc child : children) {
 				this.children.add(child.clone());
-			}    // end of for (Element child: children)
+			} // end of for (Element child: children)
 
 			// this.children.addAll(children);
 			// Collections.sort(children);
@@ -315,8 +299,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	public String childrenToString() {
@@ -331,17 +314,16 @@ public class Element implements XMLNodeIfc<Element> {
 					if (child != null) {
 						result.append(child.toString());
 					}
-				}    // end of for ()
+				} // end of for ()
 			}
-		}        // end of if (child != null)
+		} // end of if (child != null)
 
 		return (result.length() > 0) ? result.toString() : null;
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	public String childrenToStringSecure() {
@@ -356,17 +338,16 @@ public class Element implements XMLNodeIfc<Element> {
 					if (child != null) {
 						result.append(child.toStringSecure());
 					}
-				}    // end of for ()
+				} // end of for ()
 			}
-		}        // end of if (child != null)
+		} // end of if (child != null)
 
 		return (result.length() > 0) ? result.toString() : null;
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked" })
@@ -378,19 +359,19 @@ public class Element implements XMLNodeIfc<Element> {
 			result = (Element) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new InternalError();
-		}    // end of try-catch
+		} // end of try-catch
 
 		if (attributes != null) {
 			result.attributes = (XMLIdentityHashMap<String, String>) attributes.clone();
 		} else {
 			result.attributes = null;
-		}    // end of else
+		} // end of else
 
 		if (children != null) {
 			result.setChildren(children);
 		} else {
 			result.children = null;
-		}    // end of else
+		} // end of else
 
 		return result;
 	}
@@ -399,38 +380,38 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method <code>compareTo</code> is used to perform
-	 *
-	 * @param elem an <code>Object</code> value
+	 * 
+	 * @param elem
+	 *          an <code>Object</code> value
 	 * @return an <code>int</code> value
 	 */
+	@Override
 	public int compareTo(Element elem) {
 
-//  int result = name.compareTo(elem.getName());
-//  if (result == 0) {
-//    if (getXMLNS() != null) {
-//      if (elem.getXMLNS() != null) {
-//        result = getXMLNS().compareTo(elem.getXMLNS());
-//      } else {
-//        result = 1;
-//      }
-//    } else {
-//      if (elem.getXMLNS() != null) {
-//        result = -1;
-//      } else {
-//        result = 0;
-//      }
-//    }
-//  }
-//   return result;
+		// int result = name.compareTo(elem.getName());
+		// if (result == 0) {
+		// if (getXMLNS() != null) {
+		// if (elem.getXMLNS() != null) {
+		// result = getXMLNS().compareTo(elem.getXMLNS());
+		// } else {
+		// result = 1;
+		// }
+		// } else {
+		// if (elem.getXMLNS() != null) {
+		// result = -1;
+		// } else {
+		// result = 0;
+		// }
+		// }
+		// }
+		// return result;
 		return toStringNoChildren().compareTo(elem.toStringNoChildren());
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param obj
-	 *
 	 * @return
 	 */
 	@Override
@@ -438,15 +419,15 @@ public class Element implements XMLNodeIfc<Element> {
 		if (obj instanceof Element) {
 			Element elem = (Element) obj;
 
-//    boolean result = name.equals(elem.getName());
-//    if (result) {
-//      if (getXMLNS() != null && elem.getXMLNS() != null) {
-//        result = getXMLNS().equals(elem.getXMLNS());
-//      } else {
-//        result = getXMLNS() == elem.getXMLNS();
-//      }
-//    }
-//    return result;
+			// boolean result = name.equals(elem.getName());
+			// if (result) {
+			// if (getXMLNS() != null && elem.getXMLNS() != null) {
+			// result = getXMLNS().equals(elem.getXMLNS());
+			// } else {
+			// result = getXMLNS() == elem.getXMLNS();
+			// }
+			// }
+			// return result;
 			return toStringNoChildren().equals(elem.toStringNoChildren());
 		}
 
@@ -455,55 +436,49 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
-	 *
 	 * @return
 	 */
 	public Element findChild(String elementPath) {
 		StringTokenizer strtok = new StringTokenizer(elementPath, "/", false);
 
-		if ( !strtok.nextToken().equals(getName())) {
+		if (!strtok.nextToken().equals(getName())) {
 			return null;
-		}    // end of if (!strtok.nextToken().equals(child.getName()))
+		} // end of if (!strtok.nextToken().equals(child.getName()))
 
 		Element child = this;
 
 		while (strtok.hasMoreTokens() && (child != null)) {
 			child = child.getChild(strtok.nextToken());
-		}    // end of while (strtok.hasMoreTokens())
+		} // end of while (strtok.hasMoreTokens())
 
 		return child;
 	}
 
-	//~--- get methods ----------------------------------------------------------
+	// ~--- get methods ----------------------------------------------------------
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param attName
-	 *
 	 * @return
 	 */
 	public String getAttribute(String attName) {
 		if (attributes != null) {
 			synchronized (attributes) {
-				return attributes.get(attName);
+				return attributes.get(attName.intern());
 			}
-		}    // end of if (attributes != null)
+		} // end of if (attributes != null)
 
 		return null;
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
 	 * @param att_name
-	 *
 	 * @return
 	 */
 	public String getAttribute(String elementPath, String att_name) {
@@ -514,6 +489,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Get the Attributes value.
+	 * 
 	 * @return the Attributes value.
 	 */
 	public Map<String, String> getAttributes() {
@@ -522,10 +498,8 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
-	 *
 	 * @return
 	 */
 	public String getCData(String elementPath) {
@@ -534,7 +508,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Gets the value of cdata
-	 *
+	 * 
 	 * @return the value of cdata
 	 */
 	public String getCData() {
@@ -543,10 +517,8 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param name
-	 *
 	 * @return
 	 */
 	public Element getChild(String name) {
@@ -562,18 +534,16 @@ public class Element implements XMLNodeIfc<Element> {
 					}
 				}
 			}
-		}    // end of if (children != null)
+		} // end of if (children != null)
 
 		return null;
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param name
 	 * @param child_xmlns
-	 *
 	 * @return
 	 */
 	public Element getChild(String name, String child_xmlns) {
@@ -588,23 +558,22 @@ public class Element implements XMLNodeIfc<Element> {
 						Element elem = (Element) el;
 
 						if (elem.getName().equals(name)
-								&& ((elem.getXMLNS() == child_xmlns) || child_xmlns.equals(elem.getXMLNS()))) {
+								&& ((elem.getXMLNS() == child_xmlns) || child_xmlns.equals(elem
+										.getXMLNS()))) {
 							return elem;
 						}
 					}
 				}
 			}
-		}    // end of if (children != null)
+		} // end of if (children != null)
 
 		return null;
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
-	 *
 	 * @return
 	 */
 	public String getChildCData(String elementPath) {
@@ -615,8 +584,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	public List<Element> getChildren() {
@@ -637,10 +605,8 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
-	 *
 	 * @return
 	 */
 	public List<Element> getChildren(String elementPath) {
@@ -651,7 +617,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Gets the value of name
-	 *
+	 * 
 	 * @return the value of name
 	 */
 	public String getName() {
@@ -659,7 +625,6 @@ public class Element implements XMLNodeIfc<Element> {
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	public String getXMLNS() {
@@ -672,7 +637,6 @@ public class Element implements XMLNodeIfc<Element> {
 	}
 
 	/**
-	 *
 	 * @param elementPath
 	 * @return
 	 */
@@ -682,42 +646,38 @@ public class Element implements XMLNodeIfc<Element> {
 		return (child != null) ? child.getXMLNS() : null;
 	}
 
-	//~--- methods --------------------------------------------------------------
+	// ~--- methods --------------------------------------------------------------
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	@Override
 	public int hashCode() {
 
-//  String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
-//  return hash_str.hashCode();
+		// String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
+		// return hash_str.hashCode();
 		return toStringNoChildren().hashCode();
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param key
 	 */
 	public void removeAttribute(String key) {
 		if (attributes != null) {
 			synchronized (attributes) {
-				attributes.remove(key);
+				attributes.remove(key.intern());
 			}
-		}    // end of if (attributes == null)
+		} // end of if (attributes == null)
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param child
-	 *
 	 * @return
 	 */
 	public boolean removeChild(Element child) {
@@ -727,17 +687,16 @@ public class Element implements XMLNodeIfc<Element> {
 			synchronized (children) {
 				res = children.remove(child);
 			}
-		}    // end of if (children == null)
+		} // end of if (children == null)
 
 		return res;
 	}
 
-	//~--- set methods ----------------------------------------------------------
+	// ~--- set methods ----------------------------------------------------------
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param elementPath
 	 * @param att_name
 	 * @param att_value
@@ -747,20 +706,19 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (child != null) {
 			child.setAttribute(att_name, att_value);
-		}    // end of if (child != null)
+		} // end of if (child != null)
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param key
 	 * @param value
 	 */
 	public void setAttribute(String key, String value) {
 		if (attributes == null) {
 			attributes = new XMLIdentityHashMap<String, String>(5);
-		}    // end of if (attributes == null)
+		} // end of if (attributes == null)
 
 		synchronized (attributes) {
 			String k = key.intern();
@@ -777,7 +735,9 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Set the Attributes value.
-	 * @param newAttributes The new Attributes value.
+	 * 
+	 * @param newAttributes
+	 *          The new Attributes value.
 	 */
 	public void setAttributes(Map<String, String> newAttributes) {
 		attributes = new XMLIdentityHashMap<String, String>(newAttributes.size());
@@ -793,8 +753,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param names
 	 * @param values
 	 */
@@ -807,15 +766,14 @@ public class Element implements XMLNodeIfc<Element> {
 					setAttribute(names[i].toString(), values[i].toString());
 
 					// attributes.put(names[i].toString().intern(), values[i].toString());
-				}    // end of if (names[i] != null)
-			}      // end of for (int i = 0; i < names.length; i++)
+				} // end of if (names[i] != null)
+			} // end of for (int i = 0; i < names.length; i++)
 		}
 	}
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param names
 	 * @param values
 	 */
@@ -828,15 +786,16 @@ public class Element implements XMLNodeIfc<Element> {
 					setAttribute(names[i], values[i]);
 
 					// attributes.put(names[i].intern(), values[i]);
-				}    // end of if (names[i] != null)
-			}      // end of for (int i = 0; i < names.length; i++)
+				} // end of if (names[i] != null)
+			} // end of for (int i = 0; i < names.length; i++)
 		}
 	}
 
 	/**
 	 * Sets the value of cdata
-	 *
-	 * @param argCData Value to assign to this.cdata
+	 * 
+	 * @param argCData
+	 *          Value to assign to this.cdata
 	 */
 	public void setCData(String argCData) {
 		addChild(new CData(argCData));
@@ -844,8 +803,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param children
 	 */
 	public void setChildren(List<XMLNodeIfc> children) {
@@ -854,7 +812,7 @@ public class Element implements XMLNodeIfc<Element> {
 		synchronized (this.children) {
 			for (XMLNodeIfc child : children) {
 				this.children.add(child.clone());
-			}    // end of for (Element child: children)
+			} // end of for (Element child: children)
 
 			// Collections.sort(children);
 		}
@@ -862,8 +820,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param ns
 	 */
 	public void setDefXMLNS(String ns) {
@@ -872,8 +829,9 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Sets the value of name
-	 *
-	 * @param argName Value to assign to this.name
+	 * 
+	 * @param argName
+	 *          Value to assign to this.name
 	 */
 	public void setName(String argName) {
 		this.name = argName.intern();
@@ -881,8 +839,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @param ns
 	 */
 	public void setXMLNS(String ns) {
@@ -890,12 +847,11 @@ public class Element implements XMLNodeIfc<Element> {
 		setAttribute("xmlns", xmlns);
 	}
 
-	//~--- methods --------------------------------------------------------------
+	// ~--- methods --------------------------------------------------------------
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	@Override
@@ -906,9 +862,10 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (attributes != null) {
 			for (String key : attributes.keySet()) {
-				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-			}    // end of for ()
-		}      // end of if (attributes != null)
+				result.append(" ").append(key).append("=\"").append(attributes.get(key))
+						.append("\"");
+			} // end of for ()
+		} // end of if (attributes != null)
 
 		String childrenStr = childrenToString();
 
@@ -925,8 +882,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
 	public String toStringNoChildren() {
@@ -936,9 +892,10 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (attributes != null) {
 			for (String key : attributes.keySet()) {
-				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-			}    // end of for ()
-		}      // end of if (attributes != null)
+				result.append(" ").append(key).append("=\"").append(attributes.get(key))
+						.append("\"");
+			} // end of for ()
+		} // end of if (attributes != null)
 
 		String cdata = cdataToString();
 
@@ -947,7 +904,7 @@ public class Element implements XMLNodeIfc<Element> {
 
 			if (cdata != null) {
 				result.append(cdata);
-			}    // end of if (cdata != null)
+			} // end of if (cdata != null)
 
 			result.append("</").append(name).append(">");
 		} else {
@@ -959,10 +916,10 @@ public class Element implements XMLNodeIfc<Element> {
 
 	/**
 	 * Method description
-	 *
-	 *
+	 * 
 	 * @return
 	 */
+	@Override
 	public String toStringSecure() {
 		StringBuilder result = new StringBuilder();
 
@@ -970,9 +927,10 @@ public class Element implements XMLNodeIfc<Element> {
 
 		if (attributes != null) {
 			for (String key : attributes.keySet()) {
-				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append("\"");
-			}    // end of for ()
-		}      // end of if (attributes != null)
+				result.append(" ").append(key).append("=\"").append(attributes.get(key))
+						.append("\"");
+			} // end of for ()
+		} // end of if (attributes != null)
 
 		String childrenStr = childrenToStringSecure();
 
@@ -999,48 +957,45 @@ public class Element implements XMLNodeIfc<Element> {
 					if ((child != null) && (child instanceof CData)) {
 						result.append(child.toString());
 					}
-				}    // end of for ()
+				} // end of for ()
 			}
-		}        // end of if (child != null)
+		} // end of if (child != null)
 
 		return (result.length() > 0) ? result.toString() : null;
 	}
 
-	//~--- inner classes --------------------------------------------------------
+	// ~--- inner classes --------------------------------------------------------
 
 	protected class XMLIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 		private static final long serialVersionUID = 1L;
 
-		//~--- constructors -------------------------------------------------------
+		// ~--- constructors -------------------------------------------------------
 
 		private XMLIdentityHashMap(int size) {
 			super(size);
 		}
 
-		//~--- methods ------------------------------------------------------------
+		// ~--- methods ------------------------------------------------------------
 
 		/**
 		 * Method description
-		 *
-		 *
+		 * 
 		 * @param key
 		 * @param value
-		 *
 		 * @return
 		 */
 		@Override
 		public V put(K key, V value) {
 			if ((key == null) || (value == null)) {
-				throw new NullPointerException("Neither attribute key or value can be set to null.");
+				throw new NullPointerException(
+						"Neither attribute key or value can be set to null.");
 			}
 
 			return super.put(key, value);
 		}
 	}
-}    // Element
+} // Element
 
+// ~ Formatted in Sun Code Convention
 
-//~ Formatted in Sun Code Convention
-
-
-//~ Formatted by Jindent --- http://www.jindent.com
+// ~ Formatted by Jindent --- http://www.jindent.com
