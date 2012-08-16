@@ -474,6 +474,16 @@ public class Element implements XMLNodeIfc<Element> {
 		return null;
 	}
 
+	public String getAttributeFast(String attName) {
+		if (attributes != null) {
+			synchronized (attributes) {
+				return attributes.get(attName);
+			}
+		} // end of if (attributes != null)
+
+		return null;
+	}
+
 	/**
 	 * Method description
 	 * 
