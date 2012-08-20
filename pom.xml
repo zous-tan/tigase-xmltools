@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tigase</groupId>
 	<artifactId>tigase-xmltools</artifactId>
-	<version>3.3.6-SNAPSHOT</version>
+	<version>3.3.6</version>
 	<description>Tigase XML Tools</description>
 	<name>TigaseXMLTools</name>
 	<url>http://xmltools.tigase.org/</url>
@@ -16,9 +15,9 @@
 		<url>http://www.tigase.org</url>
 	</organization>
 	<scm>
-		<connection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/trunk</connection>
-		<developerConnection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/trunk</developerConnection>
-		<url>https://svn.tigase.org/reps/tigase-xmltools</url>
+		<connection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.6</connection>
+		<developerConnection>scm:svn:https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.6</developerConnection>
+		<url>https://svn.tigase.org/reps/tigase-xmltools/tags/tigase-xmltools-3.3.6</url>
 	</scm>
 	<developers>
 		<developer>
