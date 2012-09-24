@@ -474,6 +474,15 @@ public class Element implements XMLNodeIfc<Element> {
 		return null;
 	}
 
+	public String getChildAttribute(String childName, String attName) {
+		String result = null;
+		Element child = getChild(childName);
+		if (child != null) {
+			result = child.getAttribute(attName);
+		}
+		return result;
+	}
+
 	public String getAttributeFast(String attName) {
 		if (attributes != null) {
 			synchronized (attributes) {
