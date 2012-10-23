@@ -67,6 +67,9 @@ import java.util.Arrays;
  */
 public class SimpleParser {
 
+	public int ATTRIBUTES_NUMBER_LIMIT = 50;
+	public static final String ATTRIBUTES_NUMBER_LIMIT_PROP_KEY =
+		"tigase.xml.attributes_number_limit";
 	/**
 	 * Variable constant <code>MAX_ATTRIBS_NUMBER</code> keeps value of
 	 * maximum possible attributes number. Real XML parser shouldn't have
@@ -127,6 +130,8 @@ public class SimpleParser {
 	}
 
 	public SimpleParser() {
+		ATTRIBUTES_NUMBER_LIMIT =
+			Integer.getInteger(ATTRIBUTES_NUMBER_LIMIT_PROP_KEY, ATTRIBUTES_NUMBER_LIMIT);
 		MAX_ATTRIBS_NUMBER = Integer.getInteger(MAX_ATTRIBS_NUMBER_PROP_KEY, MAX_ATTRIBS_NUMBER);
 		MAX_ELEMENT_NAME_SIZE =
 			Integer.getInteger(MAX_ELEMENT_NAME_SIZE_PROP_KEY, MAX_ELEMENT_NAME_SIZE);
@@ -331,10 +336,18 @@ public class SimpleParser {
 							parser_state.attrib_values = initArray(MAX_ATTRIBS_NUMBER);
 						} else {
 							if (parser_state.current_attr == parser_state.attrib_names.length - 1) {
-								int new_size = parser_state.attrib_names.length + MAX_ATTRIBS_NUMBER;
+								if (parser_state.attrib_names.length >= ATTRIBUTES_NUMBER_LIMIT) {
+									parser_state.state = State.ERROR;
+									parser_state.errorMessage = "Attributes nuber limit exceeded: "
+										+ ATTRIBUTES_NUMBER_LIMIT
+										+ "\nreceived: " + parser_state.element_name.toString();
+									break;
+								} else {
+									int new_size = parser_state.attrib_names.length + MAX_ATTRIBS_NUMBER;
 
-								parser_state.attrib_names = resizeArray(parser_state.attrib_names, new_size);
-								parser_state.attrib_values = resizeArray(parser_state.attrib_values, new_size);
+									parser_state.attrib_names = resizeArray(parser_state.attrib_names, new_size);
+									parser_state.attrib_values = resizeArray(parser_state.attrib_values, new_size);
+								}
 							}
 						}    // end of else
 
