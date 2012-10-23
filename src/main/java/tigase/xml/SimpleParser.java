@@ -77,11 +77,18 @@ public class SimpleParser {
 	 * bigger so there should be no problem with processing XML streams
 	 * different than expected.
 	 */
-	public static int MAX_ATTRIBS_NUMBER = 6;
-	private static final int MAX_ELEMENT_NAME_SIZE = 1024;
-	private static final int MAX_ATTRIBUTE_NAME_SIZE = 1024;
-	private static final int MAX_ATTRIBUTE_VALUE_SIZE = 10 * 1024;
-	private static final int MAX_CDATA_SIZE = 1024 * 1024;
+	public int MAX_ATTRIBS_NUMBER = 6;
+	public static final String MAX_ATTRIBS_NUMBER_PROP_KEY = "tigase.xml.max_attrib_number";
+	public int MAX_ELEMENT_NAME_SIZE = 1024;
+	public static final String MAX_ELEMENT_NAME_SIZE_PROP_KEY = "tigase.xml.max_element_size";
+	public int MAX_ATTRIBUTE_NAME_SIZE = 1024;
+	public static final String MAX_ATTRIBUTE_NAME_SIZE_PROP_KEY =
+		"tigase.xml.max_attribute_name_size";
+	public int MAX_ATTRIBUTE_VALUE_SIZE = 10 * 1024;
+	public static final String MAX_ATTRIBUTE_VALUE_SIZE_PROP_KEY =
+		"tigase.xml.max_attribute_value_size";
+	public int MAX_CDATA_SIZE = 1024 * 1024;
+	public static final String MAX_CDATA_SIZE_PROP_KEY = "tigase.xml.max_cdata_size";
 	private static final char OPEN_BRACKET = '<';
 	private static final char CLOSE_BRACKET = '>';
 	private static final char QUESTION_MARK = '?';
@@ -117,6 +124,17 @@ public class SimpleParser {
 
 		// Arrays.sort(WHITE_CHARS);
 		Arrays.sort(IGNORE_CHARS);
+	}
+
+	public SimpleParser() {
+		MAX_ATTRIBS_NUMBER = Integer.getInteger(MAX_ATTRIBS_NUMBER_PROP_KEY, MAX_ATTRIBS_NUMBER);
+		MAX_ELEMENT_NAME_SIZE =
+			Integer.getInteger(MAX_ELEMENT_NAME_SIZE_PROP_KEY, MAX_ELEMENT_NAME_SIZE);
+		MAX_ATTRIBUTE_NAME_SIZE =
+			Integer.getInteger(MAX_ATTRIBUTE_NAME_SIZE_PROP_KEY, MAX_ATTRIBUTE_NAME_SIZE);
+		MAX_ATTRIBUTE_VALUE_SIZE =
+			Integer.getInteger(MAX_ATTRIBUTE_VALUE_SIZE_PROP_KEY, MAX_ATTRIBUTE_VALUE_SIZE);
+		MAX_CDATA_SIZE = Integer.getInteger(MAX_CDATA_SIZE_PROP_KEY, MAX_CDATA_SIZE);
 	}
 
 	//~--- methods --------------------------------------------------------------
