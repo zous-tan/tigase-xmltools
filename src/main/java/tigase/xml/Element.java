@@ -551,6 +551,23 @@ public class Element
 	}
 
 	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 * @param att_name
+	 *
+	 * @return
+	 */
+	public String getAttribute(String[] elementPath, String att_name) {
+		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getAttribute(att_name)
+					 : null;
+	}
+
+	/**
 	 * Get the Attributes value.
 	 *
 	 * @return the Attributes value.
@@ -568,6 +585,18 @@ public class Element
 	 * @return
 	 */
 	public String getCData(String elementPath) {
+		return getChildCData(elementPath);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getCData(String[] elementPath) {
 		return getChildCData(elementPath);
 	}
 
@@ -641,6 +670,22 @@ public class Element
 	 * @return
 	 */
 	public String getChildCData(String elementPath) {
+		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getCData()
+					 : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getChildCData(String[] elementPath) {
 		Element child = findChild(elementPath);
 
 		return (child != null)
