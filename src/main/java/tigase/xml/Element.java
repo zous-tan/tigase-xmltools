@@ -684,6 +684,22 @@ public class Element
 	}
 
 	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public List<Element> getChildren(String[] elementPath) {
+		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getChildren()
+					 : null;
+	}
+
+	/**
 	 * Gets the value of name
 	 *
 	 * @return the value of name
@@ -1112,4 +1128,4 @@ public class Element
 // ~ Formatted by Jindent --- http://www.jindent.com
 
 
-//~ Formatted in Tigase Code Convention on 13/02/14
+//~ Formatted in Tigase Code Convention on 13/02/15
