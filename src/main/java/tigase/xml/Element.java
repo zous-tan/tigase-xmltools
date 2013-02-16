@@ -454,7 +454,8 @@ public class Element
 
 		Element child = this;
 
-		for (int i = 0; (i < elementPath.length) && (child != null); i++) {
+                // we must start with 1 not 0 as 0 is name of parent element
+		for (int i = 1; (i < elementPath.length) && (child != null); i++) {
 			String str = elementPath[i];
 
 			child = child.getChild(str);
@@ -473,7 +474,12 @@ public class Element
 
 		// For performance reasons, replace StringTokenizer with split
 		String strtok[] = elementPath.split("/");
-
+                
+                // we used "/parent/child" so first element can be empty and should be omitted
+                if (strtok.length > 0 && strtok[0].isEmpty()) {
+                        strtok = Arrays.copyOfRange(strtok, 1, strtok.length);
+                }
+                
 		return findChild(strtok);
 	}
 
