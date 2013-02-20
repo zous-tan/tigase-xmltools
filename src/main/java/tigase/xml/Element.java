@@ -469,20 +469,24 @@ public class Element
 	 * Method description
 	 *
 	 *
-	 * @param elementPath
+	 *
+	 * @param elemPath
 	 *
 	 * @return
 	 */
-	public Element findChild(String[] elementPath) {
-		if (!elementPath[0].equals(getName())) {
+	public Element findChild(String[] elemPath) {
+		if (elemPath[0].isEmpty()) {
+			elemPath = Arrays.copyOfRange(elemPath, 1, elemPath.length);
+		}
+		if (!elemPath[0].equals(getName())) {
 			return null;
 		}
 
 		Element child = this;
 
 		// we must start with 1 not 0 as 0 is name of parent element
-		for (int i = 1; (i < elementPath.length) && (child != null); i++) {
-			String str = elementPath[i];
+		for (int i = 1; (i < elemPath.length) && (child != null); i++) {
+			String str = elemPath[i];
 
 			child = child.getChild(str);
 		}
@@ -505,15 +509,7 @@ public class Element
 	public Element findChild(String elementPath) {
 
 		// For performance reasons, replace StringTokenizer with split
-		String strtok[] = elementPath.split("/");
-
-		// we used "/parent/child" so first element can be empty
-		// and should be omitted
-		if ((strtok.length > 0) && strtok[0].isEmpty()) {
-			strtok = Arrays.copyOfRange(strtok, 1, strtok.length);
-		}
-
-		return findChild(strtok);
+		return findChild(elementPath.split("/"));
 	}
 
 	//~--- get methods ----------------------------------------------------------
@@ -564,7 +560,7 @@ public class Element
 	 *
 	 * @return
 	 */
-	public String getAttributeFast(String attName) {
+	public String getAttributeStaticStr(String attName) {
 		if (attributes != null) {
 			synchronized (attributes) {
 				return attributes.get(attName);
