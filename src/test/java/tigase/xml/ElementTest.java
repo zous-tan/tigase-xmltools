@@ -183,30 +183,6 @@ public class ElementTest
 	}
 
 	/**
-	 * Test of childrenToString method, of class Element.
-	 */
-	@Test
-	public void testChildrenToString() {
-		String expResult =
-			"<child child_att_name=\"child_att_value\" xmlns=\"xmlns:1\">correct-value</child>";
-		String result = parent.childrenToString();
-
-		assertEquals(expResult, result);
-	}
-
-	/**
-	 * Test of childrenToStringSecure method, of class Element.
-	 */
-	@Test
-	public void testChildrenToStringSecure() {
-		String expResult =
-			"<child child_att_name=\"child_att_value\" xmlns=\"xmlns:1\">CData size: 13</child>";
-		String result = parent.childrenToStringSecure();
-
-		assertEquals(expResult, result);
-	}
-
-	/**
 	 * Test of clone method, of class Element.
 	 */
 	@Test
@@ -474,4 +450,4 @@ public class ElementTest
 }
 
 
-//~ Formatted in Tigase Code Convention on 13/02/19
+//~ Formatted in Tigase Code Convention on 13/02/20
