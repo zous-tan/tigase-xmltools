@@ -1,12 +1,13 @@
 /*
  * Element.java
- * 
+ *
  * Tigase Jabber/XMPP Server
  * Copyright (C) 2004-2012 "Artur Hefczyc" <artur.hefczyc@tigase.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License.
+ * the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -447,6 +448,31 @@ public class Element
 	 *
 	 * @return
 	 */
+	public Element findChildStaticStr(String[] elementPath) {
+		if (elementPath[0] != getName()) {
+			return null;
+		}
+
+		Element child = this;
+
+		// we must start with 1 not 0 as 0 is name of parent element
+		for (int i = 1; (i < elementPath.length) && (child != null); i++) {
+			String str = elementPath[i];
+
+			child = child.getChildStaticStr(str);
+		}
+
+		return child;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
 	public Element findChild(String[] elementPath) {
 		if (!elementPath[0].equals(getName())) {
 			return null;
@@ -454,7 +480,8 @@ public class Element
 
 		Element child = this;
 
-		for (int i = 0; (i < elementPath.length) && (child != null); i++) {
+		// we must start with 1 not 0 as 0 is name of parent element
+		for (int i = 1; (i < elementPath.length) && (child != null); i++) {
 			String str = elementPath[i];
 
 			child = child.getChild(str);
@@ -466,13 +493,25 @@ public class Element
 	/**
 	 * Method description
 	 *
+	 *
+	 *
+	 *
+	 *
 	 * @param elementPath
 	 * @return
+	 * @deprecated use {@link #findChild(java.lang.String[])} instead.
 	 */
+	@Deprecated
 	public Element findChild(String elementPath) {
 
 		// For performance reasons, replace StringTokenizer with split
 		String strtok[] = elementPath.split("/");
+
+		// we used "/parent/child" so first element can be empty
+		// and should be omitted
+		if ((strtok.length > 0) && strtok[0].isEmpty()) {
+			strtok = Arrays.copyOfRange(strtok, 1, strtok.length);
+		}
 
 		return findChild(strtok);
 	}
@@ -541,7 +580,11 @@ public class Element
 	 * @param elementPath
 	 * @param att_name
 	 * @return
+	 * @deprecated use
+	 * {@link #getAttribute(java.lang.String[], java.lang.String) }
+	 * instead.
 	 */
+	@Deprecated
 	public String getAttribute(String elementPath, String att_name) {
 		Element child = findChild(elementPath);
 
@@ -568,6 +611,23 @@ public class Element
 	}
 
 	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 * @param att_name
+	 *
+	 * @return
+	 */
+	public String getAttributeStaticStr(String[] elementPath, String att_name) {
+		Element child = findChildStaticStr(elementPath);
+
+		return (child != null)
+					 ? child.getAttribute(att_name)
+					 : null;
+	}
+
+	/**
 	 * Get the Attributes value.
 	 *
 	 * @return the Attributes value.
@@ -583,7 +643,9 @@ public class Element
 	 *
 	 * @param elementPath
 	 * @return
+	 * @deprecated use {@link #getCData(java.lang.String[]) } instead.
 	 */
+	@Deprecated
 	public String getCData(String elementPath) {
 		return getChildCData(elementPath);
 	}
@@ -598,6 +660,18 @@ public class Element
 	 */
 	public String getCData(String[] elementPath) {
 		return getChildCData(elementPath);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getCDataStaticStr(String[] elementPath) {
+		return getChildCDataStaticStr(elementPath);
 	}
 
 	/**
@@ -623,6 +697,32 @@ public class Element
 						Element elem = (Element) el;
 
 						if (elem.getName().equals(name)) {
+							return elem;
+						}
+					}
+				}
+			}
+		}    // end of if (children != null)
+
+		return null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param name
+	 *
+	 * @return
+	 */
+	public Element getChildStaticStr(String name) {
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc el : children) {
+					if (el instanceof Element) {
+						Element elem = (Element) el;
+
+						if (elem.getName() == name) {
 							return elem;
 						}
 					}
@@ -668,7 +768,9 @@ public class Element
 	 *
 	 * @param elementPath
 	 * @return
+	 * @deprecated use {@link #getCData(java.lang.String[]) } instead.
 	 */
+	@Deprecated
 	public String getChildCData(String elementPath) {
 		Element child = findChild(elementPath);
 
@@ -687,6 +789,22 @@ public class Element
 	 */
 	public String getChildCData(String[] elementPath) {
 		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getCData()
+					 : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getChildCDataStaticStr(String[] elementPath) {
+		Element child = findChildStaticStr(elementPath);
 
 		return (child != null)
 					 ? child.getCData()
@@ -719,7 +837,9 @@ public class Element
 	 *
 	 * @param elementPath
 	 * @return
+	 * @deprecated use {@link #getChildren(java.lang.String[]) } instead.
 	 */
+	@Deprecated
 	public List<Element> getChildren(String elementPath) {
 		Element child = findChild(elementPath);
 
@@ -738,6 +858,22 @@ public class Element
 	 */
 	public List<Element> getChildren(String[] elementPath) {
 		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getChildren()
+					 : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public List<Element> getChildrenStaticStr(String[] elementPath) {
+		Element child = findChildStaticStr(elementPath);
 
 		return (child != null)
 					 ? child.getChildren()
@@ -772,7 +908,9 @@ public class Element
 	/**
 	 * @param elementPath
 	 * @return
+	 * @deprecated use {@link #getXMLNS(java.lang.String[]) } instead.
 	 */
+	@Deprecated
 	public String getXMLNS(String elementPath) {
 		Element child = findChild(elementPath);
 
@@ -791,6 +929,22 @@ public class Element
 	 */
 	public String getXMLNS(String[] elementPath) {
 		Element child = findChild(elementPath);
+
+		return (child != null)
+					 ? child.getXMLNS()
+					 : null;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param elementPath
+	 *
+	 * @return
+	 */
+	public String getXMLNSStaticStr(String[] elementPath) {
+		Element child = findChildStaticStr(elementPath);
 
 		return (child != null)
 					 ? child.getXMLNS()
@@ -852,17 +1006,17 @@ public class Element
 	/**
 	 * Method description
 	 *
-	 * @param elementPath
-	 * @param att_name
-	 * @param att_value
+	 *
+	 * @param key
+	 * @param value
 	 */
-	public void setAttribute(String elementPath, String att_name, String att_value) {
-		Element child = findChild(elementPath);
-
-		if (child != null) {
-			child.setAttribute(att_name, att_value);
-		}    // end of if (child != null)
-	}
+//public void setAttribute(String elementPath, String att_name, String att_value) {
+//  Element child = findChild(elementPath);
+//
+//  if (child != null) {
+//    child.setAttribute(att_name, att_value);
+//  }    // end of if (child != null)
+//}
 
 	/**
 	 * Method description
@@ -1173,4 +1327,4 @@ public class Element
 // ~ Formatted by Jindent --- http://www.jindent.com
 
 
-//~ Formatted in Tigase Code Convention on 13/02/15
+//~ Formatted in Tigase Code Convention on 13/02/19
