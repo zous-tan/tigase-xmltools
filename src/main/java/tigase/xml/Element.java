@@ -89,8 +89,6 @@ public class Element
 
 	//~--- constructors ---------------------------------------------------------
 
-	// ~--- constructors ---------------------------------------------------------
-
 	/**
 	 * Constructs ...
 	 *
@@ -200,8 +198,6 @@ public class Element
 	}
 
 	//~--- methods --------------------------------------------------------------
-
-	// ~--- methods --------------------------------------------------------------
 
 	/**
 	 * Method description
@@ -393,24 +389,6 @@ public class Element
 	 */
 	@Override
 	public int compareTo(Element elem) {
-
-		// int result = name.compareTo(elem.getName());
-		// if (result == 0) {
-		// if (getXMLNS() != null) {
-		// if (elem.getXMLNS() != null) {
-		// result = getXMLNS().compareTo(elem.getXMLNS());
-		// } else {
-		// result = 1;
-		// }
-		// } else {
-		// if (elem.getXMLNS() != null) {
-		// result = -1;
-		// } else {
-		// result = 0;
-		// }
-		// }
-		// }
-		// return result;
 		return toStringNoChildren().compareTo(elem.toStringNoChildren());
 	}
 
@@ -425,15 +403,6 @@ public class Element
 		if (obj instanceof Element) {
 			Element elem = (Element) obj;
 
-			// boolean result = name.equals(elem.getName());
-			// if (result) {
-			// if (getXMLNS() != null && elem.getXMLNS() != null) {
-			// result = getXMLNS().equals(elem.getXMLNS());
-			// } else {
-			// result = getXMLNS() == elem.getXMLNS();
-			// }
-			// }
-			// return result;
 			return toStringNoChildren().equals(elem.toStringNoChildren());
 		}
 
@@ -514,14 +483,14 @@ public class Element
 
 	//~--- get methods ----------------------------------------------------------
 
-	// ~--- get methods ----------------------------------------------------------
-
 	/**
 	 * Method description
 	 *
 	 * @param attName
 	 * @return
+	 * @deprecated use {@link #getAttributeStaticStr(java.lang.String) } instead.
 	 */
+	@Deprecated
 	public String getAttribute(String attName) {
 		if (attributes != null) {
 			synchronized (attributes) {
@@ -536,17 +505,40 @@ public class Element
 	 * Method description
 	 *
 	 *
+	 *
 	 * @param childName
 	 * @param attName
 	 *
 	 * @return
+	 * @deprecated use {@link #getChildAttributeStaticStr(java.lang.String, java.lang.String) } instead.
 	 */
+	@Deprecated
 	public String getChildAttribute(String childName, String attName) {
 		String result = null;
 		Element child = getChild(childName);
 
 		if (child != null) {
 			result = child.getAttribute(attName);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param childName
+	 * @param attName
+	 *
+	 * @return
+	 */
+	public String getChildAttributeStaticStr(String childName, String attName) {
+		String result = null;
+		Element child = getChild(childName);
+
+		if (child != null) {
+			result = child.getAttributeStaticStr(attName);
 		}
 
 		return result;
@@ -577,7 +569,7 @@ public class Element
 	 * @param att_name
 	 * @return
 	 * @deprecated use
-	 * {@link #getAttribute(java.lang.String[], java.lang.String) }
+	 * {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
 	 * instead.
 	 */
 	@Deprecated
@@ -597,7 +589,10 @@ public class Element
 	 * @param att_name
 	 *
 	 * @return
+	 * {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
+	 * instead.
 	 */
+	@Deprecated
 	public String getAttribute(String[] elementPath, String att_name) {
 		Element child = findChild(elementPath);
 
@@ -619,7 +614,7 @@ public class Element
 		Element child = findChildStaticStr(elementPath);
 
 		return (child != null)
-					 ? child.getAttribute(att_name)
+					 ? child.getAttributeStaticStr(att_name)
 					 : null;
 	}
 
@@ -890,7 +885,7 @@ public class Element
 	 */
 	public String getXMLNS() {
 		if (xmlns == null) {
-			xmlns = getAttribute("xmlns");
+			xmlns = getAttributeStaticStr("xmlns");
 			xmlns = ((xmlns != null)
 							 ? xmlns.intern()
 							 : null);
@@ -949,8 +944,6 @@ public class Element
 
 	//~--- methods --------------------------------------------------------------
 
-	// ~--- methods --------------------------------------------------------------
-
 	/**
 	 * Method description
 	 *
@@ -958,9 +951,6 @@ public class Element
 	 */
 	@Override
 	public int hashCode() {
-
-		// String hash_str = name + (getXMLNS() != null ? getXMLNS() : "");
-		// return hash_str.hashCode();
 		return toStringNoChildren().hashCode();
 	}
 
@@ -997,22 +987,23 @@ public class Element
 
 	//~--- set methods ----------------------------------------------------------
 
-	// ~--- set methods ----------------------------------------------------------
-
 	/**
 	 * Method description
 	 *
 	 *
-	 * @param key
-	 * @param value
+	 *
+	 * @param elementPath
+	 * @param att_name
+	 * @param att_value
 	 */
-//public void setAttribute(String elementPath, String att_name, String att_value) {
-//  Element child = findChild(elementPath);
-//
-//  if (child != null) {
-//    child.setAttribute(att_name, att_value);
-//  }    // end of if (child != null)
-//}
+	public void setAttributeStaticStr(String elementPath[], String att_name,
+																		String att_value) {
+		Element child = findChildStaticStr(elementPath);
+
+		if (child != null) {
+			child.setAttribute(att_name, att_value);
+		}    // end of if (child != null)
+	}
 
 	/**
 	 * Method description
@@ -1148,8 +1139,6 @@ public class Element
 
 	//~--- methods --------------------------------------------------------------
 
-	// ~--- methods --------------------------------------------------------------
-
 	/**
 	 * Method description
 	 *
@@ -1270,8 +1259,6 @@ public class Element
 
 	//~--- inner classes --------------------------------------------------------
 
-	// ~--- inner classes --------------------------------------------------------
-
 	/**
 	 * Class description
 	 *
@@ -1288,14 +1275,11 @@ public class Element
 
 		//~--- constructors -------------------------------------------------------
 
-		// ~--- constructors -------------------------------------------------------
 		private XMLIdentityHashMap(int size) {
 			super(size);
 		}
 
 		//~--- methods ------------------------------------------------------------
-
-		// ~--- methods ------------------------------------------------------------
 
 		/**
 		 * Method description
@@ -1317,10 +1301,4 @@ public class Element
 }    // Element
 
 
-
-// ~ Formatted in Sun Code Convention
-
-// ~ Formatted by Jindent --- http://www.jindent.com
-
-
-//~ Formatted in Tigase Code Convention on 13/02/19
+//~ Formatted in Tigase Code Convention on 13/02/20

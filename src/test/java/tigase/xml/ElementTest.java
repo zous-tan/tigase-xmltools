@@ -420,7 +420,7 @@ public class ElementTest
 	@Test
 	public void testRemoveAttribute() {
 		parent.removeAttribute(p_att_name);
-		assertNull(parent.getAttribute(p_att_name));
+		assertNull(parent.getAttributeStaticStr(p_att_name));
 	}
 
 	/**

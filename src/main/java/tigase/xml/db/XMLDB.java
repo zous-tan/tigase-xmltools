@@ -1,10 +1,13 @@
 /*
- * Tigase Jabber/XMPP XML Tools
+ * XMLDB.java
+ *
+ * Tigase Jabber/XMPP Server
  * Copyright (C) 2004-2012 "Artur Hefczyc" <artur.hefczyc@tigase.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License.
+ * the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,30 +18,36 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://www.gnu.org/licenses/.
  *
- * $Rev$
- * Last modified by $Author$
- * $Date$
  */
+
+
+
 package tigase.xml.db;
+
+//~--- non-JDK imports --------------------------------------------------------
+
+import tigase.xml.DomBuilderHandler;
+import tigase.xml.Element;
+import tigase.xml.SimpleParser;
+
+//~--- JDK imports ------------------------------------------------------------
 
 //import java.io.FileReader;
 //import java.io.FileWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.util.List;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
 import java.util.logging.Logger;
-import tigase.xml.DomBuilderHandler;
-import tigase.xml.SimpleParser;
-import tigase.xml.Element;
 
 /**
  * <code>XMLDB</code> is the main database access class.
@@ -96,469 +105,738 @@ import tigase.xml.Element;
  * @version $Rev$
  */
 public class XMLDB {
+	private static Logger log = Logger.getLogger("tigase.xml.db.XMLDB");
 
-  private static Logger log = Logger.getLogger("tigase.xml.db.XMLDB");
+	//~--- fields ---------------------------------------------------------------
 
-  private String root_name = "root";
-  private String node1_name = "node";
-  private DBElementComparator comparator = new DBElementComparator();
-  private Lock lock = new ReentrantLock();
-  private final DBSaver db_saver = new DBSaver();
+	private String dbFile                  = "xml_db.xml";
+	private String node1_name              = "node";
+	private DBElement root                 = null;
+	private String root_name               = "root";
+	private boolean node1s_modified        = true;
+	private DBElement[] node1s             = new DBElement[] {};
+	private Lock lock                      = new ReentrantLock();
+	private final DBSaver db_saver         = new DBSaver();
+	private DBElementComparator comparator = new DBElementComparator();
 
-  private String dbFile = "xml_db.xml";
-  private DBElement root = null;
-  private DBElement[] node1s = new DBElement[] {};
-  private boolean node1s_modified = true;
+	/**
+	 * Used only for searching for given node, do NOT use for any
+	 * other purpose.
+	 */
+	private DBElement tmp_node1 = null;
 
-  /**
-   * Used only for searching for given node, do NOT use for any
-   * other purpose.
-   */
-  private DBElement tmp_node1 = null;
+	//~--- constructors ---------------------------------------------------------
 
-  private XMLDB() {
-    Thread thrd = new Thread(db_saver);
-    thrd.setName("XMLDBSaver");
-    thrd.setDaemon(true);
-    thrd.start();
-  }
+	private XMLDB() {
+		Thread thrd = new Thread(db_saver);
 
-  public XMLDB(String db_file) throws IOException, XMLDBException {
-    Thread thrd = new Thread(db_saver);
-    thrd.setName("XMLDBSaver");
-    thrd.setDaemon(true);
-    thrd.start();
-    dbFile = db_file;
-    tmp_node1 = new DBElement(node1_name);
-    loadDB();
-  }
+		thrd.setName("XMLDBSaver");
+		thrd.setDaemon(true);
+		thrd.start();
+	}
 
-  public static XMLDB createDB(String db_file,
-		String root_name, String node1_name) {
-    XMLDB xmldb = new XMLDB();
-    xmldb.setupNewDB(db_file, root_name, node1_name);
-    return xmldb;
-  }
+	/**
+	 * Constructs ...
+	 *
+	 *
+	 * @param db_file
+	 *
+	 * @throws IOException
+	 * @throws XMLDBException
+	 */
+	public XMLDB(String db_file) throws IOException, XMLDBException {
+		Thread thrd = new Thread(db_saver);
 
-  public String getDBFileName() { return dbFile; }
+		thrd.setName("XMLDBSaver");
+		thrd.setDaemon(true);
+		thrd.start();
+		dbFile    = db_file;
+		tmp_node1 = new DBElement(node1_name);
+		loadDB();
+	}
 
-  protected void setupNewDB(String db_file, String root_name,
-		String node1_name) {
+	//~--- methods --------------------------------------------------------------
 
-    log.info("Create empty DB.");
-    this.dbFile = db_file;
-    if (root_name != null) {
-      this.root_name = root_name;
-    } // end of if (root_name != null)
-    if (node1_name != null) {
-      this.node1_name = node1_name;
-    } // end of if (node1_name != null)
-    tmp_node1 = new DBElement(node1_name);
-    root = new DBElement(this.root_name);
-  }
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param db_file
+	 * @param root_name
+	 * @param node1_name
+	 *
+	 * @return
+	 */
+	public static XMLDB createDB(String db_file, String root_name, String node1_name) {
+		XMLDB xmldb = new XMLDB();
 
-  protected void loadDB() throws IOException, XMLDBException {
-    InputStreamReader file =
-      new InputStreamReader(new FileInputStream(dbFile), "UTF-8");
-    char[] buff = new char[16*1024];
-    SimpleParser parser = new SimpleParser();
-    DomBuilderHandler domHandler =
-      new DomBuilderHandler(DBElementFactory.getFactory());
-    int result = -1;
-    while((result = file.read(buff)) != -1) {
-      parser.parse(domHandler, buff, 0, result);
-    }
-    file.close();
-    root = (DBElement)domHandler.getParsedElements().poll();
-    //    node1s = root.getChildren();
-		if(root == null)
-    	throw new XMLDBException("Invalid XML DB File");
-    this.root_name = root.getName();
-    List<Element> children = root.getChildren();
-    if (children != null && children.size() > 0) {
-      this.node1_name = children.get(0).getName();
-    } // end of if (children != null && children.size() > 0)
-    log.finest(root.formatedString(0, 2));
-  }
+		xmldb.setupNewDB(db_file, root_name, node1_name);
 
-  protected void saveDB() {
-    synchronized(db_saver) {
-      db_saver.notifyAll();
-    }
-  }
+		return xmldb;
+	}
 
+	//~--- get methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
+	public String getDBFileName() {
+		return dbFile;
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param db_file
+	 * @param root_name
+	 * @param node1_name
+	 */
+	protected void setupNewDB(String db_file, String root_name, String node1_name) {
+		log.info("Create empty DB.");
+		this.dbFile = db_file;
+		if (root_name != null) {
+			this.root_name = root_name;
+		}    // end of if (root_name != null)
+		if (node1_name != null) {
+			this.node1_name = node1_name;
+		}    // end of if (node1_name != null)
+		tmp_node1 = new DBElement(node1_name);
+		root      = new DBElement(this.root_name);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @throws IOException
+	 * @throws XMLDBException
+	 */
+	protected void loadDB() throws IOException, XMLDBException {
+		InputStreamReader file       = new InputStreamReader(new FileInputStream(dbFile),
+																		 "UTF-8");
+		char[] buff                  = new char[16 * 1024];
+		SimpleParser parser          = new SimpleParser();
+		DomBuilderHandler domHandler = new DomBuilderHandler(DBElementFactory.getFactory());
+		int result                   = -1;
+
+		while ((result = file.read(buff)) != -1) {
+			parser.parse(domHandler, buff, 0, result);
+		}
+		file.close();
+		root = (DBElement) domHandler.getParsedElements().poll();
+
+		// node1s = root.getChildren();
+		if (root == null) {
+			throw new XMLDBException("Invalid XML DB File");
+		}
+		this.root_name = root.getName();
+
+		List<Element> children = root.getChildren();
+
+		if ((children != null) && (children.size() > 0)) {
+			this.node1_name = children.get(0).getName();
+		}    // end of if (children != null && children.size() > 0)
+		log.finest(root.formatedString(0, 2));
+	}
+
+	/**
+	 * Method description
+	 *
+	 */
+	protected void saveDB() {
+		synchronized (db_saver) {
+			db_saver.notifyAll();
+		}
+	}
+
+	//~--- get methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
 	public final long getAllNode1sCount() {
 		return root.getChildren().size();
 	}
 
+	/**
+	 * Method description
+	 *
+	 *
+	 * @return
+	 */
 	public final List<String> getAllNode1s() {
-    List<Element> children = root.getChildren();
-    if (children != null) {
-      List<String> results = new ArrayList<String>(children.size());
-      for (Element child: children) {
-				results.add(child.getAttribute(DBElement.NAME));
-      } // end of for (Element child: children)
-      return results;
-    } // end of if (children != null)
-    return null;
-  }
+		List<Element> children = root.getChildren();
 
-  public final DBElement findNode1(String node1_id) {
-    DBElement result = null;
-    lock.lock();
-    try {
-      tmp_node1.setAttribute(DBElement.NAME, node1_id);
-      int idx = Arrays.binarySearch(node1s, tmp_node1, comparator);
-      DBElement dbel = null;
-      if (idx >= 0) {
-        dbel = node1s[idx];
-      } // end of if (idx >= 0)
-      if (node1s_modified && (idx < 0 || (dbel != null && dbel.removed))) {
-        List<Element> children = root.getChildren();
-        if (children != null) {
-          node1s = children.toArray(new DBElement[children.size()]);
-          Arrays.sort(node1s, comparator);
-          idx = Arrays.binarySearch(node1s, tmp_node1, comparator);
-        } // end of if (children != null)
-        node1s_modified = false;
-      } // end of if (idx < 0)
-      if (idx >= 0) {
-        result = node1s[idx];
-      }
-    } finally {
-      lock.unlock();
-    } // end of try-finally
-    return result;
-  }
+		if (children != null) {
+			List<String> results = new ArrayList<String>(children.size());
 
-  protected final DBElement getNode1(String node1_id)
-    throws NodeNotFoundException {
-    DBElement result = findNode1(node1_id);
-    if (result != null) {
-      return result;
-    } else {
-      throw new NodeNotFoundException("Node1: " + node1_id +
-				" has not been found in db.");
-    } // end of if (result != null) else
-  }
+			for (Element child : children) {
+				results.add(child.getAttributeStaticStr(DBElement.NAME));
+			}    // end of for (Element child: children)
 
-  public void addNode1(String node1_id) throws NodeExistsException {
-    lock.lock();
-    try {
-      try {
-        getNode1(node1_id);
-        throw new NodeExistsException("Node1: "+node1_id+" already exists.");
-      } catch (NodeNotFoundException e) {
-        node1s_modified = true;
-        DBElement newNode1 =
-          new DBElement(node1_name, DBElement.NAME, node1_id);
-        newNode1.addChild(new DBElement(DBElement.MAP));
-        root.addChild(newNode1);
-      } // end of try-catch
-    } finally {
-      lock.unlock();
-    } // end of try-finally
-  }
+			return results;
+		}      // end of if (children != null)
 
-  public void removeNode1(String node1_id) throws NodeNotFoundException {
-    lock.lock();
-    try {
-      DBElement dbel = getNode1(node1_id);
+		return null;
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 *
+	 * @return
+	 */
+	public final DBElement findNode1(String node1_id) {
+		DBElement result = null;
+
+		lock.lock();
+		try {
+			tmp_node1.setAttribute(DBElement.NAME, node1_id);
+
+			int idx        = Arrays.binarySearch(node1s, tmp_node1, comparator);
+			DBElement dbel = null;
+
+			if (idx >= 0) {
+				dbel = node1s[idx];
+			}      // end of if (idx >= 0)
+			if (node1s_modified && ((idx < 0) || ((dbel != null) && dbel.removed))) {
+				List<Element> children = root.getChildren();
+
+				if (children != null) {
+					node1s = children.toArray(new DBElement[children.size()]);
+					Arrays.sort(node1s, comparator);
+					idx = Arrays.binarySearch(node1s, tmp_node1, comparator);
+				}    // end of if (children != null)
+				node1s_modified = false;
+			}      // end of if (idx < 0)
+			if (idx >= 0) {
+				result = node1s[idx];
+			}
+		} finally {
+			lock.unlock();
+		}        // end of try-finally
+
+		return result;
+	}
+
+	//~--- get methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	protected final DBElement getNode1(String node1_id) throws NodeNotFoundException {
+		DBElement result = findNode1(node1_id);
+
+		if (result != null) {
+			return result;
+		} else {
+			throw new NodeNotFoundException("Node1: " + node1_id +
+																			" has not been found in db.");
+		}    // end of if (result != null) else
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 *
+	 * @throws NodeExistsException
+	 */
+	public void addNode1(String node1_id) throws NodeExistsException {
+		lock.lock();
+		try {
+			try {
+				getNode1(node1_id);
+
+				throw new NodeExistsException("Node1: " + node1_id + " already exists.");
+			} catch (NodeNotFoundException e) {
+				node1s_modified = true;
+
+				DBElement newNode1 = new DBElement(node1_name, DBElement.NAME, node1_id);
+
+				newNode1.addChild(new DBElement(DBElement.MAP));
+				root.addChild(newNode1);
+			}    // end of try-catch
+		} finally {
+			lock.unlock();
+		}      // end of try-finally
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void removeNode1(String node1_id) throws NodeNotFoundException {
+		lock.lock();
+		try {
+			DBElement dbel = getNode1(node1_id);
+
 			node1s_modified = true;
-      root.removeChild(dbel);
-      dbel.removed = true;
-    } finally {
-      lock.unlock();
-    } // end of try-finally
-    saveDB();
-  }
+			root.removeChild(dbel);
+			dbel.removed = true;
+		} finally {
+			lock.unlock();
+		}    // end of try-finally
+		saveDB();
+	}
 
-  protected final DBElement getNode(String node1_id, String subnode,
-		boolean auto_create)
-    throws NodeNotFoundException {
-    DBElement node1 = getNode1(node1_id);
+	//~--- get methods ----------------------------------------------------------
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 * @param subnode
+	 * @param auto_create
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	protected final DBElement getNode(String node1_id, String subnode, boolean auto_create)
+					throws NodeNotFoundException {
+		DBElement node1 = getNode1(node1_id);
+
 		if (subnode != null) {
 			DBElement node = node1.getSubnodePath(subnode);
-			if (node == null && auto_create) {
+
+			if ((node == null) && auto_create) {
 				node = node1.buildNodesTree(subnode);
-			} // end of if (subnode != null)
+			}    // end of if (subnode != null)
+
 			return node;
 		}
+
 		return node1;
-  }
+	}
 
-  /**
-   * Describe <code>setData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @param value a <code>String</code> value
-   */
-  public void setData(String node1_id, String subnode, String key, Object value)
-    throws NodeNotFoundException {
-    getNode(node1_id, subnode, true).setEntry(key, value);
-    saveDB();
-  }
+	//~--- set methods ----------------------------------------------------------
 
-  /**
-   * Describe <code>setData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @param value a <code>String</code> value
-   */
-  public void setData(String node1_id, String key, Object value)
-    throws NodeNotFoundException {
-    setData(node1_id, null, key, value);
-  }
+	/**
+	 * Describe <code>setData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @param value a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void setData(String node1_id, String subnode, String key, Object value)
+					throws NodeNotFoundException {
+		getNode(node1_id, subnode, true).setEntry(key, value);
+		saveDB();
+	}
 
-  //   /**
-  //    * Describe <code>setDataList</code> method here.
-  //    *
-  //    * @param node1_id a <code>String</code> value
-  //    * @param subnode a <code>String</code> value
-  //    * @param key a <code>String</code> value
-  //    * @param list a <code>String[]</code> value
-  //    * @exception NodeNotFoundException if an error occurs
-  //    */
-  //   public void setDataList(String node1_id, String subnode, String key, String[] list)
-  //     throws NodeNotFoundException {
-  //     getNode(node1_id, subnode).setEntry(key, list);
-  //     saveDB();
-  //   }
+	/**
+	 * Describe <code>setData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @param value a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void setData(String node1_id, String key, Object value)
+					throws NodeNotFoundException {
+		setData(node1_id, null, key, value);
+	}
 
-  /**
-   * Describe <code>getDataList</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @return a <code>String[]</code> value
-   * @exception NodeNotFoundException if an error occurs
-   */
-  public String[] getDataList(String node1_id, String subnode, String key)
-    throws NodeNotFoundException {
+	//~--- get methods ----------------------------------------------------------
+
+	// /**
+	// * Describe <code>setDataList</code> method here.
+	// *
+	// * @param node1_id a <code>String</code> value
+	// * @param subnode a <code>String</code> value
+	// * @param key a <code>String</code> value
+	// * @param list a <code>String[]</code> value
+	// * @exception NodeNotFoundException if an error occurs
+	// */
+	// public void setDataList(String node1_id, String subnode, String key, String[] list)
+	// throws NodeNotFoundException {
+	// getNode(node1_id, subnode).setEntry(key, list);
+	// saveDB();
+	// }
+
+	/**
+	 * Describe <code>getDataList</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @return a <code>String[]</code> value
+	 * @exception NodeNotFoundException if an error occurs
+	 */
+	public String[] getDataList(String node1_id, String subnode, String key)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryStringArrValue(key, null) : null);
-  }
 
-  public int[] getDataIntList(String node1_id, String subnode, String key)
-    throws NodeNotFoundException {
+		return ((node != null)
+						? node.getEntryStringArrValue(key, null)
+						: null);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 * @param subnode
+	 * @param key
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public int[] getDataIntList(String node1_id, String subnode, String key)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryIntArrValue(key, null) : null);
-  }
 
-  public double[] getDataDoubleList(String node1_id, String subnode, String key)
-    throws NodeNotFoundException {
+		return ((node != null)
+						? node.getEntryIntArrValue(key, null)
+						: null);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 * @param subnode
+	 * @param key
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public double[] getDataDoubleList(String node1_id, String subnode, String key)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryDoubleArrValue(key, null) : null);
-  }
 
-  /**
-   * Describe <code>getData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @param def a <code>String</code> value
-   * @return a <code>String</code> value
-   */
-  public Object getData(String node1_id, String subnode, String key, Object def)
-    throws NodeNotFoundException {
+		return ((node != null)
+						? node.getEntryDoubleArrValue(key, null)
+						: null);
+	}
+
+	/**
+	 * Describe <code>getData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @param def a <code>String</code> value
+	 * @return a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public Object getData(String node1_id, String subnode, String key, Object def)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryValue(key, def) : null);
-  }
 
-  public int getDataInt(String node1_id, String subnode, String key, int def)
-    throws NodeNotFoundException {
+		return ((node != null)
+						? node.getEntryValue(key, def)
+						: null);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 * @param subnode
+	 * @param key
+	 * @param def
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public int getDataInt(String node1_id, String subnode, String key, int def)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryIntValue(key, def) : null);
-  }
 
-  public double getDataDouble(String node1_id, String subnode, String key,
-		double def)
-    throws NodeNotFoundException {
+		return ((node != null)
+						? node.getEntryIntValue(key, def)
+						: null);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param node1_id
+	 * @param subnode
+	 * @param key
+	 * @param def
+	 *
+	 * @return
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public double getDataDouble(String node1_id, String subnode, String key, double def)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryDoubleValue(key, def) : null);
-  }
 
-  /**
-   * Describe <code>getData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @return a <code>String</code> value
-   */
-  public Object getData(String node1_id, String subnode, String key)
-    throws NodeNotFoundException {
-    return getData(node1_id, subnode, key, null);
-  }
+		return ((node != null)
+						? node.getEntryDoubleValue(key, def)
+						: null);
+	}
 
-  /**
-   * Describe <code>getData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param key a <code>String</code> value
-   * @return a <code>String</code> value
-   */
-  public Object getData(String node1_id, String key)
-    throws NodeNotFoundException {
-    return getData(node1_id, null, key, null);
-  }
+	/**
+	 * Describe <code>getData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @return a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public Object getData(String node1_id, String subnode, String key)
+					throws NodeNotFoundException {
+		return getData(node1_id, subnode, key, null);
+	}
 
-  /**
-   * Describe <code>getSubnodes</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @return a <code>String[]</code> value
-   */
-  public String[] getSubnodes(String node1_id, String subnode)
-    throws NodeNotFoundException {
-		//log.finest("node1_id: " + node1_id + ", subnode: " + subnode);
+	/**
+	 * Describe <code>getData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 * @return a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public Object getData(String node1_id, String key) throws NodeNotFoundException {
+		return getData(node1_id, null, key, null);
+	}
+
+	/**
+	 * Describe <code>getSubnodes</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @return a <code>String[]</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public String[] getSubnodes(String node1_id, String subnode)
+					throws NodeNotFoundException {
+
+		// log.finest("node1_id: " + node1_id + ", subnode: " + subnode);
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getSubnodes() : null);
-  }
 
-  /**
-   * Describe <code>getSubnodes</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @return a <code>String[]</code> value
-   */
-  public String[] getSubnodes(String node1_id)
-    throws NodeNotFoundException {
-    return getSubnodes(node1_id, null);
-  }
+		return ((node != null)
+						? node.getSubnodes()
+						: null);
+	}
 
-  /**
-   * Describe <code>getKeys</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @return a <code>String[]</code> value
-   */
-  public String[] getKeys(String node1_id, String subnode)
-    throws NodeNotFoundException {
+	/**
+	 * Describe <code>getSubnodes</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @return a <code>String[]</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public String[] getSubnodes(String node1_id) throws NodeNotFoundException {
+		return getSubnodes(node1_id, null);
+	}
+
+	/**
+	 * Describe <code>getKeys</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @return a <code>String[]</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public String[] getKeys(String node1_id, String subnode) throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
-    return (node != null ? node.getEntryKeys() : null);
-  }
 
-  /**
-   * Describe <code>getKeys</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @return a <code>String[]</code> value
-   */
-  public String[] getKeys(String node1_id)
-    throws NodeNotFoundException {
-    return getKeys(node1_id, null);
-  }
+		return ((node != null)
+						? node.getEntryKeys()
+						: null);
+	}
 
-  /**
-   * Describe <code>removeData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   * @param key a <code>String</code> value
-   */
-  public void removeData(String node1_id, String subnode, String key)
-    throws NodeNotFoundException {
+	/**
+	 * Describe <code>getKeys</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @return a <code>String[]</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public String[] getKeys(String node1_id) throws NodeNotFoundException {
+		return getKeys(node1_id, null);
+	}
+
+	//~--- methods --------------------------------------------------------------
+
+	/**
+	 * Describe <code>removeData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void removeData(String node1_id, String subnode, String key)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
+
 		if (node != null) {
 			node.removeEntry(key);
 			saveDB();
 		}
-  }
+	}
 
-  /**
-   * Describe <code>removeData</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param key a <code>String</code> value
-   */
-  public void removeData(String node1_id, String key)
-    throws NodeNotFoundException {
-    removeData(node1_id, null, key);
-  }
+	/**
+	 * Describe <code>removeData</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param key a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void removeData(String node1_id, String key) throws NodeNotFoundException {
+		removeData(node1_id, null, key);
+	}
 
-  /**
-   * Describe <code>removeSubnode</code> method here.
-   *
-   * @param node1_id a <code>String</code> value
-   * @param subnode a <code>String</code> value
-   */
-  public void removeSubnode(String node1_id, String subnode)
-    throws NodeNotFoundException {
+	/**
+	 * Describe <code>removeSubnode</code> method here.
+	 *
+	 * @param node1_id a <code>String</code> value
+	 * @param subnode a <code>String</code> value
+	 *
+	 * @throws NodeNotFoundException
+	 */
+	public void removeSubnode(String node1_id, String subnode)
+					throws NodeNotFoundException {
 		DBElement node = getNode(node1_id, subnode, false);
+
 		if (node != null) {
 			node.removeNode(subnode);
 			saveDB();
 		}
-  }
+	}
 
-  public void sync() throws IOException {
-    write();
-  }
+	/**
+	 * Method description
+	 *
+	 *
+	 * @throws IOException
+	 */
+	public void sync() throws IOException {
+		write();
+	}
 
-  private void write() throws IOException {
-    lock.lock();
-    try {
-      String buffer = root.formatedString(0, 1);
-      OutputStreamWriter file =
-				new OutputStreamWriter(new FileOutputStream(dbFile, false),
-					"UTF-8");
-      file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-      file.write(buffer+"\n");
-      file.close();
-    } finally {
-      lock.unlock();
-    } // end of try-finally
-  }
+	private void write() throws IOException {
+		lock.lock();
+		try {
+			String buffer           = root.formatedString(0, 1);
+			OutputStreamWriter file = new OutputStreamWriter(new FileOutputStream(dbFile,
+																	false), "UTF-8");
 
-  private static class DBElementComparator
-    implements Comparator<DBElement>, Serializable {
+			file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+			file.write(buffer + "\n");
+			file.close();
+		} finally {
+			lock.unlock();
+		}    // end of try-finally
+	}
 
+	//~--- inner classes --------------------------------------------------------
+
+	private static class DBElementComparator
+					implements Comparator<DBElement>, Serializable {
 		private static final long serialVersionUID = 1L;
 
+		//~--- methods ------------------------------------------------------------
+
+		/**
+		 * Method description
+		 *
+		 *
+		 * @param el1
+		 * @param el2
+		 *
+		 * @return
+		 */
 		@Override
-    public int compare(DBElement el1, DBElement el2) {
-      String name1 = el1.getAttribute("name");
-      String name2 = el2.getAttribute("name");
-      return name1.compareTo(name2);
-    }
+		public int compare(DBElement el1, DBElement el2) {
+			String name1 = el1.getAttributeStaticStr("name");
+			String name2 = el2.getAttributeStaticStr("name");
 
-  }
+			return name1.compareTo(name2);
+		}
+	}
 
-  class DBSaver implements Runnable {
 
-    public DBSaver() {
-    }
+	class DBSaver
+					implements Runnable {
+		/**
+		 * Constructs ...
+		 *
+		 */
+		public DBSaver() {}
 
-    // Implementation of java.lang.Runnable
+		//~--- methods ------------------------------------------------------------
 
-    /**
-     * Describe <code>run</code> method here.
-     *
-     */
+		// Implementation of java.lang.Runnable
+
+		/**
+		 * Describe <code>run</code> method here.
+		 *
+		 */
 		@Override
-    public void run() {
-      while (true) {
-        try {
-          synchronized(db_saver) { db_saver.wait(); }
-          Thread.sleep(2000);
-        } catch (InterruptedException e) { }
-        try {
+		public void run() {
+			while (true) {
+				try {
+					synchronized (db_saver) {
+						db_saver.wait();
+					}
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {}
+				try {
 					sync();
 				} catch (Exception e) {
-          log.severe("Can't save repository file: " + e);
-        }
-      } // end of while (true)
-    }
+					log.severe("Can't save repository file: " + e);
+				}
+			}    // end of while (true)
+		}
+	}
+}    // XMLDB
 
-  }
 
-
-} // XMLDB
+//~ Formatted in Tigase Code Convention on 13/02/20
