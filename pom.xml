@@ -75,10 +75,11 @@
 				<configuration>
 					<archive>
 						<manifest>
+							<packageName>tigase/</packageName>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>${project.version} build ${buildNumber} (${timestamp})</Implementation-Version>
+							<Implementation-Version>${project.version} (${buildNumber})</Implementation-Version>
 							<Implementation-Build>${buildNumber} (${timestamp})</Implementation-Build>
 						</manifestEntries>
 					</archive>
