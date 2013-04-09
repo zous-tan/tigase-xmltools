@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tigase</groupId>
 	<artifactId>tigase-xmltools</artifactId>
-	<version>3.4.3</version>
+	<version>3.4.4-SNAPSHOT</version>
 	<name>Tigase XML Tools</name>
 	<description>Tigase XML Tools</description>
 	<url>http://www.tigase.org/</url>
