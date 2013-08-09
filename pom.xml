@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.build.timestamp.format>yyyy-MM-dd/HH:mm:ss</maven.build.timestamp.format>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tigase</groupId>
@@ -60,6 +61,37 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.codehaus.gmaven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>gitver</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<providerSelection>2.0</providerSelection>
+							<properties>
+								<script>git rev-list master --count</script>
+							</properties>
+							<source>
+								def command = project.properties.script
+								def process = command.execute()
+								process.waitFor()
+
+								def describe = process.in.text.trim()
+								println "setting revision to: " + describe
+
+								project.properties.setProperty('gitVersion',describe)
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5.1</version>
@@ -79,8 +111,8 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>${project.version} (${buildNumber})</Implementation-Version>
-							<Implementation-Build>${buildNumber} (${timestamp})</Implementation-Build>
+							<Implementation-Version>${project.version}-b${gitVersion}/${buildNumber}</Implementation-Version>
+							<Implementation-Build>${gitVersion}/${buildNumber} (${maven.build.timestamp})</Implementation-Build>
 						</manifestEntries>
 					</archive>
 				</configuration>
