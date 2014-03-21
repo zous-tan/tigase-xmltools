@@ -1292,7 +1292,7 @@ public class Element
 		public V put(K key, V value) {
 			if ((key == null) || (value == null)) {
 				throw new NullPointerException(
-						"Neither attribute key or value can be set to null.");
+						"Neither attribute key or value can be set to null. Attribute: " + key + ", value: " + value);
 			}
 
 			return super.put(key, value);
