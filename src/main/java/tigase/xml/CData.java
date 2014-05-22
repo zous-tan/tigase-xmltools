@@ -79,6 +79,12 @@ public class CData
 		return cdata;
 	}
 
+	//~--- set methods ----------------------------------------------------------
+
+	public void setCdata( String cdata ) {
+		this.cdata = cdata;
+	}
+
 	//~--- methods --------------------------------------------------------------
 
 	/**

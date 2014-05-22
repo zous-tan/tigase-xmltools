@@ -1089,6 +1089,21 @@ public class Element
 	 *          Value to assign to this.cdata
 	 */
 	public void setCData(String argCData) {
+
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc child : children) {
+
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if ((child != null) && (child instanceof CData)) {
+						((CData)child).setCdata( argCData );
+						return;
+					}
+				}    // end of for ()
+			}
+		}        // end of if (child != null)
+
 		addChild(new CData(argCData));
 	}
 

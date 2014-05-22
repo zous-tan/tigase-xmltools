@@ -98,6 +98,9 @@ public class ElementTest
 		parent = new Element("parent");
 		child  = new Element("child");
 		child.setXMLNS(xmlns);
+		//multiple call to setCData to verify the value is correct
+		child.setCData(value);
+		child.setCData(value);
 		child.setCData(value);
 		parent.addChild(child);
 		p_att_name  = "parent_att_name";
