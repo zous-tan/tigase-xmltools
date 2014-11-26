@@ -1,12 +1,10 @@
 /*
- * XMLDB.java
- *
  * Tigase Jabber/XMPP Server
- * Copyright (C) 2004-2012 "Artur Hefczyc" <artur.hefczyc@tigase.org>
+ * Copyright (C) 2004-2014 "Tigase, Inc." <office@tigase.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License,
+ * the Free Software Foundation, version 3 of the License,
  * or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -17,36 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://www.gnu.org/licenses/.
- *
  */
 
-
-
 package tigase.xml.db;
-
-//~--- non-JDK imports --------------------------------------------------------
 
 import tigase.xml.DomBuilderHandler;
 import tigase.xml.Element;
 import tigase.xml.SimpleParser;
 
-//~--- JDK imports ------------------------------------------------------------
-
-//import java.io.FileReader;
-//import java.io.FileWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -102,70 +91,105 @@ import java.util.logging.Logger;
  * Created: Tue Oct 26 15:27:33 2004
  * </p>
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
- * @version $Rev$
  */
 public class XMLDB {
+
+	/**
+	 *
+	 */
 	private static Logger log = Logger.getLogger("tigase.xml.db.XMLDB");
 
 	//~--- fields ---------------------------------------------------------------
 
+	/** dbFile filename filed*/
 	private String dbFile                  = "xml_db.xml";
-	private String node1_name              = "node";
+
+	/** memoryMode indicates whether XML should be kept only in memory*/
+	private boolean memoryMode						 = false;
+
+	/** node_name filed*/
+	private String node_name              = "node";
+
+	/** root element filed*/
 	private DBElement root                 = null;
+
+	/** root element name filed*/
 	private String root_name               = "root";
-	private boolean node1s_modified        = true;
-	private DBElement[] node1s             = new DBElement[] {};
+
+	/** field indicates if nodes were modified */
+	private boolean nodes_modified        = true;
+
+	/** nodes filed*/
+	private DBElement[] nodes             = new DBElement[] {};
+
+	/** lock filed*/
 	private Lock lock                      = new ReentrantLock();
+
+	/** file saver task */
 	private final DBSaver db_saver         = new DBSaver();
+
+	/** DBElementComparator filed*/
 	private DBElementComparator comparator = new DBElementComparator();
 
 	/**
 	 * Used only for searching for given node, do NOT use for any
 	 * other purpose.
 	 */
-	private DBElement tmp_node1 = null;
+	private DBElement tmp_node = null;
 
-	//~--- constructors ---------------------------------------------------------
-
+	/**
+	 * Creates default XMLDB object, if file modes is enabled then
+	 * appropriate saver thread is created as well
+	 */
 	private XMLDB() {
-		Thread thrd = new Thread(db_saver);
+		if ( !memoryMode ){
+			Thread thrd = new Thread( db_saver );
 
-		thrd.setName("XMLDBSaver");
-		thrd.setDaemon(true);
-		thrd.start();
+			thrd.setName( "XMLDBSaver" );
+			thrd.setDaemon( true );
+			thrd.start();
+		}
 	}
 
 	/**
-	 * Constructs ...
+	 * Creates XMLDB object with desired filename, if file modes is enabled then
+	 * appropriate saver thread is created as well. For filenames starting with
+	 * "memory://" memory mode (i.e. without writing to disk) is enabled
 	 *
-	 *
-	 * @param db_file
+	 * @param db_file indicates path to the file on disk to/from which write/read;
+	 *                if parameter starts with "memory://" then memory mode
+	 *                (without actual file usage) is enabled
 	 *
 	 * @throws IOException
 	 * @throws XMLDBException
 	 */
-	public XMLDB(String db_file) throws IOException, XMLDBException {
-		Thread thrd = new Thread(db_saver);
+	public XMLDB( String db_file ) throws IOException, XMLDBException {
+		dbFile = db_file;
+		tmp_node = new DBElement( node_name );
+		if ( db_file.startsWith( "memory://" ) ){
+			memoryMode = true;
+			this.setupNewDB( db_file, root_name, node_name );
+		} else {
+			Thread thrd = new Thread( db_saver );
 
-		thrd.setName("XMLDBSaver");
-		thrd.setDaemon(true);
-		thrd.start();
-		dbFile    = db_file;
-		tmp_node1 = new DBElement(node1_name);
-		loadDB();
+			thrd.setName( "XMLDBSaver" + db_file );
+			thrd.setDaemon( true );
+			thrd.start();
+
+			loadDB();
+		}
 	}
 
-	//~--- methods --------------------------------------------------------------
-
 	/**
-	 * Method description
+	 * Factory method creating and setting up XMLDB
 	 *
+	 * @param db_file indicates path to the file on disk to/from which write/read;
+	 *                if parameter starts with "memory://" then memory mode
+	 *                (without actual file usage) is enabled
 	 *
-	 * @param db_file
-	 * @param root_name
-	 * @param node1_name
-	 *
-	 * @return
+	 * @param root_name name of the root element
+	 * @param node1_name name of the node
+	 * @return XMLDB object
 	 */
 	public static XMLDB createDB(String db_file, String root_name, String node1_name) {
 		XMLDB xmldb = new XMLDB();
@@ -175,44 +199,52 @@ public class XMLDB {
 		return xmldb;
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
 	/**
-	 * Method description
+	 * Retrieves filename
 	 *
-	 *
-	 * @return
+	 * @return filename
 	 */
 	public String getDBFileName() {
 		return dbFile;
 	}
 
-	//~--- methods --------------------------------------------------------------
+	@Override
+	public String toString() {
+		return root != null ? root.formatedString(0, 1) : "";
+	}
 
 	/**
-	 * Method description
+	 * Creates basic Elements of the XMLDB
 	 *
+	 * @param db_file indicates path to the file on disk to/from which write/read;
+	 *                if parameter starts with "memory://" then memory mode
+	 *                (without actual file usage) is enabled
 	 *
-	 * @param db_file
-	 * @param root_name
-	 * @param node1_name
+	 * @param root_name name of the root element
+	 * @param node1_name name of the node
 	 */
 	protected void setupNewDB(String db_file, String root_name, String node1_name) {
-		log.info("Create empty DB.");
+		log.log(Level.FINEST, "Created new XML Database, db_file: {0}, root_name: {1}, node_name: {2} @ {3}",
+													new Object [] {db_file, root_name, node1_name, this});
 		this.dbFile = db_file;
+		if ( db_file.startsWith( "memory://" ) ){
+			this.memoryMode = true;
+		}
 		if (root_name != null) {
 			this.root_name = root_name;
 		}    // end of if (root_name != null)
 		if (node1_name != null) {
-			this.node1_name = node1_name;
+			this.node_name = node1_name;
 		}    // end of if (node1_name != null)
-		tmp_node1 = new DBElement(node1_name);
+		tmp_node = new DBElement(node1_name);
+		log.log(Level.FINEST, "Created tmp_node1: {0}", new Object [] {tmp_node});
 		root      = new DBElement(this.root_name);
+		log.log(Level.FINEST, "Created root: {0} @ {1}", new Object [] {root,this.toString()});
+
 	}
 
 	/**
-	 * Method description
-	 *
+	 * Loads XML from file
 	 *
 	 * @throws IOException
 	 * @throws XMLDBException
@@ -225,10 +257,12 @@ public class XMLDB {
 		DomBuilderHandler domHandler = new DomBuilderHandler(DBElementFactory.getFactory());
 		int result                   = -1;
 
-		while ((result = file.read(buff)) != -1) {
-			parser.parse(domHandler, buff, 0, result);
+		if ( !memoryMode ){
+			while ( ( result = file.read( buff ) ) != -1 ) {
+				parser.parse( domHandler, buff, 0, result );
+			}
+			file.close();
 		}
-		file.close();
 		root = (DBElement) domHandler.getParsedElements().poll();
 
 		// node1s = root.getChildren();
@@ -240,38 +274,33 @@ public class XMLDB {
 		List<Element> children = root.getChildren();
 
 		if ((children != null) && (children.size() > 0)) {
-			this.node1_name = children.get(0).getName();
+			this.node_name = children.get(0).getName();
 		}    // end of if (children != null && children.size() > 0)
 		log.finest(root.formatedString(0, 2));
 	}
 
 	/**
-	 * Method description
-	 *
+	 * Saves XML to file
 	 */
 	protected void saveDB() {
-		synchronized (db_saver) {
-			db_saver.notifyAll();
+		if ( !memoryMode ){
+			synchronized ( db_saver ) {
+				db_saver.notifyAll();
+			}
 		}
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
 	/**
-	 * Method description
-	 *
-	 *
-	 * @return
+	 * Retrieve number of nodes
+	 * @return number of nodes
 	 */
 	public final long getAllNode1sCount() {
 		return root.getChildren().size();
 	}
 
 	/**
-	 * Method description
-	 *
-	 *
-	 * @return
+	 * Retrieve list of nodes
+	 * @return list of nodes
 	 */
 	public final List<String> getAllNode1s() {
 		List<Element> children = root.getChildren();
@@ -289,41 +318,36 @@ public class XMLDB {
 		return null;
 	}
 
-	//~--- methods --------------------------------------------------------------
-
 	/**
-	 * Method description
-	 *
-	 *
-	 * @param node1_id
-	 *
-	 * @return
+	 * Return Element corresponding to the node name
+	 * @param node1_id node name
+	 * @return Element corresponding to the node name
 	 */
 	public final DBElement findNode1(String node1_id) {
 		DBElement result = null;
 
 		lock.lock();
 		try {
-			tmp_node1.setAttribute(DBElement.NAME, node1_id);
+			tmp_node.setAttribute(DBElement.NAME, node1_id);
 
-			int idx        = Arrays.binarySearch(node1s, tmp_node1, comparator);
+			int idx        = Arrays.binarySearch(nodes, tmp_node, comparator);
 			DBElement dbel = null;
 
 			if (idx >= 0) {
-				dbel = node1s[idx];
+				dbel = nodes[idx];
 			}      // end of if (idx >= 0)
-			if (node1s_modified && ((idx < 0) || ((dbel != null) && dbel.removed))) {
+			if (nodes_modified && ((idx < 0) || ((dbel != null) && dbel.removed))) {
 				List<Element> children = root.getChildren();
 
 				if (children != null) {
-					node1s = children.toArray(new DBElement[children.size()]);
-					Arrays.sort(node1s, comparator);
-					idx = Arrays.binarySearch(node1s, tmp_node1, comparator);
+					nodes = children.toArray(new DBElement[children.size()]);
+					Arrays.sort(nodes, comparator);
+					idx = Arrays.binarySearch(nodes, tmp_node, comparator);
 				}    // end of if (children != null)
-				node1s_modified = false;
+				nodes_modified = false;
 			}      // end of if (idx < 0)
 			if (idx >= 0) {
-				result = node1s[idx];
+				result = nodes[idx];
 			}
 		} finally {
 			lock.unlock();
@@ -332,16 +356,10 @@ public class XMLDB {
 		return result;
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
 	/**
-	 * Method description
-	 *
 	 *
 	 * @param node1_id
-	 *
 	 * @return
-	 *
 	 * @throws NodeNotFoundException
 	 */
 	protected final DBElement getNode1(String node1_id) throws NodeNotFoundException {
@@ -355,14 +373,10 @@ public class XMLDB {
 		}    // end of if (result != null) else
 	}
 
-	//~--- methods --------------------------------------------------------------
-
 	/**
-	 * Method description
+	 * Adds new node
 	 *
-	 *
-	 * @param node1_id
-	 *
+	 * @param node1_id name of the node to add
 	 * @throws NodeExistsException
 	 */
 	public void addNode1(String node1_id) throws NodeExistsException {
@@ -373,9 +387,9 @@ public class XMLDB {
 
 				throw new NodeExistsException("Node1: " + node1_id + " already exists.");
 			} catch (NodeNotFoundException e) {
-				node1s_modified = true;
+				nodes_modified = true;
 
-				DBElement newNode1 = new DBElement(node1_name, DBElement.NAME, node1_id);
+				DBElement newNode1 = new DBElement(node_name, DBElement.NAME, node1_id);
 
 				newNode1.addChild(new DBElement(DBElement.MAP));
 				root.addChild(newNode1);
@@ -386,11 +400,9 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
+	 * Removes the node
 	 *
-	 *
-	 * @param node1_id
-	 *
+	 * @param node1_id name of the node to remove
 	 * @throws NodeNotFoundException
 	 */
 	public void removeNode1(String node1_id) throws NodeNotFoundException {
@@ -398,7 +410,7 @@ public class XMLDB {
 		try {
 			DBElement dbel = getNode1(node1_id);
 
-			node1s_modified = true;
+			nodes_modified = true;
 			root.removeChild(dbel);
 			dbel.removed = true;
 		} finally {
@@ -407,23 +419,21 @@ public class XMLDB {
 		saveDB();
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
 	/**
-	 * Method description
+	 * Retrieves the node of the given name at specific path
 	 *
-	 *
-	 * @param node1_id
-	 * @param subnode
-	 * @param auto_create
-	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param auto_create whether to create path if it's missing
 	 * @return
-	 *
 	 * @throws NodeNotFoundException
 	 */
 	protected final DBElement getNode(String node1_id, String subnode, boolean auto_create)
 					throws NodeNotFoundException {
 		DBElement node1 = getNode1(node1_id);
+
+		log.log( Level.FINEST, "Getting node, node1_id: {0}, subnode: {1}, auto_create: {2}, node1: {3} @ {4}",
+						 new Object[] { node1_id, subnode, auto_create, node1, this } );
 
 		if (subnode != null) {
 			DBElement node = node1.getSubnodePath(subnode);
@@ -438,31 +448,29 @@ public class XMLDB {
 		return node1;
 	}
 
-	//~--- set methods ----------------------------------------------------------
-
 	/**
-	 * Describe <code>setData</code> method here.
+	 * Sets data for the given node at given path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @param value a <code>String</code> value
-	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which save the data
+	 * @param value actual value to be saved
 	 * @throws NodeNotFoundException
 	 */
 	public void setData(String node1_id, String subnode, String key, Object value)
 					throws NodeNotFoundException {
+		log.log( Level.FINEST, "Getting node, node1_id: {0}, subnode: {1}, key: {2}, value: {3} @ {4}",
+						 new Object[] { node1_id, subnode, key, value, this } );
 		getNode(node1_id, subnode, true).setEntry(key, value);
 		saveDB();
 	}
 
 	/**
-	 * Describe <code>setData</code> method here.
+	 * Sets data for the given node at root
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @param value a <code>String</code> value
-	 *
+	 * @param node1_id name of the node
+	 * @param key under which save the data
+	 * @param value actual value to be saved
 	 * @throws NodeNotFoundException
 	 */
 	public void setData(String node1_id, String key, Object value)
@@ -470,31 +478,16 @@ public class XMLDB {
 		setData(node1_id, null, key, value);
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
-	// /**
-	// * Describe <code>setDataList</code> method here.
-	// *
-	// * @param node1_id a <code>String</code> value
-	// * @param subnode a <code>String</code> value
-	// * @param key a <code>String</code> value
-	// * @param list a <code>String[]</code> value
-	// * @exception NodeNotFoundException if an error occurs
-	// */
-	// public void setDataList(String node1_id, String subnode, String key, String[] list)
-	// throws NodeNotFoundException {
-	// getNode(node1_id, subnode).setEntry(key, list);
-	// saveDB();
-	// }
-
 	/**
-	 * Describe <code>getDataList</code> method here.
+	 * Retrieve values of given node under specific path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @return a <code>String[]</code> value
-	 * @exception NodeNotFoundException if an error occurs
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
+	 *
+	 * @return array of Strings
+	 *
+	 * @throws NodeNotFoundException
 	 */
 	public String[] getDataList(String node1_id, String subnode, String key)
 					throws NodeNotFoundException {
@@ -506,14 +499,13 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
+	 * Retrieve values of given node under specific path
 	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
 	 *
-	 * @param node1_id
-	 * @param subnode
-	 * @param key
-	 *
-	 * @return
+	 * @return array of Integers
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -527,14 +519,13 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
+	 * Retrieve values of given node under specific path
 	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
 	 *
-	 * @param node1_id
-	 * @param subnode
-	 * @param key
-	 *
-	 * @return
+	 * @return array of Doubles
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -548,13 +539,14 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getData</code> method here.
+	 * Retrieve value of given node under specific path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @param def a <code>String</code> value
-	 * @return a <code>String</code> value
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
+	 * @param def default value if nothing is stored
+	 *
+	 * @return Object with value
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -568,15 +560,14 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
+	 * Retrieve value of given node under specific path
 	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
+	 * @param def default value if nothing is stored
 	 *
-	 * @param node1_id
-	 * @param subnode
-	 * @param key
-	 * @param def
-	 *
-	 * @return
+	 * @return Integer value
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -590,15 +581,14 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
+	 * Retrieve value of given node under specific path
 	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
+	 * @param def default value if nothing is stored
 	 *
-	 * @param node1_id
-	 * @param subnode
-	 * @param key
-	 * @param def
-	 *
-	 * @return
+	 * @return Double value
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -612,12 +602,13 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getData</code> method here.
+	 * Retrieve value of given node under specific path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @return a <code>String</code> value
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key under which read the data
+	 *
+	 * @return Object value
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -627,11 +618,12 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getData</code> method here.
+	 * Retrieve value of given node
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 * @return a <code>String</code> value
+	 * @param node1_id name of the node
+	 * @param key under which read the data
+	 *
+	 * @return Double value
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -640,18 +632,18 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getSubnodes</code> method here.
+	 * Retrieve list of subnodes under specific path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @return a <code>String[]</code> value
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 *
+	 * @return arrays of subnodes names
 	 *
 	 * @throws NodeNotFoundException
 	 */
 	public String[] getSubnodes(String node1_id, String subnode)
 					throws NodeNotFoundException {
 
-		// log.finest("node1_id: " + node1_id + ", subnode: " + subnode);
 		DBElement node = getNode(node1_id, subnode, false);
 
 		return ((node != null)
@@ -660,10 +652,11 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getSubnodes</code> method here.
+	 * Retrieve list of subnodes under root
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @return a <code>String[]</code> value
+	 * @param node1_id name of the node
+	 *
+	 * @return arrays of subnodes names
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -672,11 +665,12 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getKeys</code> method here.
+	 * Retrieve list of keys under specific path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @return a <code>String[]</code> value
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 *
+	 * @return arrays of keys names
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -689,10 +683,11 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>getKeys</code> method here.
+	 * Retrieve list of keys under root
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @return a <code>String[]</code> value
+	 * @param node1_id name of the node
+	 *
+	 * @return arrays of subnodes names
 	 *
 	 * @throws NodeNotFoundException
 	 */
@@ -700,15 +695,12 @@ public class XMLDB {
 		return getKeys(node1_id, null);
 	}
 
-	//~--- methods --------------------------------------------------------------
-
 	/**
-	 * Describe <code>removeData</code> method here.
+	 * Removes data of specific key from node of given name under given path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
+	 * @param key name of the key
 	 * @throws NodeNotFoundException
 	 */
 	public void removeData(String node1_id, String subnode, String key)
@@ -722,11 +714,10 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>removeData</code> method here.
+	 * Removes data of specific key from node of given name under root element
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param key a <code>String</code> value
-	 *
+	 * @param node1_id name of the node
+	 * @param key name of the key
 	 * @throws NodeNotFoundException
 	 */
 	public void removeData(String node1_id, String key) throws NodeNotFoundException {
@@ -734,11 +725,10 @@ public class XMLDB {
 	}
 
 	/**
-	 * Describe <code>removeSubnode</code> method here.
+	 * Removes node of given name under given path
 	 *
-	 * @param node1_id a <code>String</code> value
-	 * @param subnode a <code>String</code> value
-	 *
+	 * @param node1_id name of the node
+	 * @param subnode path to the node
 	 * @throws NodeNotFoundException
 	 */
 	public void removeSubnode(String node1_id, String subnode)
@@ -752,8 +742,7 @@ public class XMLDB {
 	}
 
 	/**
-	 * Method description
-	 *
+	 * Performs synchronization with the file
 	 *
 	 * @throws IOException
 	 */
@@ -761,6 +750,10 @@ public class XMLDB {
 		write();
 	}
 
+	/**
+	 * Writes XMLDB to file
+	 * @throws IOException
+	 */
 	private void write() throws IOException {
 		lock.lock();
 		try {
@@ -768,9 +761,11 @@ public class XMLDB {
 			OutputStreamWriter file = new OutputStreamWriter(new FileOutputStream(dbFile,
 																	false), "UTF-8");
 
-			file.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-			file.write(buffer + "\n");
-			file.close();
+			if ( !memoryMode ){
+				file.write( "<?xml version='1.0' encoding='UTF-8'?>\n" );
+				file.write( buffer + "\n" );
+				file.close();
+			}
 		} finally {
 			lock.unlock();
 		}    // end of try-finally
@@ -778,21 +773,16 @@ public class XMLDB {
 
 	//~--- inner classes --------------------------------------------------------
 
+	/**
+	 * Helper class for comparing elements
+	 */
+
 	private static class DBElementComparator
 					implements Comparator<DBElement>, Serializable {
+
+		/** serialVersionUID */
 		private static final long serialVersionUID = 1L;
 
-		//~--- methods ------------------------------------------------------------
-
-		/**
-		 * Method description
-		 *
-		 *
-		 * @param el1
-		 * @param el2
-		 *
-		 * @return
-		 */
 		@Override
 		public int compare(DBElement el1, DBElement el2) {
 			String name1 = el1.getAttributeStaticStr("name");
@@ -802,23 +792,17 @@ public class XMLDB {
 		}
 	}
 
-
+	/**
+	 * Helper class for performing scheduled writes to file
+	 */
 	class DBSaver
 					implements Runnable {
+
 		/**
-		 * Constructs ...
-		 *
+		 * Constructor...
 		 */
 		public DBSaver() {}
 
-		//~--- methods ------------------------------------------------------------
-
-		// Implementation of java.lang.Runnable
-
-		/**
-		 * Describe <code>run</code> method here.
-		 *
-		 */
 		@Override
 		public void run() {
 			while (true) {
@@ -838,5 +822,3 @@ public class XMLDB {
 	}
 }    // XMLDB
 
-
-//~ Formatted in Tigase Code Convention on 13/02/20
