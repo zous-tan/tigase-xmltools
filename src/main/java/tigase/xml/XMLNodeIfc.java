@@ -27,7 +27,6 @@ package tigase.xml;
  *
  * @param <T>
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
- * @version $Rev$
  */
 public interface XMLNodeIfc<T extends XMLNodeIfc>
 				extends Comparable<T>, Cloneable {
@@ -35,5 +34,7 @@ public interface XMLNodeIfc<T extends XMLNodeIfc>
 	T clone();
 
 	String toStringSecure();
+
+	String toStringPretty();
 
 }

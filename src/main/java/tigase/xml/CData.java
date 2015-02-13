@@ -28,32 +28,15 @@ package tigase.xml;
  * Created: Feb 9, 2009 12:21:43 PM
  *
  * @author <a href="mailto:artur.hefczyc@tigase.org">Artur Hefczyc</a>
- * @version $Rev$
  */
 public class CData
 				implements XMLNodeIfc<CData> {
 	private String cdata = null;
 
-	//~--- constructors ---------------------------------------------------------
-
-	/**
-	 * Constructs ...
-	 *
-	 *
-	 * @param cdata
-	 */
 	public CData(String cdata) {
 		this.cdata = cdata;
 	}
 
-	//~--- methods --------------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 *
-	 * @return
-	 */
 	@Override
 	public CData clone() {
 		CData result = null;
@@ -67,43 +50,24 @@ public class CData
 		return result;
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 *
-	 * @return
-	 */
 	public String getCData() {
 		return cdata;
 	}
-
-	//~--- set methods ----------------------------------------------------------
 
 	public void setCdata( String cdata ) {
 		this.cdata = cdata;
 	}
 
-	//~--- methods --------------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 *
-	 * @return
-	 */
 	@Override
 	public String toString() {
 		return cdata;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @return
-	 */
+	@Override
+	public String toStringPretty() {
+		return cdata;
+	}
+
 	@Override
 	public String toStringSecure() {
 		return (((cdata != null) && (cdata.length() > 2))
@@ -111,18 +75,8 @@ public class CData
 						: cdata);
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param o
-	 *
-	 * @return
-	 */
+	@Override
 	public int compareTo(CData o) {
 		return cdata.compareTo(o.cdata);
 	}
 }
-
-
-//~ Formatted in Tigase Code Convention on 13/02/20

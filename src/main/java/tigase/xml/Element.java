@@ -87,13 +87,6 @@ public class Element
 	/** Field description */
 	protected String xmlns = null;
 
-	//~--- constructors ---------------------------------------------------------
-
-	/**
-	 * Constructs ...
-	 *
-	 * @param element
-	 */
 	public Element(Element element) {
 		Element src = element.clone();
 
@@ -106,21 +99,10 @@ public class Element
 		this.children = src.children;
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 */
 	public Element(String argName) {
 		setName(argName);
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 * @param argCData
-	 */
 	public Element(String argName, String argCData) {
 		setName(argName);
 		if (argCData != null) {
@@ -128,13 +110,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 * @param att_names
-	 * @param att_values
-	 */
 	public Element(String argName, String[] att_names, String[] att_values) {
 		setName(argName);
 		if (att_names != null) {
@@ -142,14 +117,6 @@ public class Element
 		}    // end of if (att_names != null)
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 * @param children
-	 * @param att_names
-	 * @param att_values
-	 */
 	public Element(String argName, Element[] children, String[] att_names,
 								 String[] att_values) {
 		setName(argName);
@@ -159,14 +126,6 @@ public class Element
 		addChildren(Arrays.asList(children));
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 * @param argCData
-	 * @param att_names
-	 * @param att_values
-	 */
 	public Element(String argName, String argCData, String[] att_names,
 								 String[] att_values) {
 		setName(argName);
@@ -178,14 +137,6 @@ public class Element
 		}    // end of if (att_names != null)
 	}
 
-	/**
-	 * Constructs ...
-	 *
-	 * @param argName
-	 * @param argCData
-	 * @param att_names
-	 * @param att_values
-	 */
 	public Element(String argName, String argCData, StringBuilder[] att_names,
 								 StringBuilder[] att_values) {
 		setName(argName);
@@ -197,14 +148,6 @@ public class Element
 		}    // end of if (att_names != null)
 	}
 
-	//~--- methods --------------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 * @param args
-	 * @throws Exception
-	 */
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
 			System.err.println("You must give file name as parameter.");
@@ -230,21 +173,10 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param attName
-	 * @param attValue
-	 */
 	public void addAttribute(String attName, String attValue) {
 		setAttribute(attName, attValue);
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param attrs
-	 */
 	public void addAttributes(Map<String, String> attrs) {
 		if (attributes == null) {
 			attributes = new XMLIdentityHashMap<String, String>(attrs.size());
@@ -256,11 +188,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param child
-	 */
 	public void addChild(XMLNodeIfc child) {
 		if (child == null) {
 			throw new NullPointerException("Element child can not be null.");
@@ -275,11 +202,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param children
-	 */
 	public void addChildren(List<Element> children) {
 		if (children == null) {
 			return;
@@ -297,11 +219,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	public String childrenToString() {
 		StringBuilder result = new StringBuilder();
 
@@ -322,12 +239,27 @@ public class Element
 					 ? result.toString()
 					 : null;
 	}
+	public String childrenToStringPretty() {
+		StringBuilder result = new StringBuilder();
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc child : children) {
+
+					// This is weird but if there is a bug in some other component
+					// it may add null children to the element, let's be save here.
+					if (child != null) {
+						result.append(child.toStringPretty());
+					}
+				}    // end of for ()
+			}
+		}        // end of if (child != null)
+
+		return (result.length() > 0)
+					 ? result.toString()
+					 : null;
+	}
+
 	public String childrenToStringSecure() {
 		StringBuilder result = new StringBuilder();
 
@@ -349,11 +281,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public Element clone() {
@@ -378,26 +305,11 @@ public class Element
 		return result;
 	}
 
-	// Implementation of java.lang.Comparable
-
-	/**
-	 * Method <code>compareTo</code> is used to perform
-	 *
-	 * @param elem
-	 *          an <code>Object</code> value
-	 * @return an <code>int</code> value
-	 */
 	@Override
 	public int compareTo(Element elem) {
 		return toStringNoChildren().compareTo(elem.toStringNoChildren());
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param obj
-	 * @return
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Element) {
@@ -409,14 +321,6 @@ public class Element
 		return false;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public Element findChildStaticStr(String[] elementPath) {
 		if (elementPath[0] != getName()) {
 			return null;
@@ -434,15 +338,6 @@ public class Element
 		return child;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 *
-	 * @param elemPath
-	 *
-	 * @return
-	 */
 	public Element findChild(String[] elemPath) {
 		if (elemPath[0].isEmpty()) {
 			elemPath = Arrays.copyOfRange(elemPath, 1, elemPath.length);
@@ -464,14 +359,6 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 *
-	 *
-	 *
-	 *
-	 * @param elementPath
-	 * @return
 	 * @deprecated use {@link #findChild(java.lang.String[])} instead.
 	 */
 	@Deprecated
@@ -481,13 +368,7 @@ public class Element
 		return findChild(elementPath.split("/"));
 	}
 
-	//~--- get methods ----------------------------------------------------------
-
 	/**
-	 * Method description
-	 *
-	 * @param attName
-	 * @return
 	 * @deprecated use {@link #getAttributeStaticStr(java.lang.String) } instead.
 	 */
 	@Deprecated
@@ -502,14 +383,6 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 *
-	 *
-	 * @param childName
-	 * @param attName
-	 *
-	 * @return
 	 * @deprecated use {@link #getChildAttributeStaticStr(java.lang.String, java.lang.String) } instead.
 	 */
 	@Deprecated
@@ -524,15 +397,6 @@ public class Element
 		return result;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param childName
-	 * @param attName
-	 *
-	 * @return
-	 */
 	public String getChildAttributeStaticStr(String childName, String attName) {
 		String result = null;
 		Element child = getChild(childName);
@@ -544,14 +408,6 @@ public class Element
 		return result;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param attName
-	 *
-	 * @return
-	 */
 	public String getAttributeStaticStr(String attName) {
 		if (attributes != null) {
 			synchronized (attributes) {
@@ -563,13 +419,7 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 * @param elementPath
-	 * @param att_name
-	 * @return
-	 * @deprecated use
-	 * {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
+	 * @deprecated use  {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
 	 * instead.
 	 */
 	@Deprecated
@@ -582,14 +432,8 @@ public class Element
 	}
 
 	/**
-	 * Method description
 	 *
-	 *
-	 * @param elementPath
-	 * @param att_name
-	 *
-	 * @return
-	 * {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
+	 * @deprecated {@link #getAttributeStaticStr(java.lang.String[], java.lang.String) }
 	 * instead.
 	 */
 	@Deprecated
@@ -601,15 +445,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 * @param att_name
-	 *
-	 * @return
-	 */
 	public String getAttributeStaticStr(String[] elementPath, String att_name) {
 		Element child = findChildStaticStr(elementPath);
 
@@ -618,11 +453,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Get the Attributes value.
-	 *
-	 * @return the Attributes value.
-	 */
 	public Map<String, String> getAttributes() {
 		return ((attributes != null)
 						? new LinkedHashMap<String, String>(attributes)
@@ -630,10 +460,6 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 * @param elementPath
-	 * @return
 	 * @deprecated use {@link #getCData(java.lang.String[]) } instead.
 	 */
 	@Deprecated
@@ -641,45 +467,18 @@ public class Element
 		return getChildCData(elementPath);
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getCData(String[] elementPath) {
 		return getChildCData(elementPath);
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getCDataStaticStr(String[] elementPath) {
 		return getChildCDataStaticStr(elementPath);
 	}
 
-	/**
-	 * Gets the value of cdata
-	 *
-	 * @return the value of cdata
-	 */
 	public String getCData() {
 		return cdataToString();
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param name
-	 * @return
-	 */
 	public Element getChild(String name) {
 		if (children != null) {
 			synchronized (children) {
@@ -698,14 +497,6 @@ public class Element
 		return null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param name
-	 *
-	 * @return
-	 */
 	public Element getChildStaticStr(String name) {
 		if (children != null) {
 			synchronized (children) {
@@ -724,13 +515,6 @@ public class Element
 		return null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param name
-	 * @param child_xmlns
-	 * @return
-	 */
 	public Element getChild(String name, String child_xmlns) {
 		if (child_xmlns == null) {
 			return getChild(name);
@@ -755,10 +539,6 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 * @param elementPath
-	 * @return
 	 * @deprecated use {@link #getCData(java.lang.String[]) } instead.
 	 */
 	@Deprecated
@@ -770,14 +550,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getChildCData(String[] elementPath) {
 		Element child = findChild(elementPath);
 
@@ -786,14 +558,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getChildCDataStaticStr(String[] elementPath) {
 		Element child = findChildStaticStr(elementPath);
 
@@ -802,11 +566,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	public List<Element> getChildren() {
 		if (children != null) {
 			LinkedList<Element> result = new LinkedList<Element>();
@@ -824,10 +583,6 @@ public class Element
 	}
 
 	/**
-	 * Method description
-	 *
-	 * @param elementPath
-	 * @return
 	 * @deprecated use {@link #getChildren(java.lang.String[]) } instead.
 	 */
 	@Deprecated
@@ -839,14 +594,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public List<Element> getChildren(String[] elementPath) {
 		Element child = findChild(elementPath);
 
@@ -855,14 +602,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public List<Element> getChildrenStaticStr(String[] elementPath) {
 		Element child = findChildStaticStr(elementPath);
 
@@ -871,18 +610,10 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Gets the value of name
-	 *
-	 * @return the value of name
-	 */
 	public String getName() {
 		return this.name;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getXMLNS() {
 		if (xmlns == null) {
 			xmlns = getAttributeStaticStr("xmlns");
@@ -897,8 +628,6 @@ public class Element
 	}
 
 	/**
-	 * @param elementPath
-	 * @return
 	 * @deprecated use {@link #getXMLNS(java.lang.String[]) } instead.
 	 */
 	@Deprecated
@@ -910,14 +639,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getXMLNS(String[] elementPath) {
 		Element child = findChild(elementPath);
 
@@ -926,14 +647,6 @@ public class Element
 					 : null;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param elementPath
-	 *
-	 * @return
-	 */
 	public String getXMLNSStaticStr(String[] elementPath) {
 		Element child = findChildStaticStr(elementPath);
 
@@ -942,23 +655,11 @@ public class Element
 					 : null;
 	}
 
-	//~--- methods --------------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	@Override
 	public int hashCode() {
 		return toStringNoChildren().hashCode();
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param key
-	 */
 	public void removeAttribute(String key) {
 		if (attributes != null) {
 			synchronized (attributes) {
@@ -967,12 +668,6 @@ public class Element
 		}    // end of if (attributes == null)
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param child
-	 * @return
-	 */
 	public boolean removeChild(Element child) {
 		boolean res = false;
 
@@ -985,17 +680,6 @@ public class Element
 		return res;
 	}
 
-	//~--- set methods ----------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 *
-	 *
-	 * @param elementPath
-	 * @param att_name
-	 * @param att_value
-	 */
 	public void setAttributeStaticStr(String elementPath[], String att_name,
 																		String att_value) {
 		Element child = findChildStaticStr(elementPath);
@@ -1005,12 +689,6 @@ public class Element
 		}    // end of if (child != null)
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param key
-	 * @param value
-	 */
 	public void setAttribute(String key, String value) {
 		if (attributes == null) {
 			attributes = new XMLIdentityHashMap<String, String>(5);
@@ -1027,12 +705,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Set the Attributes value.
-	 *
-	 * @param newAttributes
-	 *          The new Attributes value.
-	 */
 	public void setAttributes(Map<String, String> newAttributes) {
 		attributes = new XMLIdentityHashMap<String, String>(newAttributes.size());
 		synchronized (attributes) {
@@ -1044,12 +716,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param names
-	 * @param values
-	 */
 	public void setAttributes(StringBuilder[] names, StringBuilder[] values) {
 		attributes = new XMLIdentityHashMap<String, String>(names.length);
 		synchronized (attributes) {
@@ -1063,12 +729,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param names
-	 * @param values
-	 */
 	public void setAttributes(String[] names, String[] values) {
 		attributes = new XMLIdentityHashMap<String, String>(names.length);
 		synchronized (attributes) {
@@ -1082,12 +742,6 @@ public class Element
 		}
 	}
 
-	/**
-	 * Sets the value of cdata
-	 *
-	 * @param argCData
-	 *          Value to assign to this.cdata
-	 */
 	public void setCData(String argCData) {
 
 		if (children != null) {
@@ -1107,11 +761,6 @@ public class Element
 		addChild(new CData(argCData));
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param children
-	 */
 	public void setChildren(List<XMLNodeIfc> children) {
 		this.children = new LinkedList<XMLNodeIfc>();
 		synchronized (this.children) {
@@ -1123,42 +772,19 @@ public class Element
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param ns
-	 */
 	public void setDefXMLNS(String ns) {
 		defxmlns = ns.intern();
 	}
 
-	/**
-	 * Sets the value of name
-	 *
-	 * @param argName
-	 *          Value to assign to this.name
-	 */
 	public void setName(String argName) {
 		this.name = argName.intern();
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @param ns
-	 */
 	public void setXMLNS(String ns) {
 		xmlns = ns.intern();
 		setAttribute("xmlns", xmlns);
 	}
 
-	//~--- methods --------------------------------------------------------------
-
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
@@ -1184,11 +810,34 @@ public class Element
 		return result.toString();
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
+	@Override
+	public String toStringPretty() {
+		StringBuilder result = new StringBuilder();
+
+		result.append("<").append(name);
+		if (attributes != null) {
+			for (String key : attributes.keySet()) {
+				result.append(" ").append(key).append("=\"").append(attributes.get(key)).append(
+						"\"");
+			}    // end of for ()
+		}      // end of if (attributes != null)
+
+		String childrenStr = childrenToStringPretty();
+
+		if ((childrenStr != null) && (childrenStr.length() > 0)) {
+			result.append(">");
+			result.append("\n");
+			result.append(childrenStr);
+			result.append("</").append(name).append(">");
+			result.append("\n");
+		} else {
+			result.append("/>");
+			result.append("\n");
+		}
+
+		return result.toString();
+	}
+
 	public String toStringNoChildren() {
 		StringBuilder result = new StringBuilder();
 
@@ -1215,11 +864,6 @@ public class Element
 		return result.toString();
 	}
 
-	/**
-	 * Method description
-	 *
-	 * @return
-	 */
 	@Override
 	public String toStringSecure() {
 		StringBuilder result = new StringBuilder();
@@ -1245,12 +889,6 @@ public class Element
 		return result.toString();
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @return
-	 */
 	protected String cdataToString() {
 		StringBuilder result = new StringBuilder();
 
@@ -1272,37 +910,14 @@ public class Element
 					 : null;
 	}
 
-	//~--- inner classes --------------------------------------------------------
-
-	/**
-	 * Class description
-	 *
-	 *
-	 * @param <K>
-	 * @param <V>
-	 *
-	 * @version        Enter version here..., 13/02/14
-	 * @author         Enter your name here...
-	 */
 	protected class XMLIdentityHashMap<K, V>
 					extends IdentityHashMap<K, V> {
 		private static final long serialVersionUID = 1L;
-
-		//~--- constructors -------------------------------------------------------
 
 		private XMLIdentityHashMap(int size) {
 			super(size);
 		}
 
-		//~--- methods ------------------------------------------------------------
-
-		/**
-		 * Method description
-		 *
-		 * @param key
-		 * @param value
-		 * @return
-		 */
 		@Override
 		public V put(K key, V value) {
 			if ((key == null) || (value == null)) {
@@ -1315,5 +930,3 @@ public class Element
 	}
 }    // Element
 
-
-//~ Formatted in Tigase Code Convention on 13/02/20
