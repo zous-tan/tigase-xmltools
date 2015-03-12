@@ -538,6 +538,28 @@ public class Element
 		return null;
 	}
 
+	public Element getChildStaticStr(String name, String child_xmlns) {
+		if (child_xmlns == null) {
+			return getChildStaticStr(name);
+		}
+		if (children != null) {
+			synchronized (children) {
+				for (XMLNodeIfc el : children) {
+					if (el instanceof Element) {
+						Element elem = (Element) el;
+
+						if (elem.getName() == name &&
+								elem.getXMLNS() == child_xmlns) {
+							return elem;
+						}
+					}
+				}
+			}
+		}    // end of if (children != null)
+
+		return null;
+	}	
+	
 	/**
 	 * @deprecated use {@link #getCData(java.lang.String[]) } instead.
 	 */
