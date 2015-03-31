@@ -45,26 +45,14 @@ public abstract class XMLUtils {
 
 	//~--- methods --------------------------------------------------------------
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param input
-	 *
-	 * @return
-	 */
-	public static String escape(String input) {
-		return translateAll(input, decoded, encoded);
+	public static String escape( String input ) {
+		if ( input != null ){
+			return translateAll( input, decoded, encoded );
+		} else {
+			return null;
+		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param args
-	 *
-	 * @throws Exception
-	 */
 	public static void main(final String[] args) throws Exception {
 		if (args.length < 1) {
 			System.err.println("You must give a file name as a parameter.");
@@ -90,16 +78,6 @@ public abstract class XMLUtils {
 		}
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param input
-	 * @param patterns
-	 * @param replacements
-	 *
-	 * @return
-	 */
 	public static String translateAll(String input, String[] patterns, String[] replacements) {
 		String result = input;
 
@@ -110,21 +88,11 @@ public abstract class XMLUtils {
 		return result;
 	}
 
-	/**
-	 * Method description
-	 *
-	 *
-	 * @param input
-	 *
-	 * @return
-	 */
-	public static String unescape(String input) {
-		return translateAll(input, encoded, decoded);
+	public static String unescape( String input ) {
+		if ( input != null ){
+			return translateAll( input, encoded, decoded );
+		} else {
+			return null;
+		}
 	}
 }
-
-
-//~ Formatted in Sun Code Convention
-
-
-//~ Formatted by Jindent --- http://www.jindent.com
