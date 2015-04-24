@@ -213,29 +213,31 @@ public class Element
 		// Collections.sort(children);
 	}
 
-	// FIXME - add proper passing of stringbuilder instance instead of creation 
-	// of new instance in subelement to speed up this method
 	public String childrenToString() {
 		StringBuilder result = new StringBuilder();
+		childrenToString(result);
 
+		return (result.length() > 0)
+					 ? result.toString()
+					 : null;
+	}
+	
+	public void childrenToString(StringBuilder result) {
 		if (children != null) {
 			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
 				// it may add null children to the element, let's be save here.
 				if (child != null) {
-					result.append(child.toString());
+					if (child instanceof Element)
+						((Element) child).toString(result);
+					else
+						result.append(child.toString());
 				}
 			}    // end of for ()
 		}        // end of if (child != null)
+	}	
 
-		return (result.length() > 0)
-					 ? result.toString()
-					 : null;
-	}
-
-	// FIXME - add proper passing of stringbuilder instance instead of creation 
-	// of new instance in subelement to speed up this method	
 	public String childrenToStringPretty() {
 		StringBuilder result = new StringBuilder();
 
@@ -255,27 +257,31 @@ public class Element
 					 : null;
 	}
 
-	// FIXME - add proper passing of stringbuilder instance instead of creation 
-	// of new instance in subelement to speed up this method	
 	public String childrenToStringSecure() {
 		StringBuilder result = new StringBuilder();
-
-		if (children != null) {
-			for (XMLNodeIfc child : children) {
-
-					// This is weird but if there is a bug in some other component
-				// it may add null children to the element, let's be save here.
-				if (child != null) {
-					result.append(child.toStringSecure());
-				}
-			}    // end of for ()
-		}        // end of if (child != null)
+		childrenToStringSecure(result);
 
 		return (result.length() > 0)
 					 ? result.toString()
 					 : null;
 	}
 
+	public void childrenToStringSecure(StringBuilder result) {
+		if (children != null) {
+			for (XMLNodeIfc child : children) {
+
+					// This is weird but if there is a bug in some other component
+				// it may add null children to the element, let's be save here.
+				if (child != null) {
+					if (child instanceof Element)
+						((Element) child).toStringSecure(result);
+					else
+						result.append(child.toStringSecure());
+				}
+			}    // end of for ()
+		}        // end of if (child != null)
+	}	
+	
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public Element clone() {
@@ -777,7 +783,12 @@ public class Element
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
+		toString(result);
 
+		return result.toString();
+	}
+
+	public void toString(StringBuilder result) {
 		result.append("<").append(name);
 		if (attributes != null) {
 			for (String key : attributes.keySet()) {
@@ -786,19 +797,15 @@ public class Element
 			}    // end of for ()
 		}      // end of if (attributes != null)
 
-		String childrenStr = childrenToString();
-
-		if ((childrenStr != null) && (childrenStr.length() > 0)) {
+		if (children != null && !children.isEmpty()) {
 			result.append(">");
-			result.append(childrenStr);
+			childrenToString(result);
 			result.append("</").append(name).append(">");
 		} else {
 			result.append("/>");
-		}
-
-		return result.toString();
+		}	
 	}
-
+	
 	@Override
 	public String toStringPretty() {
 		StringBuilder result = new StringBuilder();
@@ -856,7 +863,12 @@ public class Element
 	@Override
 	public String toStringSecure() {
 		StringBuilder result = new StringBuilder();
+		toStringSecure(result);
+		
+		return result.toString();
+	}
 
+	public void toStringSecure(StringBuilder result) {
 		result.append("<").append(name);
 		if (attributes != null) {
 			for (String key : attributes.keySet()) {
@@ -864,18 +876,14 @@ public class Element
 						"\"");
 			}    // end of for ()
 		}      // end of if (attributes != null)
-
-		String childrenStr = childrenToStringSecure();
-
-		if ((childrenStr != null) && (childrenStr.length() > 0)) {
+		
+		if (children != null && !children.isEmpty())  {
 			result.append(">");
-			result.append(childrenStr);
+			childrenToStringSecure(result);
 			result.append("</").append(name).append(">");
 		} else {
 			result.append("/>");
 		}
-
-		return result.toString();
 	}
 
 	protected String cdataToString() {
