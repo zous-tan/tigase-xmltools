@@ -181,10 +181,8 @@ public class Element
 		if (attributes == null) {
 			attributes = new XMLIdentityHashMap<String, String>(attrs.size());
 		}
-		synchronized (attributes) {
-			for (Map.Entry<String, String> entry : attrs.entrySet()) {
-				attributes.put(entry.getKey().intern(), entry.getValue());
-			}
+		for (Map.Entry<String, String> entry : attrs.entrySet()) {
+			attributes.put(entry.getKey().intern(), entry.getValue());
 		}
 	}
 
@@ -195,11 +193,9 @@ public class Element
 		if (children == null) {
 			children = new LinkedList<XMLNodeIfc>();
 		}    // end of if (children == null)
-		synchronized (children) {
-			children.add(child);
+		children.add(child);
 
-			// Collections.sort(children);
-		}
+		// Collections.sort(children);
 	}
 
 	public void addChildren(List<Element> children) {
@@ -209,50 +205,49 @@ public class Element
 		if (this.children == null) {
 			this.children = new LinkedList<XMLNodeIfc>();
 		}    // end of if (children == null)
-		synchronized (this.children) {
-			for (XMLNodeIfc child : children) {
-				this.children.add(child.clone());
-			}    // end of for (Element child: children)
+		for (XMLNodeIfc child : children) {
+			this.children.add(child.clone());
+		}    // end of for (Element child: children)
 
-			// this.children.addAll(children);
-			// Collections.sort(children);
-		}
+		// this.children.addAll(children);
+		// Collections.sort(children);
 	}
 
+	// FIXME - add proper passing of stringbuilder instance instead of creation 
+	// of new instance in subelement to speed up this method
 	public String childrenToString() {
 		StringBuilder result = new StringBuilder();
 
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc child : children) {
+			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if (child != null) {
-						result.append(child.toString());
-					}
-				}    // end of for ()
-			}
+				// it may add null children to the element, let's be save here.
+				if (child != null) {
+					result.append(child.toString());
+				}
+			}    // end of for ()
 		}        // end of if (child != null)
 
 		return (result.length() > 0)
 					 ? result.toString()
 					 : null;
 	}
+
+	// FIXME - add proper passing of stringbuilder instance instead of creation 
+	// of new instance in subelement to speed up this method	
 	public String childrenToStringPretty() {
 		StringBuilder result = new StringBuilder();
 
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc child : children) {
+			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if (child != null) {
-						result.append(child.toStringPretty());
-					}
-				}    // end of for ()
-			}
+				// it may add null children to the element, let's be save here.
+				if (child != null) {
+					result.append(child.toStringPretty());
+				}
+			}    // end of for ()
 		}        // end of if (child != null)
 
 		return (result.length() > 0)
@@ -260,20 +255,20 @@ public class Element
 					 : null;
 	}
 
+	// FIXME - add proper passing of stringbuilder instance instead of creation 
+	// of new instance in subelement to speed up this method	
 	public String childrenToStringSecure() {
 		StringBuilder result = new StringBuilder();
 
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc child : children) {
+			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if (child != null) {
-						result.append(child.toStringSecure());
-					}
-				}    // end of for ()
-			}
+				// it may add null children to the element, let's be save here.
+				if (child != null) {
+					result.append(child.toStringSecure());
+				}
+			}    // end of for ()
 		}        // end of if (child != null)
 
 		return (result.length() > 0)
@@ -374,9 +369,7 @@ public class Element
 	@Deprecated
 	public String getAttribute(String attName) {
 		if (attributes != null) {
-			synchronized (attributes) {
-				return attributes.get(attName.intern());
-			}
+			return attributes.get(attName.intern());
 		}    // end of if (attributes != null)
 
 		return null;
@@ -410,9 +403,7 @@ public class Element
 
 	public String getAttributeStaticStr(String attName) {
 		if (attributes != null) {
-			synchronized (attributes) {
-				return attributes.get(attName);
-			}
+			return attributes.get(attName);
 		}    // end of if (attributes != null)
 
 		return null;
@@ -481,14 +472,12 @@ public class Element
 
 	public Element getChild(String name) {
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc el : children) {
-					if (el instanceof Element) {
-						Element elem = (Element) el;
+			for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element) el;
 
-						if (elem.getName().equals(name)) {
-							return elem;
-						}
+					if (elem.getName().equals(name)) {
+						return elem;
 					}
 				}
 			}
@@ -499,14 +488,12 @@ public class Element
 
 	public Element getChildStaticStr(String name) {
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc el : children) {
-					if (el instanceof Element) {
-						Element elem = (Element) el;
+			for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element) el;
 
-						if (elem.getName() == name) {
-							return elem;
-						}
+					if (elem.getName() == name) {
+						return elem;
 					}
 				}
 			}
@@ -520,16 +507,14 @@ public class Element
 			return getChild(name);
 		}
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc el : children) {
-					if (el instanceof Element) {
-						Element elem = (Element) el;
+			for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element) el;
 
-						if (elem.getName().equals(name) &&
-								((elem.getXMLNS() == child_xmlns) ||
-								 child_xmlns.equals(elem.getXMLNS()))) {
-							return elem;
-						}
+					if (elem.getName().equals(name)
+							&& ((elem.getXMLNS() == child_xmlns)
+							|| child_xmlns.equals(elem.getXMLNS()))) {
+						return elem;
 					}
 				}
 			}
@@ -543,15 +528,13 @@ public class Element
 			return getChildStaticStr(name);
 		}
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc el : children) {
-					if (el instanceof Element) {
-						Element elem = (Element) el;
+			for (XMLNodeIfc el : children) {
+				if (el instanceof Element) {
+					Element elem = (Element) el;
 
-						if (elem.getName() == name &&
-								elem.getXMLNS() == child_xmlns) {
-							return elem;
-						}
+					if (elem.getName() == name
+							&& elem.getXMLNS() == child_xmlns) {
+						return elem;
 					}
 				}
 			}
@@ -684,9 +667,7 @@ public class Element
 
 	public void removeAttribute(String key) {
 		if (attributes != null) {
-			synchronized (attributes) {
-				attributes.remove(key.intern());
-			}
+			attributes.remove(key.intern());
 		}    // end of if (attributes == null)
 	}
 
@@ -694,9 +675,7 @@ public class Element
 		boolean res = false;
 
 		if (children != null) {
-			synchronized (children) {
-				res = children.remove(child);
-			}
+			res = children.remove(child);
 		}    // end of if (children == null)
 
 		return res;
@@ -715,69 +694,59 @@ public class Element
 		if (attributes == null) {
 			attributes = new XMLIdentityHashMap<String, String>(5);
 		}    // end of if (attributes == null)
-		synchronized (attributes) {
 			String k = key.intern();
-			String v = value;
+		String v = value;
 
-			if (k == "xmlns") {
-				xmlns = value.intern();
-				v     = xmlns;
-			}
-			attributes.put(k, v);
+		if (k == "xmlns") {
+			xmlns = value.intern();
+			v = xmlns;
 		}
+		attributes.put(k, v);
 	}
 
 	public void setAttributes(Map<String, String> newAttributes) {
 		attributes = new XMLIdentityHashMap<String, String>(newAttributes.size());
-		synchronized (attributes) {
-			for (Map.Entry<String, String> entry : newAttributes.entrySet()) {
-				setAttribute(entry.getKey(), entry.getValue());
+		for (Map.Entry<String, String> entry : newAttributes.entrySet()) {
+			setAttribute(entry.getKey(), entry.getValue());
 
-				// attributes.put(entry.getKey().intern(), entry.getValue());
-			}
+			// attributes.put(entry.getKey().intern(), entry.getValue());
 		}
 	}
 
 	public void setAttributes(StringBuilder[] names, StringBuilder[] values) {
 		attributes = new XMLIdentityHashMap<String, String>(names.length);
-		synchronized (attributes) {
-			for (int i = 0; i < names.length; i++) {
-				if (names[i] != null) {
-					setAttribute(names[i].toString(), values[i].toString());
+		for (int i = 0; i < names.length; i++) {
+			if (names[i] != null) {
+				setAttribute(names[i].toString(), values[i].toString());
 
-					// attributes.put(names[i].toString().intern(), values[i].toString());
-				}    // end of if (names[i] != null)
-			}      // end of for (int i = 0; i < names.length; i++)
-		}
+				// attributes.put(names[i].toString().intern(), values[i].toString());
+			}    // end of if (names[i] != null)
+		}      // end of for (int i = 0; i < names.length; i++)
 	}
 
 	public void setAttributes(String[] names, String[] values) {
 		attributes = new XMLIdentityHashMap<String, String>(names.length);
-		synchronized (attributes) {
-			for (int i = 0; i < names.length; i++) {
-				if (names[i] != null) {
-					setAttribute(names[i], values[i]);
+		for (int i = 0; i < names.length; i++) {
+			if (names[i] != null) {
+				setAttribute(names[i], values[i]);
 
-					// attributes.put(names[i].intern(), values[i]);
-				}    // end of if (names[i] != null)
-			}      // end of for (int i = 0; i < names.length; i++)
-		}
+				// attributes.put(names[i].intern(), values[i]);
+			}    // end of if (names[i] != null)
+		}      // end of for (int i = 0; i < names.length; i++)
 	}
 
 	public void setCData(String argCData) {
 
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc child : children) {
+			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if ((child != null) && (child instanceof CData)) {
-						((CData)child).setCdata( argCData );
-						return;
-					}
-				}    // end of for ()
-			}
+				// it may add null children to the element, let's be save here.
+				if ((child != null) && (child instanceof CData)) {
+					((CData) child).setCdata(argCData);
+					return;
+				}
+			}    // end of for ()
 		}        // end of if (child != null)
 
 		addChild(new CData(argCData));
@@ -785,13 +754,11 @@ public class Element
 
 	public void setChildren(List<XMLNodeIfc> children) {
 		this.children = new LinkedList<XMLNodeIfc>();
-		synchronized (this.children) {
-			for (XMLNodeIfc child : children) {
-				this.children.add(child.clone());
-			}    // end of for (Element child: children)
+		for (XMLNodeIfc child : children) {
+			this.children.add(child.clone());
+		}    // end of for (Element child: children)
 
-			// Collections.sort(children);
-		}
+		// Collections.sort(children);
 	}
 
 	public void setDefXMLNS(String ns) {
@@ -915,16 +882,14 @@ public class Element
 		StringBuilder result = new StringBuilder();
 
 		if (children != null) {
-			synchronized (children) {
-				for (XMLNodeIfc child : children) {
+			for (XMLNodeIfc child : children) {
 
 					// This is weird but if there is a bug in some other component
-					// it may add null children to the element, let's be save here.
-					if ((child != null) && (child instanceof CData)) {
-						result.append(child.toString());
-					}
-				}    // end of for ()
-			}
+				// it may add null children to the element, let's be save here.
+				if ((child != null) && (child instanceof CData)) {
+					result.append(child.toString());
+				}
+			}    // end of for ()
 		}        // end of if (child != null)
 
 		return (result.length() > 0)
