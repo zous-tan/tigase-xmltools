@@ -33,12 +33,15 @@ import tigase.annotations.TODO;
 import java.io.FileReader;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 //import java.util.StringTokenizer;
 
@@ -358,7 +361,7 @@ public class Element
 
 		return child;
 	}
-
+	
 	/**
 	 * @deprecated use {@link #findChild(java.lang.String[])} instead.
 	 */
@@ -369,6 +372,75 @@ public class Element
 		return findChild(elementPath.split("/"));
 	}
 
+	public Element findChild(Matcher<Element> matcher) {
+		if (children != null) {
+			for (XMLNodeIfc node : children) {
+				if (!(node instanceof Element)) {
+					continue;
+				}
+
+				Element el = (Element) node;
+				if (matcher.match(el)) {
+					return el;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public List<Element> findChildren(Matcher<Element> matcher) {
+		if (children != null) {
+			LinkedList<Element> result = new LinkedList<Element>();
+
+			for (XMLNodeIfc node : children) {
+				if (!(node instanceof Element)) {
+					continue;
+				}
+
+				Element el = (Element) node;
+				if (matcher.match(el)) {
+					result.add(el);
+				}
+			}
+
+			return result;
+		}
+		
+		return null;
+	}
+	
+	public <R> List<R> flatMapChildren(Function<Element, Collection<? extends R>> mapper) {
+		if (children != null) {
+			LinkedList<R> result = new LinkedList<R>();
+
+			for (XMLNodeIfc node : children) {
+				if (!(node instanceof Element)) {
+					continue;
+				}
+				
+				Element el = (Element) node;
+				result.addAll(mapper.apply(el));
+			}  
+			
+			return result;
+		}
+		
+		return null;
+	}	
+	
+	public void forEachChild(Consumer<Element> consumer) {
+		if (children != null) {
+			for (XMLNodeIfc node : children) {
+				if (!(node instanceof Element)) {
+					continue;
+				}
+				
+				Element el = (Element) node;
+				consumer.accept(el);
+			}
+		}
+	}
 	/**
 	 * @deprecated use {@link #getAttributeStaticStr(java.lang.String) } instead.
 	 */
@@ -576,6 +648,14 @@ public class Element
 					 ? child.getCData()
 					 : null;
 	}
+	
+	public String getChildCData(Matcher<Element> matcher) {
+		Element child = findChild(matcher);
+		
+		return (child != null)
+				? child.getCData()
+				: null;
+	}	
 
 	public List<Element> getChildren() {
 		if (children != null) {
@@ -616,6 +696,14 @@ public class Element
 	public List<Element> getChildrenStaticStr(String[] elementPath) {
 		Element child = findChildStaticStr(elementPath);
 
+		return (child != null)
+					 ? child.getChildren()
+					 : null;
+	}
+	
+	public List<Element> getChildren(Matcher<Element> matcher) {
+		Element child = findChild(matcher);
+		
 		return (child != null)
 					 ? child.getChildren()
 					 : null;
@@ -669,6 +757,38 @@ public class Element
 	@Override
 	public int hashCode() {
 		return toStringNoChildren().hashCode();
+	}
+	
+	public <R> R map(Function<Element, ? extends R> mapper) {
+		return mapper.apply(this);
+	}
+	
+	public <R> List<R> mapChildren(Function<Element, ? extends R> mapper) {
+		return mapChildren(null, mapper);
+	}
+
+	public <R> List<R> mapChildren(Matcher<Element> matcher, Function<Element, ? extends R> mapper) {
+		if (children != null) {
+			LinkedList<R> result = new LinkedList<R>();
+
+			for (XMLNodeIfc node : children) {
+				if (!(node instanceof Element)) {
+					continue;
+				}
+				
+				Element el = (Element) node;
+				if (matcher == null || matcher.match(el))
+					result.add(mapper.apply(el));
+			}  
+			
+			return result;
+		}
+		
+		return null;
+	}
+	
+	public boolean matches(Matcher<Element> matcher) {
+		return matcher.match(this);
 	}
 
 	public void removeAttribute(String key) {
@@ -905,6 +1025,12 @@ public class Element
 					 : null;
 	}
 
+	public static interface Matcher<T> {
+		
+		boolean match(T item);
+		
+	}
+	
 	protected class XMLIdentityHashMap<K, V>
 					extends IdentityHashMap<K, V> {
 		private static final long serialVersionUID = 1L;
