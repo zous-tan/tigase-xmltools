@@ -2,3 +2,5 @@ target
 .settings
 .project
 .classpath
+tigase-xmltools.iml
+.idea/
