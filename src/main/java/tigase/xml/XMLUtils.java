@@ -43,6 +43,9 @@ public abstract class XMLUtils {
 	private static final String[] decoded = { "&", "<", ">", "\"", "\'" };
 	private static final String[] encoded = { "&amp;", "&lt;", "&gt;", "&quot;", "&apos;" };
 
+	private static final String[] decoded_1 = { "<", ">", "\"", "\'", "&" };
+	private static final String[] encoded_1 = { "&lt;", "&gt;", "&quot;", "&apos;", "&amp;" };
+
 	//~--- methods --------------------------------------------------------------
 
 	public static String escape( String input ) {
@@ -82,7 +85,7 @@ public abstract class XMLUtils {
 		String result = input;
 
 		for (int i = 0; i < patterns.length; i++) {
-			result = result.replaceAll(patterns[i], replacements[i]);
+			result = result.replace(patterns[i], replacements[i]);
 		}
 
 		return result;
@@ -90,7 +93,7 @@ public abstract class XMLUtils {
 
 	public static String unescape( String input ) {
 		if ( input != null ){
-			return translateAll( input, encoded, decoded );
+			return translateAll( input, encoded_1, decoded_1 );
 		} else {
 			return null;
 		}
