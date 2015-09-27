@@ -896,8 +896,13 @@ public class Element
 	}
 
 	public void setXMLNS(String ns) {
-		xmlns = ns.intern();
-		setAttribute("xmlns", xmlns);
+		if (ns == null) {
+			xmlns = null;
+			removeAttribute("xmlns");
+		} else {
+			xmlns = ns.intern();
+			setAttribute("xmlns", xmlns);
+		}
 	}
 
 	@Override
