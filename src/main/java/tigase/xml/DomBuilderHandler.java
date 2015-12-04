@@ -154,7 +154,7 @@ public class DomBuilderHandler implements SimpleHandler {
 		}
 		//System.out.println("Element CDATA: "+cdata);
 		try {
-			el_stack.peek().setCData(cdata.toString());
+			el_stack.peek().addCData(cdata.toString());
 		} catch (EmptyStackException e) {
 			// Do nothing here, it happens sometimes that client sends
 			// some white characters after sending open stream data....

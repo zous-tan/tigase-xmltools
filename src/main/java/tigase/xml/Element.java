@@ -189,6 +189,10 @@ public class Element
 		}
 	}
 
+	public void addCData(String argCData) {
+		addChild(new CData(argCData));
+	}
+
 	public void addChild(XMLNodeIfc child) {
 		if (child == null) {
 			throw new NullPointerException("Element child can not be null.");
