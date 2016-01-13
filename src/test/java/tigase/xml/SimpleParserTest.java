@@ -20,6 +20,7 @@ package tigase.xml;
 
 import java.util.Queue;
 import java.util.logging.Level;
+import org.junit.After;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +33,61 @@ import static org.junit.Assert.*;
  */
 public class SimpleParserTest {
 
-	private final SimpleParser parser = SingletonFactory.getParserInstance();
+	private SimpleParser parser;
 
 	public SimpleParserTest() {
 	}
 
 	@Before
 	public void setUp() {
+		parser = new SimpleParser();
+	}
+	
+	@After
+	public void tearDown() {
+		parser = null;
+	}
+	
+	@Test
+	public void testNPE() {
+		SimpleHandler handler = new SimpleHandler() {
+			Object state;
+
+			@Override
+			public void error(String errorMessage) {
+			}
+
+			@Override
+			public void startElement(StringBuilder name, StringBuilder[] attr_names, StringBuilder[] attr_values) {
+			}
+
+			@Override
+			public void elementCData(StringBuilder cdata) {
+			}
+
+			@Override
+			public void endElement(StringBuilder name) {
+			}
+
+			@Override
+			public void otherXML(StringBuilder other) {
+			}
+
+			@Override
+			public void saveParserState(Object state) {
+				this.state = state;
+			}
+
+			@Override
+			public Object restoreParserState() {
+				return this.state;
+			}
+		};
+		
+		String input = "<root test1 \"test2\"/>";
+		
+		char[] data = input.toCharArray();
+		parser.parse(handler, data, 0, data.length);
 	}
 
 	@Test
@@ -65,5 +114,52 @@ public class SimpleParserTest {
 		}
 
 	}
+
+	@Test
+	public void testChars() {
+		SimpleHandler handler = new SimpleHandler() {
+			Object state;
+
+			@Override
+			public void error(String errorMessage) {
+			}
+
+			@Override
+			public void startElement(StringBuilder name, StringBuilder[] attr_names, StringBuilder[] attr_values) {
+			}
+
+			@Override
+			public void elementCData(StringBuilder cdata) {
+			}
+
+			@Override
+			public void endElement(StringBuilder name) {
+			}
+
+			@Override
+			public void otherXML(StringBuilder other) {
+			}
+
+			@Override
+			public void saveParserState(Object state) {
+				this.state = state;
+			}
+
+			@Override
+			public Object restoreParserState() {
+				return this.state;
+			}
+		};
+				
+		for (int i = 0; i < 0xFFFFFF; i++) {
+			char c = (char) i;
+			assertEquals(parser.checkIsCharValidInXML(c), parser.checkIsCharValidInXML(c));
+		}
+
+	}
+	
+	protected boolean checkIsCharValidInXML(char chr) {
+		return (chr == 0x09 || chr ==0x0a || chr == 0x0d || (chr >= 0x20 && chr <= 0xD7FF) || (chr >= 0xE000 && chr <= 0xFFFD) || (chr >= 0x10000 && chr <= 0x10FFFF));
+	}	
 
 }

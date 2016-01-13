@@ -169,9 +169,15 @@ public class SimpleParser {
 //    if (ignore(chr)) {
 //      break;
 //    } // end of if (ignore(chr))
-			if (chr == IGNORE_CHARS[0]) {
-				break;
+//		Replaced by checkCharIsValidInXML()
+//			if (chr == IGNORE_CHARS[0]) {
+//				break;
+//			}
+			if (!checkIsCharValidInXML(chr)) {
+				parser_state.errorMessage = "Not allowed character '" + chr + "' in XML stream";
+				parser_state.state = State.ERROR;
 			}
+				
 
 			switch (parser_state.state) {
 				case START :
@@ -543,6 +549,28 @@ public class SimpleParser {
 		return array;
 	}
 
+	private static final boolean[] ALLOWED_CHARS_LOW = new boolean[0x20];
+	static {
+		ALLOWED_CHARS_LOW[0x09] = true;
+		ALLOWED_CHARS_LOW[0x0A] = true;
+		ALLOWED_CHARS_LOW[0x0D] = true;
+	}
+	
+	protected boolean checkIsCharValidInXML(char chr) {
+		if (chr <= 0xD7FF) {
+			if (chr >= 0x20)
+				return true;
+			return ALLOWED_CHARS_LOW[chr];
+		} else if (chr <= 0xFFFD) {
+			if (chr >= 0xE000)
+				return true;
+			return false;
+		} else if (chr >= 0x10000 && chr <= 0x10FFFF) {
+			return true;
+		}
+		return false;
+	}
+	
 	//~--- inner classes --------------------------------------------------------
 
 	private static class ParserState {
