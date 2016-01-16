@@ -114,7 +114,7 @@ public class SimpleParser {
 
 	//~--- constant enums -------------------------------------------------------
 
-	private static enum State {
+	protected static enum State {
 		START, OPEN_BRACKET, ELEMENT_NAME, END_ELEMENT_NAME, ATTRIB_NAME, END_OF_ATTR_NAME,
 		ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML, ERROR, CLOSE_ELEMENT
 	}
@@ -173,7 +173,7 @@ public class SimpleParser {
 //			if (chr == IGNORE_CHARS[0]) {
 //				break;
 //			}
-			if (!checkIsCharValidInXML(chr)) {
+			if (!checkIsCharValidInXML(parser_state, chr)) {
 				parser_state.errorMessage = "Not allowed character '" + chr + "' in XML stream";
 				parser_state.state = State.ERROR;
 			}
@@ -556,7 +556,9 @@ public class SimpleParser {
 		ALLOWED_CHARS_LOW[0x0D] = true;
 	}
 	
-	protected boolean checkIsCharValidInXML(char chr) {
+	protected boolean checkIsCharValidInXML(ParserState parserState, char chr) {
+		boolean highSurrogate = parserState.highSurrogate;
+		parserState.highSurrogate = false;
 		if (chr <= 0xD7FF) {
 			if (chr >= 0x20)
 				return true;
@@ -564,22 +566,27 @@ public class SimpleParser {
 		} else if (chr <= 0xFFFD) {
 			if (chr >= 0xE000)
 				return true;
-			return false;
-		} else if (chr >= 0x10000 && chr <= 0x10FFFF) {
-			return true;
+
+			if (Character.isLowSurrogate(chr)) {
+				return highSurrogate;
+			} else if (Character.isHighSurrogate(chr)) {
+				parserState.highSurrogate = true;
+				return true;
+			}
 		}
 		return false;
 	}
 	
 	//~--- inner classes --------------------------------------------------------
 
-	private static class ParserState {
+	protected static class ParserState {
 		StringBuilder[] attrib_names = null;
 		StringBuilder[] attrib_values = null;
 		int current_attr = -1;
 		StringBuilder element_cdata = null;
 		StringBuilder element_name = null;
 		String errorMessage = null;
+		boolean highSurrogate = false;
 		boolean slash_found = false;
 		State state = State.START;
 	}

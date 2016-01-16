@@ -151,11 +151,19 @@ public class SimpleParserTest {
 			}
 		};
 				
-		for (int i = 0; i < 0xFFFFFF; i++) {
-			char c = (char) i;
-			assertEquals(parser.checkIsCharValidInXML(c), parser.checkIsCharValidInXML(c));
-		}
+		char[] data = "<test/>".toCharArray();
+		parser.parse(handler, data, 0, data.length);
 
+		handler.saveParserState(null);
+		String dataStr = new StringBuilder("<test>").append(Character.toChars(127479)).append("</test>").toString(); 
+		data = dataStr.toCharArray();
+
+ 		parser.parse(handler, data, 0, data.length);
+		assertNotEquals(SimpleParser.State.ERROR, ((SimpleParser.ParserState)handler.restoreParserState()).state);
+
+		data = "<test>\u0000</test".toCharArray();
+ 		parser.parse(handler, data, 0, data.length);
+		assertEquals(SimpleParser.State.ERROR, ((SimpleParser.ParserState)handler.restoreParserState()).state);
 	}
 	
 	protected boolean checkIsCharValidInXML(char chr) {
