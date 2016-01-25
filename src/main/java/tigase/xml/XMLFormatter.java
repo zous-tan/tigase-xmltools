@@ -119,7 +119,7 @@ public class XMLFormatter implements SimpleHandler {
    * @param name a <code>StringBuilder</code> value
    */
 	@Override
-  public void endElement(final StringBuilder name) {
+  public boolean endElement(final StringBuilder name) {
     if (cdataWritten) {
       output.println("");
       for (int idx = 0; idx < (indent-2); idx ++) {
@@ -132,6 +132,7 @@ public class XMLFormatter implements SimpleHandler {
     indent -= 2;
     cdataWritten = true;
     openedElement = false;
+	return true;
   }
 
   /**

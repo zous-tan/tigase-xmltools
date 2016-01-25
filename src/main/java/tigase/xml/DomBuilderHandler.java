@@ -161,17 +161,20 @@ public class DomBuilderHandler implements SimpleHandler {
 		}
   }
 
-  public void endElement(StringBuilder name) {
+  public boolean endElement(StringBuilder name) {
 		if (log.isLoggable(Level.FINEST)) {
 			log.finest("End element name: " + name);
 		}
     //System.out.println("End element name: "+name);
 
+	String tmp_name = name.toString();
     if (el_stack.isEmpty()) {
-      el_stack.push(newElement(name.toString(), null, null, null));
+      el_stack.push(newElement(tmp_name, null, null, null));
     } // end of if (tmp_name.equals())
 
     Element elem = el_stack.pop();
+	if (elem.getName() != tmp_name.intern())
+		return false;
     if (el_stack.isEmpty()) {
       all_roots.offer(elem);
 			if (log.isLoggable(Level.FINEST)) {
@@ -181,6 +184,7 @@ public class DomBuilderHandler implements SimpleHandler {
     else {
       el_stack.peek().addChild(elem);
     } // end of if (el_stack.isEmpty()) else
+	return true;
   }
 
   public void otherXML(StringBuilder other) {

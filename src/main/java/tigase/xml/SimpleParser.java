@@ -101,7 +101,10 @@ public class SimpleParser {
 	private static final char TAB = '\t';
 	private static final char LF = '\n';
 	private static final char CR = '\r';
+	private static final char AMP = '&';
 	private static final char EQUALS = '=';
+	private static final char HASH = '#';
+	private static final char SEMICOLON = ';';
 	private static final char SINGLE_QUOTE = '\'';
 	private static final char DOUBLE_QUOTE = '"';
 	private static final char[] QUOTES = { SINGLE_QUOTE, DOUBLE_QUOTE };
@@ -109,14 +112,23 @@ public class SimpleParser {
 	private static final char[] END_NAME_CHARS = {
 		CLOSE_BRACKET, SLASH, SPACE, TAB, LF, CR
 	};
-	private static final char[] ERR_NAME_CHARS = { OPEN_BRACKET, QUESTION_MARK };
+	private static final char[] ERR_NAME_CHARS = { OPEN_BRACKET, QUESTION_MARK, AMP };
 	private static final char[] IGNORE_CHARS = { '\0' };
 
 	//~--- constant enums -------------------------------------------------------
 
+	protected static enum EntityType {
+		UNKNOWN,
+		NAMED,
+		CODEPOINT,
+		CODEPOINT_DEC,
+		CODEPOINT_HEX
+	}
+	
 	protected static enum State {
 		START, OPEN_BRACKET, ELEMENT_NAME, END_ELEMENT_NAME, ATTRIB_NAME, END_OF_ATTR_NAME,
-		ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML, ERROR, CLOSE_ELEMENT
+		ATTRIB_VALUE_S, ATTRIB_VALUE_D, ELEMENT_CDATA, OTHER_XML, ERROR, CLOSE_ELEMENT,
+		ENTITY
 	}
 
 	;
@@ -208,6 +220,13 @@ public class SimpleParser {
 
 						default :
 							if (Arrays.binarySearch(WHITE_CHARS, chr) < 0) {
+								if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1]) || (chr == ERR_NAME_CHARS[2])) {
+									parser_state.state = State.ERROR;
+									parser_state.errorMessage = "Not allowed character in start element name: " + chr;
+
+									break;
+								}    // end of if ()
+								
 								parser_state.state = State.ELEMENT_NAME;
 								parser_state.element_name = new StringBuilder(10);
 								parser_state.element_name.append(chr);
@@ -246,7 +265,7 @@ public class SimpleParser {
 						break;
 					}    // end of if ()
 
-					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1])) {
+					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1]) || (chr == ERR_NAME_CHARS[2])) {
 						parser_state.state = State.ERROR;
 						parser_state.errorMessage = "Not allowed character in start element name: " + chr
 								+ "\nExisting characters in start element name: "
@@ -280,8 +299,12 @@ public class SimpleParser {
 					}    // end of if (chr == SLASH)
 
 					if (chr == CLOSE_BRACKET) {
-						parser_state.state = State.ELEMENT_CDATA;;
-						handler.endElement(parser_state.element_name);
+						parser_state.state = State.ELEMENT_CDATA;
+						if (!handler.endElement(parser_state.element_name)) {
+							parser_state.state = State.ERROR;
+							parser_state.errorMessage = "Malformed XML: element close found without open for this element: " + parser_state.element_name;
+							break;
+						}
 
 						// parser_state = new ParserState();
 						parser_state.element_name = null;
@@ -289,7 +312,7 @@ public class SimpleParser {
 						break;
 					}    // end of if ()
 
-					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1])) {
+					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1]) || (chr == ERR_NAME_CHARS[2])) {
 						parser_state.state = State.ERROR;
 						parser_state.errorMessage = "Not allowed character in close element name: " + chr
 								+ "\nExisting characters in close element name: "
@@ -373,6 +396,15 @@ public class SimpleParser {
 						break;
 					}    // end of if ()
 
+					if ((chr == ERR_NAME_CHARS[0]) || (chr == ERR_NAME_CHARS[1]) || (chr == ERR_NAME_CHARS[2])) {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Not allowed character in element attribute name: " + chr
+								+ "\nExisting characters in element attribute name: "
+									+ parser_state.attrib_names[parser_state.current_attr].toString();
+
+						break;
+					}    // end of if ()
+
 					parser_state.attrib_names[parser_state.current_attr].append(chr);
 
 					if (parser_state.attrib_names[parser_state.current_attr].length()
@@ -407,6 +439,21 @@ public class SimpleParser {
 					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
 
 					parser_state.attrib_values[parser_state.current_attr].append(chr);
+					switch (chr) {
+						case '&':
+							parser_state.parentState = parser_state.state;
+							parser_state.state = State.ENTITY;
+							parser_state.entityType = EntityType.UNKNOWN;
+							break;
+						case '<':
+							parser_state.state = State.ERROR;
+							parser_state.errorMessage = "Not allowed character in element attribute value: " + chr
+									+ "\nExisting characters in element attribute value: "
+									+ parser_state.attrib_values[parser_state.current_attr].toString();
+							break;
+						default:
+							break;
+					}
 
 					if (parser_state.attrib_values[parser_state.current_attr].length()
 							> MAX_ATTRIBUTE_VALUE_SIZE) {
@@ -426,6 +473,22 @@ public class SimpleParser {
 					}    // end of if (chr == SINGLE_QUOTE || chr == DOUBLE_QUOTE)
 
 					parser_state.attrib_values[parser_state.current_attr].append(chr);
+					
+					switch (chr) {
+						case '&':
+							parser_state.parentState = parser_state.state;
+							parser_state.state = State.ENTITY;
+							parser_state.entityType = EntityType.UNKNOWN;
+							break;
+						case '<':
+							parser_state.state = State.ERROR;
+							parser_state.errorMessage = "Not allowed character in element attribute value: " + chr
+									+ "\nExisting characters in element attribute value: "
+									+ parser_state.attrib_values[parser_state.current_attr].toString();
+							break;
+						default:
+							break;
+					}
 
 					if (parser_state.attrib_values[parser_state.current_attr].length()
 							> MAX_ATTRIBUTE_VALUE_SIZE) {
@@ -458,9 +521,14 @@ public class SimpleParser {
 //            parser_state.element_cdata.append(chr);
 //            }// end of if (Arrays.binarySearch(WHITE_CHARS, chr) < 0)
 						}    // end of if (parser_state.element_cdata == null) else
-
+						
 						parser_state.element_cdata.append(chr);
-
+						if (chr == '&') {
+							parser_state.parentState = parser_state.state;
+							parser_state.state = State.ENTITY;
+							parser_state.entityType = EntityType.UNKNOWN;
+						}
+						
 						if (parser_state.element_cdata.length() > MAX_CDATA_SIZE) {
 							parser_state.state = State.ERROR;
 							parser_state.errorMessage = "Max cdata size exceeded: " + MAX_CDATA_SIZE
@@ -470,6 +538,73 @@ public class SimpleParser {
 
 					break;
 
+				case ENTITY:
+					boolean alpha = ((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z'));
+					boolean numeric = !alpha && (chr >= '0' && chr <= '9');
+
+					boolean valid = true;
+					
+					switch (parser_state.entityType) {
+						case UNKNOWN:
+							if (alpha) {
+								parser_state.entityType = EntityType.NAMED;
+							} else if (chr == HASH) {
+								parser_state.entityType = EntityType.CODEPOINT;
+							} else {
+								valid = false;
+							}
+							break;
+						case NAMED:
+							if (!(alpha || numeric)) {
+								if (chr != SEMICOLON)
+									valid = false;
+								else
+									parser_state.state = parser_state.parentState;
+							}
+							break;
+						case CODEPOINT:
+							if (chr == 'x') {
+								parser_state.entityType = EntityType.CODEPOINT_HEX;
+							} if (numeric) {
+								parser_state.entityType = EntityType.CODEPOINT_DEC;
+							} else {
+								valid = false;
+							}
+							break;
+						case CODEPOINT_DEC:
+							if (!numeric) {
+								if (chr != SEMICOLON)
+									valid = false;
+								else
+									parser_state.state = parser_state.parentState;
+							}
+							break;
+						case CODEPOINT_HEX:
+							if (!((chr >= 'a' && chr <= 'f') || (chr >= 'A' || chr <= 'F') || numeric)) {
+								if (chr != SEMICOLON)
+									valid = false;
+								else
+									parser_state.state = parser_state.parentState;
+							}
+							break;
+					}
+						
+					if (valid) {
+						switch (parser_state.parentState) {
+							case ATTRIB_VALUE_D:
+							case ATTRIB_VALUE_S:
+								parser_state.attrib_values[parser_state.current_attr].append(chr);
+								break;
+							case ELEMENT_CDATA:
+								parser_state.element_cdata.append(chr);
+								break;
+						}
+					} else {
+						parser_state.state = State.ERROR;
+						parser_state.errorMessage = "Invalid XML entity";
+					}
+					break;
+					
 				case OTHER_XML :
 					if (chr == CLOSE_BRACKET) {
 						parser_state.state = State.START;
@@ -587,6 +722,8 @@ public class SimpleParser {
 		StringBuilder element_name = null;
 		String errorMessage = null;
 		boolean highSurrogate = false;
+		EntityType entityType = EntityType.UNKNOWN;
+		State parentState = null;
 		boolean slash_found = false;
 		State state = State.START;
 	}

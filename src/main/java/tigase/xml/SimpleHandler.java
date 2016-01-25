@@ -49,7 +49,7 @@ public interface SimpleHandler {
 
   void elementCData(StringBuilder cdata);
 
-  void endElement(StringBuilder name);
+  boolean endElement(StringBuilder name);
 
   void otherXML(StringBuilder other);
 
