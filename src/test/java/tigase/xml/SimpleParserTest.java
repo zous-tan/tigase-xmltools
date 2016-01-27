@@ -290,6 +290,12 @@ public class SimpleParserTest {
 		handler.saveParserState(null);		
 		handler = new DomBuilderHandlerImpl(error);
 		
+		data = "<db:result to=\"malkowscy.net\" from=\"brzezinski.mobi\">CAESBxCXyf6RqCoaEGFkhIYrlYto/kK5GTcsaTw=</db:result><db:verify to=\"malkowscy.net\" from=\"brzezinski.mobi\" id=\"1B6476BAD2C0BF34\">4ab1c1d99f40263822ae7d4851854eb158e46325009e928a66b1148ee4fed331</db:verify><db:result to=\"malkowscy.net\" from=\"gmail.com\">CAESBxCXyf6RqCoaEGPHnXDLTIeKBNx9ZJ1SmzM=</db:result>".toCharArray();
+		parser.parse(handler, data, 0, data.length);
+		assertFalse(error.get());
+//		assertEquals(SimpleParser.State.ERROR, ((SimpleParser.ParserState)handler.restoreParserState()).state);
+		handler.saveParserState(null);		
+		handler = new DomBuilderHandlerImpl(error);
 	}
 
 	private class DomBuilderHandlerImpl extends DomBuilderHandler {
