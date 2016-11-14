@@ -18,14 +18,12 @@
  */
 package tigase.xml;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import org.junit.After;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
 
@@ -296,6 +294,14 @@ public class SimpleParserTest {
 //		assertEquals(SimpleParser.State.ERROR, ((SimpleParser.ParserState)handler.restoreParserState()).state);
 		handler.saveParserState(null);		
 		handler = new DomBuilderHandlerImpl(error);
+
+		data = "<body xmlns:xmpp=\"urn:xmpp:xbosh\" ack=\"6621206\" from=\"test\" xmlns=\"http://jabber.org/protocol/httpbind\" secure=\"true\" xmpp:version=\"1.0\" xmlns:stream=\"http://etherx.jabber.org/streams\" host=\"mbp-andrzej.local\"><stream:features xmlns=\"jabber:client\"><auth xmlns=\"http://jabber.org/features/iq-auth\"/><mechanisms xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"><mechanism>SCRAM-SHA-1</mechanism><mechanism>PLAIN</mechanism><mechanism>ANONYMOUS</mechanism></mechanisms><register xmlns=\"http://jabber.org/features/iq-register\"/><ver xmlns=\"urn:xmpp:features:rosterver\"/><starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/><compression xmlns=\"http://jabber.org/features/compress\"><method>zlib</method></compression></stream:features></body>".toCharArray();
+		parser.parse(handler, data, 0, data.length);
+		assertFalse(error.get());
+//		assertEquals(SimpleParser.State.ERROR, ((SimpleParser.ParserState)handler.restoreParserState()).state);
+		handler.saveParserState(null);
+		handler = new DomBuilderHandlerImpl(error);
+
 	}
 
 	private class DomBuilderHandlerImpl extends DomBuilderHandler {

@@ -168,6 +168,20 @@ public class DomBuilderHandler implements SimpleHandler {
     //System.out.println("End element name: "+name);
 
 	String tmp_name = name.toString();
+	String tmp_name_prefix = null;
+	int idx = tmp_name.indexOf(':');
+	if (idx > 0) {
+	 tmp_name_prefix = tmp_name.substring(0, idx);
+	}
+	if (tmp_name_prefix != null) {
+	  for (String pref : namespaces.keySet()) {
+		if (tmp_name_prefix.equals(pref)) {
+		  tmp_name = tmp_name.substring(pref.length() + 1, tmp_name.length());
+	    } // end of if (tmp_name.startsWith(xmlns))
+	  } // end of for (String xmlns: namespaces.keys())
+	}
+
+
     if (el_stack.isEmpty()) {
       el_stack.push(newElement(tmp_name, null, null, null));
     } // end of if (tmp_name.equals())
