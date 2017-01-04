@@ -420,13 +420,18 @@ public class DBElement
 
 		if (entries != null) {
 			synchronized (entries) {
+				Element toRemove = null;
 				for (ListIterator<Element> it = entries.listIterator(); it.hasNext(); ) {
-					if (it.next().getAttributeStaticStr(KEY).equals(key)) {
-						it.remove();
+					Element el = it.next();
+					if (el.getAttributeStaticStr(KEY).equals(key)) {
+						toRemove = el;
 
 						break;
 					}    //
 				}      // end of for (DBElement node : children)
+				if (toRemove != null) {
+					getChild(MAP).removeChild(toRemove);
+				}
 			}
 		}
 	}
