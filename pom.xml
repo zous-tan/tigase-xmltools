@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tigase</groupId>
 	<artifactId>tigase-xmltools</artifactId>
-	<version>3.5.0</version>
+	<version>3.6.0-SNAPSHOT</version>
 	<name>Tigase XML Tools</name>
 	<description>Tigase XML Tools</description>
 	<url>http://www.tigase.org/</url>
@@ -34,7 +34,7 @@
 		<connection>scm:git:https://repository.tigase.org/git/tigase-xmltools.git</connection>
 		<developerConnection>scm:git:https://repository.tigase.org/git/tigase-xmltools.git</developerConnection>
 		<url>https://projects.tigase.org/projects/tigase-xmltools/repository</url>
-	  <tag>tigase-xmltools-3.5.0</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<organization>
 		<name>Tigase</name>
